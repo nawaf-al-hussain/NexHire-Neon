@@ -1,0 +1,29 @@
+#	Group	View Name	Purpose / Description	Key Data Sources
+1	Candidate Matching & Scoring	vw_CandidateMatchScore	Calculates weighted match scores for candidates against job requirements based on skills, experience, and location	Candidates, Applications, JobPostings, CandidateSkills, JobSkills
+2	Candidate Matching & Scoring	vw_SkillGapAnalysis	Identifies skills in high demand but low supply by comparing job requirements vs. candidate qualifications	Skills, JobSkills, CandidateSkills
+3	Candidate Matching & Scoring	vw_SkillVerificationStatus	Shows verification status of candidate skills including claimed vs. verified proficiency levels	Candidates, CandidateSkills, Skills, SkillVerifications
+4	Interview Management	vw_CandidateInterviews	Provides a comprehensive view of all scheduled interviews with time status (Past/Upcoming)	InterviewSchedules, Applications, JobPostings, Candidates, Recruiters, Users
+5	Interview Management	vw_InterviewScoreVsDecision	Correlates average interview scores with final hiring decisions to assess scoring effectiveness	InterviewFeedback, Applications, Candidates, ApplicationStatus
+6	Interview Management	vw_InterviewerConsistency	Measures interviewer scoring patterns, averages, and variance to identify calibration needs	InterviewFeedback, Users
+7	Analytics & Reporting	vw_TimeToHire	Calculates the number of days from application to hire for each successful candidate	Applications, Candidates, ApplicationStatusHistory
+8	Analytics & Reporting	vw_AverageTimeToHire	Provides the organization-wide average days-to-hire metric	vw_TimeToHire
+9	Analytics & Reporting	vw_HireRatePerJob	Shows application volume, hire count, and conversion rate percentage for each job posting	JobPostings, Applications, ApplicationStatus
+10	Analytics & Reporting	vw_RecruiterPerformance	Tracks recruiter effectiveness through interviews conducted and successful hires	Recruiters, Users, InterviewSchedules, Applications, ApplicationStatus
+11	Analytics & Reporting	vw_ApplicationFunnel	Provides a pipeline view showing candidate counts at each application status stage	ApplicationStatus, Applications
+12	Analytics & Reporting	vw_HiringBottlenecks	Identifies stages where applications stall by measuring time spent in each status	ApplicationStatus, Applications
+13	Analytics & Reporting	vw_RejectionAnalysis	Categorizes and quantifies reasons for candidate rejection to identify patterns	Applications
+14	Analytics & Reporting	vw_VacancyUtilization	Shows remaining vacancies alongside application volume and filled positions	JobPostings, Applications, ApplicationStatus
+15	Analytics & Reporting	vw_SilentRejections	Detects applications stuck in non-terminal states for over 30 days with no updates	Applications, Candidates, ApplicationStatus, JobPostings
+16	DEI & Bias Detection	vw_Bias_Location	Analyzes hire rates by candidate location to detect potential geographic bias	Applications, Candidates, ApplicationStatus
+17	DEI & Bias Detection	vw_Bias_Experience	Analyzes hire rates by experience level (Junior, Mid, Senior) to detect experience-based bias	Applications, Candidates, ApplicationStatus
+18	DEI & Bias Detection	vw_DiversityAnalyticsFunnel	Tracks diversity metrics through the hiring pipeline from application to hire	DiversityMetrics, Applications
+19	Ghosting Risk	vw_GhostingRiskDashboard	Consolidates ghosting risk factors including historical patterns, response times, and communication volume	Applications, Candidates, JobPostings, Users, GhostingPatterns, CommunicationLogs, ApplicationStatus
+20	Salary & Compensation	vw_SalaryTransparency	Compares job salary ranges against market benchmarks and tracks transparency levels	JobPostings, JobSalaryRanges, SalaryBenchmarks, Applications
+21	Remote Work	vw_RemoteCompatibilityMatrix	Provides a comprehensive view of candidate vs. company remote work compatibility	Candidates, RemoteCompatibility, Applications, JobPostings, CompanyRemotePolicy, TimezoneOverlapAnalysis
+22	Career Development	vw_CareerPathInsights	Shows candidate career goals, transition probabilities, and available learning resources	Candidates, CandidateCareerGoals, CareerPaths, CandidateSkills, LearningResources
+23	Referral Intelligence	vw_ReferralIntelligence	Tracks referral performance, relationship strength, and outcome analysis	ReferralNetwork, Candidates, JobPostings, NetworkStrength, ReferralPerformance
+24	Market Intelligence	vw_MarketIntelligenceDashboard	Provides supply/demand metrics, salary trends, and hiring difficulty by skill and location	MarketIntelligence, Skills
+25	Candidate Engagement	vw_CandidateEngagement	Measures candidate responsiveness through interview confirmation rates	Candidates, Applications, InterviewSchedules
+26	Onboarding	vw_OnboardingPredictions	(Inferred) Would show onboarding success predictions - referenced in sp_PredictOnboardingSuccess	(Derived from multiple onboarding tables)
+27	Advanced Analytics	vw_AI_Predictions	(Inferred) Would show AI-generated success predictions - based on AI_Predictions table	AI_Predictions, Candidates, JobPostings
+28	Advanced Analytics	vw_ResumeInsights	(Inferred) Would show NLP-extracted resume insights - based on ResumeInsights table	ResumeInsights, Candidates

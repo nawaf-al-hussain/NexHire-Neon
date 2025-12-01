@@ -1,0 +1,613 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;450;500;600;700&display=swap');
+
+/* ============================================================
+   DESIGN TOKENS — Premium Soft (Linear/Stripe-inspired)
+   Light theme is the default; .dark class on <html> flips it.
+   ============================================================ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Surfaces */
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f4f4f5;
+  --bg-elevated: #ffffff;
+  --surface-hover: #f4f4f5;
+  --bg-accent: #f4f4f5; /* kept for backward compat */
+
+  /* Text */
+  --text-primary: #0a0a0a;
+  --text-secondary: #525252;
+  --text-muted: #a3a3a3;
+
+  /* Borders */
+  --border-primary: rgba(15, 23, 42, 0.06);
+  --border-strong: rgba(15, 23, 42, 0.10);
+
+  /* Accent (indigo — used sparingly per Taste Skill) */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef2ff;
+  --accent-ring: rgba(79, 70, 229, 0.45);
+
+  /* Semantic */
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(15, 23, 42, 0.06);
+
+  /* Legacy (preserved for any code still referencing them) */
+  --panel-bg: #ffffff;
+  --sidebar-bg: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.8);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  /* Shadows (tinted, not pure black) */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 32px -8px rgba(15, 23, 42, 0.10), 0 4px 8px -4px rgba(15, 23, 42, 0.06);
+  --shadow-focus: 0 0 0 3px var(--accent-ring);
+
+  /* Motion */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --dur-reveal: 600ms;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  /* Surfaces (tinted neutral, not blue-tinted slate) */
+  --bg-primary: #0c0d10;
+  --bg-secondary: #0f0f10;
+  --bg-tertiary: #1a1a1d;
+  --bg-elevated: #161618;
+  --surface-hover: #1f1f23;
+  --bg-accent: #1a1a1d;
+
+  /* Text */
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+
+  /* Borders */
+  --border-primary: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.10);
+
+  /* Accent — slightly brighter indigo for dark mode */
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --accent-soft: rgba(99, 102, 241, 0.10);
+  --accent-ring: rgba(99, 102, 241, 0.50);
+
+  /* Semantic — kept consistent */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* Glass */
+  --glass-bg: rgba(20, 20, 22, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  /* Legacy */
+  --panel-bg: #0a0a0a;
+  --sidebar-bg: #0a0a0a;
+  --header-bg: rgba(10, 10, 10, 0.8);
+
+  /* Shadows — tinted with neutral dark */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.40), 0 2px 4px -2px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 12px 32px -8px rgba(0, 0, 0, 0.55), 0 4px 8px -4px rgba(0, 0, 0, 0.35);
+  --shadow-focus: 0 0 0 3px var(--accent-ring);
+}
+
+/* ============================================================
+   BASE — body, focus management, accessibility
+   ============================================================ */
+@layer base {
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    transition: background-color var(--dur-base) var(--ease-out-soft),
+                color var(--dur-base) var(--ease-out-soft);
+  }
+
+  /* Visible keyboard focus for accessibility — taste-skill rule */
+  *:focus {
+    outline: none;
+  }
+  *:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Skip link for keyboard users */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 8px;
+    z-index: 9999;
+    padding: 10px 16px;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .skip-link:focus {
+    left: 8px;
+  }
+}
+
+/* ============================================================
+   COMPONENT UTILITY CLASSES
+   ============================================================ */
+@layer components {
+  /* Soft card — replaces ad-hoc border+shadow+bg combos */
+  .card-soft {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: border-color var(--dur-base) var(--ease-out-soft),
+                box-shadow var(--dur-base) var(--ease-out-soft),
+                background-color var(--dur-base) var(--ease-out-soft);
+  }
+
+  /* Soft input — replaces ad-hoc form inputs */
+  .input-soft {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    transition: border-color var(--dur-base) var(--ease-out-soft),
+                box-shadow var(--dur-base) var(--ease-out-soft);
+  }
+  .input-soft::placeholder {
+    color: var(--text-muted);
+  }
+  .input-soft:focus {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-focus);
+    outline: none;
+  }
+
+  /* Primary button — solid indigo CTA */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--accent);
+    color: #ffffff;
+    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    border: none;
+    transition: background-color var(--dur-base) var(--ease-out-soft),
+                transform var(--dur-fast) var(--ease-out-soft);
+  }
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Ghost button — subtle hover background */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color var(--dur-base) var(--ease-out-soft),
+                border-color var(--dur-base) var(--ease-out-soft),
+                transform var(--dur-fast) var(--ease-out-soft);
+  }
+  .btn-ghost:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--border-strong);
+  }
+  .btn-ghost:active {
+    transform: scale(0.98);
+  }
+
+  /* Eyebrow label — for section labels above headings */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+  }
+
+  /* Focus ring utility — apply to any interactive element that needs
+     a visible keyboard focus indicator. Uses --accent-ring token. */
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    box-shadow: var(--shadow-focus);
+    outline: none;
+  }
+
+  /* Legacy glass classes — kept for backward compat, tuned to new tokens */
+  .glass-card {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md);
+    transition: background-color var(--dur-base) var(--ease-out-soft),
+                border-color var(--dur-base) var(--ease-out-soft);
+  }
+
+  .glass-nav {
+    background-color: var(--header-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-primary);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    transition: background-color var(--dur-base) var(--ease-out-soft);
+  }
+
+  /* Legacy btn-premium — kept as alias to btn-primary for backward compat */
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-200 active:scale-[0.98];
+    background-color: var(--accent);
+    color: #ffffff;
+    border-radius: var(--radius-md);
+  }
+  /* shimmer removed — AI tell */
+}
+
+/* ============================================================
+   SCROLLBAR — neutral palette, both themes
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 999px;
+  border: 2px solid var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ============================================================
+   MOTION — entry animations + reduced-motion guard
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+  from { opacity: 0; transform: translateY(2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.animate-in {
+  animation-fill-mode: backwards;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s var(--ease-out-soft) backwards;
+}
+
+.slide-in-from-bottom-8 {
+  animation: slideInFromBottom 0.7s var(--ease-spring) backwards;
+}
+
+.duration-700 {
+  animation-duration: 700ms;
+}
+
+.reveal-up {
+  animation: reveal-up var(--dur-reveal) var(--ease-spring) backwards;
+}
+
+/* Respect reduced-motion preference — taste-skill rule */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Smooth scroll for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ============================================================
+   MOBILE OPTIMIZATION
+   ============================================================ */
+
+/* Prevent text size adjustment on orientation change (iOS Safari) */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Prevent iOS tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure all interactive elements have adequate touch targets
+   (minimum 44x44px per Apple HIG, 48x48px per Material) */
+button,
+[role="button"],
+a.btn-primary,
+a.btn-ghost,
+input[type="submit"],
+input[type="button"] {
+  min-height: 36px;
+  min-width: 36px;
+}
+@media (max-width: 768px) {
+  button,
+  [role="button"],
+  a.btn-primary,
+  a.btn-ghost,
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Prevent horizontal scroll caused by elements wider than viewport */
+body {
+  overflow-x: hidden;
+}
+
+/* Make tables horizontally scrollable on mobile by default */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 768px) {
+  /* Wrap tables: the table's parent div gets overflow-x-auto so the
+     table can scroll horizontally if its columns exceed the viewport.
+     The table itself keeps display:table so column widths are respected. */
+  table {
+    display: table;
+    width: 100%;
+    max-width: none;
+  }
+  /* Force the table's parent to scroll if the table is wider than viewport */
+  .glass-card > div,
+  .card-soft > div,
+  [style*="border-radius"] > div {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+
+
+.safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .safe-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  .safe-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+/* Prevent layout shift when mobile browser chrome shows/hides */
+@supports (height: 100dvh) {
+  .h-screen-mobile {
+    height: 100dvh;
+  }
+}
+@supports not (height: 100dvh) {
+  .h-screen-mobile {
+    height: 100vh;
+  }
+}
+
+
+/* Mobile minimum font size — bump up tiny text (8-10px) to 11px for readability.
+   These text-[8px]/text-[9px]/text-[10px] classes are used for micro-labels
+   and stats throughout the app. On desktop they're fine, but on mobile
+   they're hard to read. This rule overrides them on mobile only. */
+@media (max-width: 768px) {
+  .text-\[8px\],
+  .text-\[9px\],
+  .text-\[10px\] {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* Improve form input experience on mobile — prevent zoom on focus
+   by ensuring font-size is at least 16px (iOS Safari zooms if < 16px) */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Prevent pull-to-refresh on dashboard pages (causes accidental
+   refreshes when scrolling through lists) */
+.no-pull-refresh {
+  overscroll-behavior-y: contain;
+}
+
+/* Custom select chevron for appearance-none selects */
+select[class*="appearance-none"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+/* Missing animation utilities — referenced by components but not previously defined */
+@keyframes slideInFromTop {
+    from { opacity: 0; transform: translateY(-1rem); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInFromRight {
+    from { opacity: 0; transform: translateX(1rem); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.slide-in-from-top-2 { animation: slideInFromTop 0.2s var(--ease-out-soft) backwards; }
+.slide-in-from-top-4 { animation: slideInFromTop 0.4s var(--ease-out-soft) backwards; }
+.slide-in-from-right { animation: slideInFromRight 0.3s var(--ease-out-soft) backwards; }
+.zoom-in-95 { animation: zoomIn 0.2s var(--ease-out-soft) backwards; }
+.duration-200 { animation-duration: 200ms; }
+.duration-300 { animation-duration: 300ms; }
+.duration-500 { animation-duration: 500ms; }
+.duration-1000 { animation-duration: 1000ms; }
+
+@keyframes skeleton-pulse {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}
+
+/* Icon container system — standardizes the w-X h-X + rounded + flex pattern */
+.icon-box-sm {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+.icon-box-md {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+.icon-box-lg {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    flex-shrink: 0;
+}
+
+/* Badge system — standardizes status badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+.badge-success {
+    background-color: color-mix(in srgb, var(--success) 12%, transparent);
+    color: var(--success);
+}
+.badge-warning {
+    background-color: color-mix(in srgb, var(--warning) 12%, transparent);
+    color: var(--warning);
+}
+.badge-danger {
+    background-color: color-mix(in srgb, var(--danger) 12%, transparent);
+    color: var(--danger);
+}
+.badge-accent {
+    background-color: var(--accent-soft);
+    color: var(--accent);
+}
+.badge-neutral {
+    background-color: var(--bg-tertiary);
+    color: var(--text-muted);
+}

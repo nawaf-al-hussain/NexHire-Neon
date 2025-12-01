@@ -1,0 +1,71 @@
+#	Group	Group Name	Table Name	Column Count	Primary Key	Key Foreign Keys	Description
+1	Group 1	Core Identity & Security	Roles	2	RoleID	None	Defines user roles (Admin, Recruiter, Candidate).
+2	Group 1	Core Identity & Security	Users	9	UserID	RoleID	Stores login credentials and basic info for all system users.
+3	Group 1	Core Identity & Security	Recruiters	3	RecruiterID	UserID	Stores profile information for recruiters.
+4	Group 1	Core Identity & Security	Candidates	13	CandidateID	UserID	Stores detailed profile information for job candidates.
+5	Group 1	Core Identity & Security	ConsentManagement	9	ConsentID	CandidateID	Manages candidate consent for data processing.
+6	Group 1	Core Identity & Security	AuditLog	7	AuditID	None	A generic audit log for tracking changes across tables.
+7	Group 1	Core Identity & Security	PushNotifications	12	NotificationID	UserID	Manages push notifications sent to users' devices.
+8	Group 1	Core Identity & Security	BlockchainVerifications	11	VerificationID	CandidateID	Tracks verification of credentials on a blockchain.
+9	Group 1	Core Identity & Security	BackgroundChecks	14	CheckID	CandidateID	Manages the process and results of background checks.
+10	Group 1	Core Identity & Security	GhostingPatterns	7	PatternID	UserID	Tracks patterns of non-response to predict ghosting risk.
+11	Group 2	Job & Skills Management	JobPostings	9	JobID	CreatedBy	Stores details about job vacancies.
+12	Group 2	Job & Skills Management	JobPostingsArchive	6	None (Archival)	None	An archival table for old or deleted job postings.
+13	Group 2	Job & Skills Management	JobSalaryRanges	9	RangeID	JobID	Stores the salary range offered for a specific job posting.
+14	Group 2	Job & Skills Management	Skills	2	SkillID	None	A master list of all skills (e.g., "SQL", "Java").
+15	Group 2	Job & Skills Management	JobSkills	4	(JobID, SkillID)	JobID, SkillID	Defines skills required for a job, including if they are mandatory.
+16	Group 2	Job & Skills Management	CandidateSkills	3	(CandidateID, SkillID)	CandidateID, SkillID	Links candidates to skills and stores their proficiency level.
+17	Group 2	Job & Skills Management	SalaryBenchmarks	13	BenchmarkID	SkillID	Stores market salary data for roles, locations, and experience.
+18	Group 2	Job & Skills Management	MarketIntelligence	14	IntelID	SkillID	Stores external market data on skills, salaries, and demand.
+19	Group 2	Job & Skills Management	MarketAlerts	11	AlertID	SkillID	Generates alerts based on changes in market intelligence.
+20	Group 2	Job & Skills Management	CompetitorAnalysis	11	AnalysisID	None	Tracks hiring activities of competitors.
+21	Group 2	Job & Skills Management	RoleArchetypes	7	ArchetypeID	None	Categorizes roles by archetype (Manager, Specialist, etc.).
+22	Group 3	Application & Workflow	Applications	9	ApplicationID	CandidateID, JobID, StatusID	The core table linking a candidate to a job application.
+23	Group 3	Application & Workflow	ApplicationsArchive	6	None (Archival)	None	An archival table for old applications.
+24	Group 3	Application & Workflow	ApplicationStatus	2	StatusID	None	Defines possible states of a job application (Applied, Hired, etc.).
+25	Group 3	Application & Workflow	ApplicationStatusTransitions	2	(FromStatusID, ToStatusID)	FromStatusID, ToStatusID	Defines the state machine for valid application status changes.
+26	Group 3	Application & Workflow	ApplicationStatusHistory	6	HistoryID	ApplicationID, FromStatusID, ToStatusID, ChangedBy	An audit trail of every status change for an application.
+27	Group 3	Application & Workflow	CandidateRankingHistory	5	HistoryID	CandidateID, JobID	Stores historical match scores for candidates against jobs.
+28	Group 3	Application & Workflow	ScreeningBotDecisions	10	DecisionID	ApplicationID	Logs decisions made by an automated screening bot.
+29	Group 3	Application & Workflow	AI_Predictions	8	PredictionID	CandidateID, JobID, ApplicationID	Stores AI-generated predictions for hiring success.
+30	Group 3	Application & Workflow	OnboardingPredictions	8	PredictionID	CandidateID, JobID	Stores predictions about a candidate's onboarding success.
+31	Group 3	Application & Workflow	CandidateGamification	9	GameID	CandidateID	Tracks points, levels, and badges for candidate engagement.
+32	Group 4	Interview Management	InterviewSchedules	6	ScheduleID	ApplicationID, RecruiterID	Stores scheduled interviews.
+33	Group 4	Interview Management	InterviewFeedback	9	FeedbackID	ApplicationID, InterviewerID	Stores feedback scores and comments from an interviewer.
+34	Group 4	Interview Management	InterviewSharedInsights	10	InsightID	JobID	Tracks questions asked across interviews to identify redundancy.
+35	Group 4	Interview Management	InterviewOptimizationRules	6	RuleID	None	Stores rules for optimizing the interview process.
+36	Group 4	Interview Management	InterviewTranscriptions	12	TranscriptionID	ScheduleID, InterviewID	Stores transcriptions and analysis of interviews.
+37	Group 4	Interview Management	VideoInterviews	12	VideoInterviewID	ApplicationID, ScheduleID	Manages links and metadata for video interviews.
+38	Group 4	Interview Management	AI_GeneratedQuestions	11	QuestionID	JobID, SkillID	Stores AI-generated interview questions.
+39	Group 4	Interview Management	InterviewPrepMaterials	10	MaterialID	JobID, CreatedBy	Stores materials to help candidates prepare for interviews.
+40	Group 4	Interview Management	CandidateInterviewHistory	11	HistoryID	CandidateID	Stores a candidate's personal history of interviews.
+41	Group 4	Interview Management	CandidatePrepProgress	8	ProgressID	CandidateID, MaterialID	Tracks a candidate's progress through prep materials.
+42	Group 4	Interview Management	MicroAssessments	9	AssessmentID	SkillID	Defines short assessments/quizzes for skill verification.
+43	Group 4	Interview Management	SkillVerifications	12	VerificationID	CandidateID, SkillID, AssessmentID, VerifiedBy	Records attempts and results of skill verifications.
+44	Group 4	Interview Management	AssessmentAttempts	8	AttemptID	CandidateID, AssessmentID	Tracks a candidate's attempt at a specific micro-assessment.
+45	Group 4	Interview Management	NegotiationHistory	12	NegotiationID	CandidateID, JobID	Tracks the history of salary negotiations.
+46	Group 4	Interview Management	NegotiationTemplates	8	TemplateID	None	Stores pre-written templates for salary negotiations.
+47	Group 4	Interview Management	OnboardingChecklists	9	ChecklistID	JobID	Defines onboarding tasks for specific job types.
+48	Group 5	Documents & Communication	CandidateDocuments	5	DocumentID	CandidateID	Stores metadata for candidate-uploaded documents (resumes, etc.).
+49	Group 5	Documents & Communication	ResumeInsights	13	InsightID	CandidateID, DocumentID	Stores insights extracted from resumes via NLP.
+50	Group 5	Documents & Communication	EmailQueue	7	EmailID	CandidateID	A queue for sending asynchronous emails to candidates.
+51	Group 5	Documents & Communication	CommunicationLogs	9	LogID	ApplicationID, SenderID, ReceiverID	Logs all communications between users.
+52	Group 5	Documents & Communication	ChatbotInteractions	13	InteractionID	CandidateID	Logs interactions with a recruitment chatbot.
+53	Group 5	Documents & Communication	CandidateSentiment	12	SentimentID	CandidateID	Tracks candidate sentiment from interactions.
+54	Group 5	Documents & Communication	ExternalPlatformSync	12	SyncID	CandidateID, JobID	Tracks data synchronization with external job platforms.
+55	Group 5	Documents & Communication	PersonalizedLearningPaths	11	PathID	CandidateID, GoalJobID	Creates a personalized learning path for a candidate's goal.
+56	Group 6	Remote Work & Location Intelligence	RemoteCompatibility	12	CompatibilityID	CandidateID	Stores a candidate's self-assessed remote work readiness.
+57	Group 6	Remote Work & Location Intelligence	CompanyRemotePolicy	10	PolicyID	RecruiterID	Stores a company's/recruiter's remote work policies.
+58	Group 6	Remote Work & Location Intelligence	TimezoneOverlapAnalysis	8	AnalysisID	CandidateID, JobID	Analyzes timezone overlap between a candidate and a job.
+59	Group 6	Remote Work & Location Intelligence	CandidateLocationPreferences	6	PreferenceID	CandidateID	Stores detailed location and relocation preferences.
+60	Group 6	Remote Work & Location Intelligence	OnboardingSuccessFactors	13	FactorID	HiredCandidateID	Tracks data points for candidates post-hire to predict success.
+61	Group 6	Remote Work & Location Intelligence	DiversityMetrics	12	MetricID	ApplicationID	Stores anonymized diversity data for applicants.
+62	Group 6	Remote Work & Location Intelligence	DiversityGoals	7	GoalID	RecruiterID	Tracks diversity hiring goals for recruiters.
+63	Group 6	Remote Work & Location Intelligence	BiasDetectionLogs	8	DetectionID	RecruiterID	Logs potential bias detected in the hiring process.
+65	Group 7	Career Development & Referrals	CareerPaths	10	PathID	None	Defines common career transitions and their statistics.
+66	Group 7	Career Development & Referrals	CandidateCareerGoals	8	GoalID	CandidateID	Stores a candidate's career goals.
+67	Group 7	Career Development & Referrals	LearningResources	9	ResourceID	SkillID	A catalog of learning resources for specific skills.
+68	Group 7	Career Development & Referrals	ReferralNetwork	12	ReferralID	ReferrerID, ReferredCandidateID, JobID	Tracks candidate referrals and their outcomes.
+69	Group 7	Career Development & Referrals	NetworkStrength	10	StrengthID	CandidateID, ConnectionID	Analyzes the strength of connections between candidates.
+70	Group 7	Career Development & Referrals	ReferralPerformance	8	PerformanceID	ReferrerID	Summarizes the performance of a referrer.
+71	Group 7	Career Development & Referrals	GamificationActions	7	ActionID	None	Defines actions that award gamification points.
