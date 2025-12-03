@@ -81,7 +81,21 @@ const HireSuccessPredictor = () => {
  applicationId: selectedApp.ApplicationID
  });
 
- setPredictionResult(res.data.prediction);
+ // Backend returns { successProbability, confidence, breakdown: { skills, experience, interview, engagement, history } }
+ // Normalize to the shape the UI expects: { successProbability, confidenceLevel, factors: { skillMatch, ... } }
+ const pred = res.data.prediction || {};
+ const breakdown = pred.breakdown || {};
+ setPredictionResult({
+ successProbability: pred.successProbability,
+ confidenceLevel: pred.confidenceLevel || pred.confidence || 'Medium',
+ factors: {
+ skillMatch: breakdown.skillMatch ?? breakdown.skills ?? 0,
+ experienceMatch: breakdown.experienceMatch ?? breakdown.experience ?? 0,
+ interviewScore: breakdown.interviewScore ?? breakdown.interview ?? 0,
+ responseEngagement: breakdown.responseEngagement ?? breakdown.engagement ?? 0,
+ historicalSuccess: breakdown.historicalSuccess ?? breakdown.history ?? 0
+ }
+ });
 
  // Refresh predictions list
  const predRes = await axios.get(`${API_BASE}/analytics/hire-success-predictions`);
@@ -290,7 +304,7 @@ const HireSuccessPredictor = () => {
 
  {expandedFactors && (
  <div className="mt-4 space-y-3">
- {Object.entries(predictionResult.factors).map(([key, value]) => (
+ {Object.entries(predictionResult.factors || {}).map(([key, value]) => (
  <div key={key} className="flex items-center gap-3">
  <div className={`p-2 rounded-lg ${getProbabilityColor(value)} bg-current/10`}>
  <span className={getProbabilityColor(value)}>
