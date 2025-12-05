@@ -279,17 +279,28 @@ const HireSuccessPredictor = () => {
  </div>
  )}
 
- {predictionResult && (
- <div className={`mt-4 p-6 rounded-xl border ${getConfidenceBg(predictionResult.confidenceLevel)}`}>
+ {predictionResult && (() => {
+ // Defensive: ensure factors is always a plain object, even if the API
+ // returned something unexpected (null, undefined, string, array, etc.).
+ // Object.entries(null|undefined) throws "Cannot convert undefined or null to object",
+ // which is the exact crash the user has been hitting on stale bundles.
+ const safeFactors = (predictionResult && typeof predictionResult.factors === 'object' && predictionResult.factors !== null)
+ ? predictionResult.factors
+ : {};
+ const safeProb = Number(predictionResult.successProbability || 0);
+ const safeConfidence = predictionResult.confidenceLevel || 'Medium';
+
+ return (
+ <div className={`mt-4 p-6 rounded-xl border ${getConfidenceBg(safeConfidence)}`}>
  <div className="text-center mb-4">
  <div className="text-[11px] font-medium text-[var(--text-muted)] mb-1">
  Success Probability
  </div>
- <div className={`text-5xl font-semibold ${getProbabilityColor(predictionResult.successProbability)}`}>
- {Number(predictionResult.successProbability).toFixed(1)}%
+ <div className={`text-5xl font-semibold ${getProbabilityColor(safeProb)}`}>
+ {safeProb.toFixed(1)}%
  </div>
- <div className={`text-sm font-bold mt-2 ${getConfidenceColor(predictionResult.confidenceLevel)}`}>
- {predictionResult.confidenceLevel} Confidence
+ <div className={`text-sm font-bold mt-2 ${getConfidenceColor(safeConfidence)}`}>
+ {safeConfidence} Confidence
  </div>
  </div>
 
@@ -304,10 +315,12 @@ const HireSuccessPredictor = () => {
 
  {expandedFactors && (
  <div className="mt-4 space-y-3">
- {Object.entries(predictionResult.factors || {}).map(([key, value]) => (
+ {Object.entries(safeFactors).map(([key, value]) => {
+ const numValue = Number(value) || 0;
+ return (
  <div key={key} className="flex items-center gap-3">
- <div className={`p-2 rounded-lg ${getProbabilityColor(value)} bg-current/10`}>
- <span className={getProbabilityColor(value)}>
+ <div className={`p-2 rounded-lg ${getProbabilityColor(numValue)} bg-current/10`}>
+ <span className={getProbabilityColor(numValue)}>
  {getFactorIcon(key)}
  </span>
  </div>
@@ -316,25 +329,27 @@ const HireSuccessPredictor = () => {
  <span className="text-xs font-medium text-[var(--text-primary)]">
  {getFactorLabel(key)}
  </span>
- <span className={`text-xs font-bold ${getProbabilityColor(value)}`}>
- {Number(value).toFixed(1)}%
+ <span className={`text-xs font-bold ${getProbabilityColor(numValue)}`}>
+ {numValue.toFixed(1)}%
  </span>
  </div>
  <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
  <div
- className={`h-full rounded-full ${value >= 80 ? 'bg-[var(--success)]' :
- value >= 60 ? 'bg-[var(--warning)]' : 'bg-[var(--danger)]'
+ className={`h-full rounded-full ${numValue >= 80 ? 'bg-[var(--success)]' :
+ numValue >= 60 ? 'bg-[var(--warning)]' : 'bg-[var(--danger)]'
  }`}
- style={{ width: `${Math.min(value, 100)}%` }}
+ style={{ width: `${Math.min(numValue, 100)}%` }}
  />
  </div>
  </div>
  </div>
- ))}
+ );
+ })}
  </div>
  )}
  </div>
- )}
+ );
+ })()}
  </div>
  </div>
  </div>
