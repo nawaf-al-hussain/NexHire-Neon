@@ -1,0 +1,144 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@theme {
+  --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Theme Variables */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-accent: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-primary: rgba(0, 0, 0, 0.05);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --panel-bg: #ffffff;
+  --sidebar-bg: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.8);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #0f172a;
+  --bg-accent: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-primary: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --panel-bg: #0f172a;
+  --sidebar-bg: #0f172a;
+  --header-bg: rgba(15, 23, 42, 0.8);
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-xl transition-colors duration-300;
+  }
+
+  .glass-nav {
+    @apply bg-[var(--header-bg)] backdrop-blur-lg border-b border-[var(--border-primary)] sticky top-0 z-50 transition-colors duration-300;
+  }
+
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-300 active:scale-95;
+  }
+
+  .btn-premium::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full skew-x-12 transition-transform duration-700;
+  }
+
+  .btn-premium:hover::after {
+    @apply translate-x-full;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Animated Gradients */
+.bg-mesh {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+    radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+  background-attachment: fixed;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 font-black;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-50;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+}
+
+/* Dark Mode Scrollbar */
+.dark ::-webkit-scrollbar-track {
+  @apply bg-slate-900;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 hover:bg-slate-600;
+}
+
+/* Entry Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation-fill-mode: backwards;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out backwards;
+}
+
+.slide-in-from-bottom-8 {
+  animation: slideInFromBottom 0.7s ease-out backwards;
+}
+
+.duration-700 {
+  animation-duration: 700ms;
+}

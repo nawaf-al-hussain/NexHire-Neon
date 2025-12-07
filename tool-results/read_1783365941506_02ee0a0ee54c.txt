@@ -1,0 +1,667 @@
+     1→import React, { lazy, Suspense } from 'react';
+     2→import { Search, MapPin, Bookmark, Compass, Star, Zap, Target, Bell, TrendingUp, BookOpen, Trophy, FileText, DollarSign, BarChart3, BellRing, ChevronRight, Briefcase, User } from 'lucide-react';
+     3→import DashboardShell from '../components/DashboardShell';
+     4→import axios from 'axios';
+     5→import API_BASE from '../apiConfig';
+     6→
+     7→// Import New Components
+     8→const CandidateApplications = lazy(() => import('../components/Candidate/CandidateApplications'));
+     9→const CandidateInterviews = lazy(() => import('../components/Candidate/CandidateInterviews'));
+    10→const CandidateSkillsVerification = lazy(() => import('../components/Candidate/CandidateSkillsVerification'));
+    11→const SkillManagementModal = lazy(() => import('../components/Candidate/SkillManagementModal'));
+    12→const PushNotifications = lazy(() => import('../components/Candidate/PushNotifications'));
+    13→const CareerPath = lazy(() => import('../components/Candidate/CareerPath'));
+    14→const LearningPaths = lazy(() => import('../components/Candidate/LearningPaths'));
+    15→const Leaderboard = lazy(() => import('../components/Candidate/Leaderboard'));
+    16→const InterviewPrep = lazy(() => import('../components/Candidate/InterviewPrep'));
+    17→const SalaryCoach = lazy(() => import('../components/Candidate/SalaryCoach'));
+    18→const ResumeScore = lazy(() => import('../components/Candidate/ResumeScore'));
+    19→const LocationPreferences = lazy(() => import('../components/Candidate/LocationPreferences'));
+    20→const SkillGapAnalysis = lazy(() => import('../components/Candidate/SkillGapAnalysis'));
+    21→const ProfileManagement = lazy(() => import('../components/Candidate/ProfileManagement'));
+    22→
+    23→
+    24→// Lightweight fallback for lazy-loaded tab content.
+    25→const TabLoader = () => (
+    26→ <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4rem', color: '#6b7280' }}>
+    27→ <div style={{ textAlign: 'center' }}>
+    28→ <div style={{
+    29→ width: '24px', height: '24px',
+    30→ border: '2px solid #e5e7eb', borderTopColor: '#3b82f6',
+    31→ borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+    32→ margin: '0 auto 8px',
+    33→ }} />
+    34→ <div style={{ fontSize: '0.75rem', fontFamily: 'system-ui' }}>Loading…</div>
+    35→ <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    36→ </div>
+    37→ </div>
+    38→);
+    39→
+    40→const CandidateDashboard = () => {
+    41→ const [discoverJobs, setDiscoverJobs] = React.useState([]);
+    42→ const [applications, setApplications] = React.useState([]);
+    43→ const [interviews, setInterviews] = React.useState([]);
+    44→ const [assessments, setAssessments] = React.useState([]);
+    45→ const [profileSkills, setProfileSkills] = React.useState([]);
+    46→ const [careerPath, setCareerPath] = React.useState([]);
+    47→ const [learningPath, setLearningPath] = React.useState([]);
+    48→ const [leaderboardData, setLeaderboardData] = React.useState([]);
+    49→ const [globalLeaderboardData, setGlobalLeaderboardData] = React.useState(null);
+    50→ const [userRank, setUserRank] = React.useState(null);
+    51→ const [prepMaterials, setPrepMaterials] = React.useState([]);
+    52→ const [salaryData, setSalaryData] = React.useState([]);
+    53→ const [resumeData, setResumeData] = React.useState([]);
+    54→ const [loading, setLoading] = React.useState(true);
+    55→ const [activeTab, setActiveTab] = React.useState('Discover Jobs');
+    56→ const [isSkillModalOpen, setIsSkillModalOpen] = React.useState(false);
+    57→ const [skillToLearn, setSkillToLearn] = React.useState(null);
+    58→ const [showNotifications, setShowNotifications] = React.useState(false);
+    59→ const [appliedJobIds, setAppliedJobIds] = React.useState(new Set());
+    60→ const [expandedJobId, setExpandedJobId] = React.useState(null);
+    61→
+    62→ // Search state
+    63→ const [searchQuery, setSearchQuery] = React.useState('');
+    64→ const [locationFilter, setLocationFilter] = React.useState('');
+    65→ const [filteredJobs, setFilteredJobs] = React.useState([]);
+    66→
+    67→ // Record daily login on component mount
+    68→ React.useEffect(() => {
+    69→ const recordDailyLogin = async () => {
+    70→ try {
+    71→ const res = await axios.post(`${API_BASE}/candidates/gamification/daily-login`);
+    72→ if (res.data.isNewDay) {
+    73→ console.log("Daily login recorded! Streak bonus:", res.data.streakBonus);
+    74→ }
+    75→ } catch (err) {
+    76→ // Silently fail - not critical
+    77→ console.log("Daily login not recorded (may already exist)");
+    78→ }
+    79→ };
+    80→ recordDailyLogin();
+    81→ }, []);
+    82→
+    83→ const pendingInvitationsCount = applications.filter(app => app.StatusName === 'Invited').length;
+    84→
+    85→ // Filter jobs based on search query and location
+    86→ const handleSearch = () => {
+    87→ let filtered = [...discoverJobs];
+    88→
+    89→ // Filter by search query (job title, skills, description)
+    90→ if (searchQuery.trim()) {
+    91→ const query = searchQuery.toLowerCase().trim();
+    92→ filtered = filtered.filter(job => {
+    93→ const titleMatch = job.JobTitle?.toLowerCase().includes(query);
+    94→ const descMatch = job.Description?.toLowerCase().includes(query);
+    95→ // Handle RequiredSkills as array or string
+    96→ let skillsMatch = false;
+    97→ if (job.RequiredSkills) {
+    98→ if (Array.isArray(job.RequiredSkills)) {
+    99→ skillsMatch = job.RequiredSkills.some(skill =>
+   100→ (skill.SkillName || skill)?.toLowerCase().includes(query)
+   101→ );
+   102→ } else if (typeof job.RequiredSkills === 'string') {
+   103→ skillsMatch = job.RequiredSkills.toLowerCase().includes(query);
+   104→ }
+   105→ }
+   106→ return titleMatch || descMatch || skillsMatch;
+   107→ });
+   108→ }
+   109→
+   110→ // Filter by location
+   111→ if (locationFilter.trim()) {
+   112→ const loc = locationFilter.toLowerCase().trim();
+   113→ filtered = filtered.filter(job => {
+   114→ const locationMatch = job.Location?.toLowerCase().includes(loc);
+   115→ const remoteMatch = loc.includes('remote') && job.Location?.toLowerCase().includes('remote');
+   116→ return locationMatch || remoteMatch;
+   117→ });
+   118→ }
+   119→
+   120→ setFilteredJobs(filtered);
+   121→ };
+   122→
+   123→ // Reset filtered jobs when discoverJobs changes
+   124→ React.useEffect(() => {
+   125→ setFilteredJobs(discoverJobs);
+   126→ }, [discoverJobs]);
+   127→
+   128→ // Handle Enter key in search inputs
+   129→ const handleSearchKeyDown = (e) => {
+   130→ if (e.key === 'Enter') {
+   131→ handleSearch();
+   132→ }
+   133→ };
+   134→
+   135→ const candidateNav = [
+   136→ // Job Search Flow
+   137→ { icon: Compass, label: 'Discover Jobs', active: activeTab === 'Discover Jobs', onClick: () => setActiveTab('Discover Jobs') },
+   138→ {
+   139→ icon: Bookmark,
+   140→ label: 'Applications',
+   141→ active: activeTab === 'Applications',
+   142→ onClick: () => setActiveTab('Applications'),
+   143→ badge: pendingInvitationsCount > 0 ? pendingInvitationsCount : null
+   144→ },
+   145→ { icon: Target, label: 'Interviews', active: activeTab === 'Interviews', onClick: () => setActiveTab('Interviews') },
+   146→ { icon: FileText, label: 'Interview Prep', active: activeTab === 'Interview Prep', onClick: () => setActiveTab('Interview Prep') },
+   147→
+   148→ // Career Development
+   149→ { icon: Star, label: 'Skills', active: activeTab === 'Skills', onClick: () => setActiveTab('Skills') },
+   150→ { icon: BarChart3, label: 'Skill Gaps', active: activeTab === 'Skill Gaps', onClick: () => setActiveTab('Skill Gaps') },
+   151→ { icon: BookOpen, label: 'Learning', active: activeTab === 'Learning', onClick: () => setActiveTab('Learning') },
+   152→ { icon: TrendingUp, label: 'Career Path', active: activeTab === 'Career Path', onClick: () => setActiveTab('Career Path') },
+   153→
+   154→ // Application Tools
+   155→ { icon: FileText, label: 'Resume Score', active: activeTab === 'Resume Score', onClick: () => setActiveTab('Resume Score') },
+   156→ { icon: DollarSign, label: 'Salary Coach', active: activeTab === 'Salary Coach', onClick: () => setActiveTab('Salary Coach') },
+   157→
+   158→ // Engagement
+   159→ { icon: Trophy, label: 'Achievements', active: activeTab === 'Achievements', onClick: () => setActiveTab('Achievements') },
+   160→
+   161→ // Preferences
+   162→ { icon: MapPin, label: 'Location Prefs', active: activeTab === 'Location Prefs', onClick: () => setActiveTab('Location Prefs') },
+   163→ ];
+   164→
+   165→
+   166→ const handleApply = async (jobID) => {
+   167→ // Prevent duplicate applications
+   168→ if (applications.some(app => app.JobID === jobID) || appliedJobIds.has(jobID)) {
+   169→ return;
+   170→ }
+   171→ try {
+   172→ await axios.post(`${API_BASE}/candidates/apply`, { jobID });
+   173→ // Add to appliedJobIds immediately so UI shows "Applied" button
+   174→ setAppliedJobIds(prev => new Set([...prev, jobID]));
+   175→ alert("Application submitted successfully!");
+   176→ // Don't call fetchData() - job stays visible with grey button until page refresh
+   177→ } catch (err) {
+   178→ console.error("Apply Error:", err.response?.data?.error || err.message);
+   179→ alert(err.response?.data?.error || "Failed to submit application.");
+   180→ }
+   181→ };
+   182→
+   183→ const fetchData = async () => {
+   184→ setLoading(true);
+   185→
+   186→ // Each fetch is INDEPENDENT — one failure never blocks the others
+   187→ const [discoverRes, appsRes, interviewsRes, assessmentsRes, profileSkillsRes] = await Promise.allSettled([
+   188→ axios.get(`${API_BASE}/candidates/discover`),
+   189→ axios.get(`${API_BASE}/candidates/applications`),
+   190→ axios.get(`${API_BASE}/candidates/interviews`),
+   191→ axios.get(`${API_BASE}/candidates/assessments/available`),
+   192→ axios.get(`${API_BASE}/candidates/profile/skills`)
+   193→ ]);
+   194→
+   195→ if (discoverRes.status === 'fulfilled') setDiscoverJobs(discoverRes.value.data);
+   196→ else console.error("Discover Jobs Error:", discoverRes.reason?.message);
+   197→
+   198→ if (appsRes.status === 'fulfilled') setApplications(appsRes.value.data);
+   199→ else console.error("Applications Error:", appsRes.reason?.message);
+   200→
+   201→ if (interviewsRes.status === 'fulfilled') setInterviews(interviewsRes.value.data);
+   202→ else console.error("Interviews Error:", interviewsRes.reason?.message);
+   203→
+   204→ if (assessmentsRes.status === 'fulfilled') setAssessments(assessmentsRes.value.data);
+   205→ else console.error("Assessments Error:", assessmentsRes.reason?.message);
+   206→
+   207→ if (profileSkillsRes.status === 'fulfilled') setProfileSkills(profileSkillsRes.value.data);
+   208→ else console.error("Profile Skills Error:", profileSkillsRes.reason?.message);
+   209→
+   210→ setLoading(false);
+   211→ };
+   212→
+   213→ React.useEffect(() => {
+   214→ fetchData();
+   215→ }, []);
+   216→
+   217→ // Fetch career path, learning path, leaderboard, and prep data when tabs are selected
+   218→ React.useEffect(() => {
+   219→ if (activeTab === 'Career Path') {
+   220→ axios.get(`${API_BASE}/candidates/career-path`)
+   221→ .then(res => setCareerPath(res.data))
+   222→ .catch(err => console.error("Career Path Error:", err));
+   223→ }
+   224→ if (activeTab === 'Learning') {
+   225→ axios.get(`${API_BASE}/candidates/learning-path`)
+   226→ .then(res => setLearningPath(res.data))
+   227→ .catch(err => console.error("Learning Path Error:", err));
+   228→ }
+   229→ if (activeTab === 'Achievements') {
+   230→ // Fetch personal leaderboard data
+   231→ axios.get(`${API_BASE}/candidates/leaderboard`)
+   232→ .then(res => setLeaderboardData(res.data))
+   233→ .catch(err => console.error("Leaderboard Error:", err));
+   234→ // Fetch global leaderboard data
+   235→ axios.get(`${API_BASE}/candidates/leaderboard/global`)
+   236→ .then(res => {
+   237→ setGlobalLeaderboardData(res.data);
+   238→ setUserRank(res.data.userRank);
+   239→ })
+   240→ .catch(err => console.error("Global Leaderboard Error:", err));
+   241→ }
+   242→ if (activeTab === 'Interview Prep') {
+   243→ axios.get(`${API_BASE}/candidates/interview-prep`)
+   244→ .then(res => setPrepMaterials(res.data))
+   245→ .catch(err => console.error("Interview Prep Error:", err));
+   246→ }
+   247→ if (activeTab === 'Salary Coach') {
+   248→ axios.get(`${API_BASE}/candidates/salary-coach`)
+   249→ .then(res => setSalaryData(res.data))
+   250→ .catch(err => console.error("Salary Coach Error:", err));
+   251→ }
+   252→ if (activeTab === 'Resume Score') {
+   253→ axios.get(`${API_BASE}/candidates/resume-score`)
+   254→ .then(res => setResumeData(res.data))
+   255→ .catch(err => console.error("Resume Score Error:", err));
+   256→ }
+   257→ }, [activeTab]);
+   258→
+   259→ const handleGenerateLearningPath = async () => {
+   260→ // Placeholder - actual generation happens in LearningPaths component
+   261→ };
+   262→
+   263→ const handleNavigateToLearning = (skillName) => {
+   264→ setSkillToLearn(skillName);
+   265→ setActiveTab('Learning');
+   266→ };
+   267→
+   268→ // Clear skillToLearn after navigating to Learning tab (after component mounts)
+   269→ React.useEffect(() => {
+   270→ if (activeTab === 'Learning' && skillToLearn) {
+   271→ const timer = setTimeout(() => setSkillToLearn(null), 100);
+   272→ return () => clearTimeout(timer);
+   273→ }
+   274→ }, [activeTab, skillToLearn]);
+   275→
+   276→ const renderMainContent = () => {
+   277→ switch (activeTab) {
+   278→ case 'Applications':
+   279→ return <Suspense fallback={<TabLoader />}><CandidateApplications applications={applications} loading={loading} onRefresh={fetchData} /></Suspense>;
+   280→ case 'Interviews':
+   281→ return <Suspense fallback={<TabLoader />}><CandidateInterviews interviews={interviews} loading={loading} onConfirm={fetchData} /></Suspense>;
+   282→ case 'Skills':
+   283→ return <CandidateSkillsVerification assessments={assessments} profileSkills={profileSkills} loading={loading} onRefresh={fetchData} onAddSkill={() => setIsSkillModalOpen(true)} />;
+   284→ case 'Career Path':
+   285→ return <Suspense fallback={<TabLoader />}><CareerPath careerPath={careerPath} loading={loading} onRefresh={fetchData} /></Suspense>;
+   286→ case 'Learning':
+   287→ return <Suspense fallback={<TabLoader />}><LearningPaths learningPath={learningPath} loading={loading} onGenerate={handleGenerateLearningPath} onRefresh={fetchData} initialTargetRole={skillToLearn} /></Suspense>;
+   288→ case 'Skill Gaps':
+   289→ return <Suspense fallback={<TabLoader />}><SkillGapAnalysis loading={loading} onRefresh={fetchData} onNavigateToLearning={handleNavigateToLearning} /></Suspense>;
+   290→ case 'Achievements':
+   291→ return <Suspense fallback={<TabLoader />}><Leaderboard leaderboardData={leaderboardData} loading={loading} globalData={globalLeaderboardData} userRank={userRank} /></Suspense>;
+   292→ case 'Interview Prep':
+   293→ return <Suspense fallback={<TabLoader />}><InterviewPrep prepMaterials={prepMaterials} loading={loading} applications={applications} onGenerate={handleGenerateLearningPath} /></Suspense>;
+   294→ case 'Salary Coach':
+   295→ return <Suspense fallback={<TabLoader />}><SalaryCoach salaryData={salaryData} loading={loading} applications={applications} /></Suspense>;
+   296→ case 'Resume Score':
+   297→ return <Suspense fallback={<TabLoader />}><ResumeScore resumeData={resumeData} loading={loading} /></Suspense>;
+   298→ case 'Location Prefs':
+   299→ return <Suspense fallback={<TabLoader />}><LocationPreferences /></Suspense>;
+   300→ case 'Profile':
+   301→ return <Suspense fallback={<TabLoader />}><ProfileManagement onRefresh={fetchData} /></Suspense>;
+   302→ default:
+   303→ // Use filteredJobs if search is active, otherwise use discoverJobs
+   304→ const jobsToDisplay = (searchQuery || locationFilter) ? filteredJobs : discoverJobs;
+   305→
+   306→ return (
+   307→ <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+   308→ <div className="lg:col-span-2">
+   309→ <div className="flex items-center justify-between mb-8">
+   310→ <div className="flex items-center gap-3">
+   311→ <Target className="w-5 h-5 text-indigo-500" />
+   312→ <h2 className="text-lg font-medium">
+   313→ {(searchQuery || locationFilter) ? 'Search Results' : `Matches Found for You (${jobsToDisplay.length})`}
+   314→ </h2>
+   315→ </div>
+   316→ </div>
+   317→
+   318→ <div className="space-y-6">
+   319→ {loading ? (
+   320→ <div className="flex flex-col items-center justify-center py-20 opacity-50">
+   321→ <Zap className="w-12 h-12 text-indigo-500 animate-pulse mb-4" />
+   322→ <p className="text-[11px] font-semibold text-[var(--text-muted)]">Querying Match Engine...</p>
+   323→ </div>
+   324→ ) : jobsToDisplay.length === 0 ? (
+   325→ <div className="p-12 border-2 border-dashed border-[var(--border-primary)] rounded-[var(--radius-xl)] text-center bg-[var(--bg-accent)]/5">
+   326→ <p className="text-xs font-semibold text-[var(--text-muted)] italic opacity-40">
+   327→ {(searchQuery || locationFilter)
+   328→ ? 'No jobs match your search criteria. Try different keywords.'
+   329→ : 'No precision matches found. Expand your skill profile.'}
+   330→ </p>
+   331→ </div>
+   332→ ) : (
+   333→ jobsToDisplay.map((job) => {
+   334→ const isExpanded = expandedJobId === job.JobID;
+   335→ const isApplied = applications.some(app => app.JobID === job.JobID) || appliedJobIds.has(job.JobID);
+   336→ return (
+   337→ <div key={job.JobID}
+   338→ className={`rounded-[var(--radius-xl)] border transition-all cursor-pointer relative overflow-hidden ${isApplied ? 'opacity-60 border-gray-500/20 bg-gray-500/5' : isExpanded ? 'border-indigo-500/30 bg-indigo-500/[0.02]' : 'border-[var(--border-primary)] bg-[var(--bg-accent)] hover:bg-indigo-500/[0.02]'}`}
+   339→ onClick={() => setExpandedJobId(isExpanded ? null : job.JobID)}
+   340→ >
+   341→ <div className={`absolute top-0 right-0 w-1 h-full ${isApplied ? 'bg-gray-400' : 'bg-indigo-500'} opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+   342→ <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8">
+   343→ <div className="flex gap-6">
+   344→ <div className="w-16 h-16 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center font-semibold text-lg text-[var(--text-muted)] group-hover:text-indigo-500 shrink-0">
+   345→ {(job.JobTitle || job.jobtitle || '??').substring(0, 2).toUpperCase()}
+   346→ </div>
+   347→ <div>
+   348→ <h4 className={`text-lg sm:text-xl font-semibold group-hover:text-indigo-500 transition-colors leading-tight ${isApplied ? 'text-gray-400' : ''}`}>{job.JobTitle}</h4>
+   349→ <div className="flex items-center gap-3 mt-1 flex-wrap">
+   350→ <p className="text-[11px] font-bold text-indigo-500">{job.Location}</p>
+   351→ <span className="text-[11px] text-[var(--text-muted)] font-medium opacity-60">• {job.MinExperience}+ Yrs Exp</span>
+   352→ </div>
+   353→ </div>
+   354→ </div>
+   355→ <div className="flex items-center gap-8 shrink-0">
+   356→ <div className="flex gap-2">
+   357→ {job.MatchedSkillsCount > 0 && (
+   358→ <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[11px] font-semibold text-emerald-500">
+   359→ {job.MatchedSkillsCount} Skill Matches
+   360→ </span>
+   361→ )}
+   362→ <span className={`px-3 py-1 rounded-lg text-[11px] font-medium ${isApplied ? 'bg-gray-500/10 border border-gray-500/20 text-gray-400' : 'bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-muted)]'}`}>{isApplied ? 'Applied' : 'Active'}</span>
+   363→ </div>
+   364→ <div className="text-right flex flex-col items-end gap-3">
+   365→ <div className="flex flex-col items-end">
+   366→ <div className="flex items-center gap-2">
+   367→ <span className="text-xl sm:text-2xl font-semibold">
+   368→ {job.MatchedSkillsCount > 0 ? Math.min(100, Math.round((job.MatchedSkillsCount / 3) * 100)) : '0'}%
+   369→ </span>
+   370→ </div>
+   371→ <div className="text-[11px] font-semibold text-[var(--text-muted)] opacity-40">Precision</div>
+   372→ </div>
+   373→ {isApplied ? (
+   374→ <button
+   375→ disabled
+   376→ className="px-6 py-2 bg-gray-400 text-white rounded-xl font-semibold text-[11px] cursor-not-allowed"
+   377→ >
+   378→ Applied
+   379→ </button>
+   380→ ) : (
+   381→ <button
+   382→ onClick={(e) => {
+   383→ e.stopPropagation();
+   384→ handleApply(job.JobID);
+   385→ }}
+   386→ className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-semibold text-[11px] hover:bg-indigo-500 transition-all shadow-lg shadow-[var(--shadow-md)]"
+   387→ >
+   388→ Apply Now
+   389→ </button>
+   390→ )}
+   391→ </div>
+   392→ <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[var(--text-muted)] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
+   393→ <ChevronRight size={16} />
+   394→ </div>
+   395→ </div>
+   396→ </div>
+   397→
+   398→ {/* Expanded Job Detail Panel */}
+   399→ {isExpanded && (
+   400→ <div className="px-8 pb-8 space-y-6 border-t border-indigo-500/10 pt-6 animate-in slide-in-from-top-2 duration-200">
+   401→ <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+   402→ {job.MinExperience !== undefined && (
+   403→ <div className="p-4 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)]">
+   404→ <p className="text-[11px] font-medium text-[var(--text-muted)] mb-1">Min. Experience</p>
+   405→ <p className="text-sm font-semibold">{job.MinExperience} yr{job.MinExperience !== 1 ? 's' : ''}</p>
+   406→ </div>
+   407→ )}
+   408→ {job.Vacancies !== undefined && (
+   409→ <div className="p-4 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)]">
+   410→ <p className="text-[11px] font-medium text-[var(--text-muted)] mb-1">Openings</p>
+   411→ <p className="text-sm font-semibold">{job.Vacancies}</p>
+   412→ </div>
+   413→ )}
+   414→ {(job.SalaryMin || job.SalaryMax) && (
+   415→ <div className="p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
+   416→ <p className="text-[11px] font-medium text-emerald-500 mb-1">Salary Range</p>
+   417→ <p className="text-sm font-semibold text-emerald-500">
+   418→ ${job.SalaryMin ? job.SalaryMin.toLocaleString() : '?'} - ${job.SalaryMax ? job.SalaryMax.toLocaleString() : '?'}
+   419→ </p>
+   420→ </div>
+   421→ )}
+   422→ </div>
+   423→
+   424→ {/* Required Skills Section */}
+   425→ {job.RequiredSkills && (job.RequiredSkills.mandatory.length > 0 || job.RequiredSkills.optional.length > 0) && (
+   426→ <div className="space-y-4">
+   427→ <p className="text-[11px] font-medium text-[var(--text-muted)]">Required Skills</p>
+   428→
+   429→ {/* Mandatory Skills */}
+   430→ {job.RequiredSkills.mandatory.length > 0 && (
+   431→ <div>
+   432→ <p className="text-[11px] font-semibold text-rose-500 mb-2">Mandatory</p>
+   433→ <div className="flex flex-wrap gap-2">
+   434→ {job.RequiredSkills.mandatory.map((skill, idx) => (
+   435→ <span
+   436→ key={`mandatory-${idx}`}
+   437→ className={`px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1.5 ${skill.MeetsRequirement
+   438→ ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+   439→ : skill.HasSkill
+   440→ ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+   441→ : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+   442→ }`}
+   443→ >
+   444→ {skill.MeetsRequirement && <span className="text-[11px]">✓</span>}
+   445→ {skill.HasSkill && !skill.MeetsRequirement && <span className="text-[11px]">⚠</span>}
+   446→ {skill.SkillName}
+   447→ <span className="text-[11px] opacity-60">
+   448→ {skill.HasSkill ? `L${skill.CandidateProficiencyLevel}` : `L${skill.MinProficiency}`}
+   449→ </span>
+   450→ </span>
+   451→ ))}
+   452→ </div>
+   453→ </div>
+   454→ )}
+   455→
+   456→ {/* Optional Skills */}
+   457→ {job.RequiredSkills.optional.length > 0 && (
+   458→ <div>
+   459→ <p className="text-[11px] font-semibold text-amber-500 mb-2">Preferred</p>
+   460→ <div className="flex flex-wrap gap-2">
+   461→ {job.RequiredSkills.optional.map((skill, idx) => (
+   462→ <span
+   463→ key={`optional-${idx}`}
+   464→ className={`px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1.5 ${skill.MeetsRequirement
+   465→ ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+   466→ : skill.HasSkill
+   467→ ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+   468→ : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+   469→ }`}
+   470→ >
+   471→ {skill.MeetsRequirement && <span className="text-[11px]">✓</span>}
+   472→ {skill.HasSkill && !skill.MeetsRequirement && <span className="text-[11px]">⚠</span>}
+   473→ {skill.SkillName}
+   474→ <span className="text-[11px] opacity-60">
+   475→ {skill.HasSkill ? `L${skill.CandidateProficiencyLevel}` : `L${skill.MinProficiency}`}
+   476→ </span>
+   477→ </span>
+   478→ ))}
+   479→ </div>
+   480→ </div>
+   481→ )}
+   482→ </div>
+   483→ )}
+   484→
+   485→ {job.Description && (
+   486→ <div className="p-5 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)]">
+   487→ <p className="text-[11px] font-medium text-[var(--text-muted)] mb-3">Job Description</p>
+   488→ <p className="text-xs leading-relaxed text-[var(--text-secondary)] line-clamp-6">{job.Description}</p>
+   489→ </div>
+   490→ )}
+   491→ </div>
+   492→ )}
+   493→ </div>
+   494→ );
+   495→ })
+   496→ )}
+   497→ </div>
+   498→ </div>
+   499→
+   500→ <div className="space-y-5 sm:space-y-8">
+   501→ <div className="glass-card rounded-[var(--radius-xl)] p-10 relative isolate overflow-hidden">
+   502→ <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -z-10"></div>
+   503→ <div className="flex items-center justify-between mb-10">
+   504→ <h3 className="text-[11px] font-medium uppercase tracking-[0.25em] text-[var(--text-muted)]">Profile Pulse</h3>
+   505→ <Zap className="w-4 h-4 text-indigo-500 fill-current" />
+   506→ </div>
+   507→
+   508→ <div className="relative w-36 h-36 mx-auto mb-10">
+   509→ <svg className="w-full h-full rotate-[-90deg]">
+   510→ <circle cx="72" cy="72" r="64" className="stroke-[var(--bg-accent)] fill-none stroke-[10]" />
+   511→ <circle cx="72" cy="72" r="64" className="stroke-indigo-600 fill-none stroke-[10] transition-all" style={{ strokeDasharray: '402', strokeDashoffset: '100' }} />
+   512→ </svg>
+   513→ <div className="absolute inset-0 flex flex-col items-center justify-center">
+   514→ <span className="text-2xl sm:text-3xl font-semibold">75%</span>
+   515→ <span className="text-[11px] text-[var(--text-muted)] uppercase font-semibold tracking-[0.15em] opacity-60">Score</span>
+   516→ </div>
+   517→ </div>
+   518→
+   519→ <p className="text-center text-[var(--text-muted)] text-xs font-medium leading-relaxed mb-8 px-4 opacity-70">
+   520→ Your SQL Schema knowledge is trending. Update your profile to hit 90%.
+   521→ </p>
+   522→
+   523→ <button
+   524→ onClick={() => setIsSkillModalOpen(true)}
+   525→ className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-semibold text-[11px] hover:bg-indigo-500 transition-all"
+   526→ >
+   527→ Manage Skills
+   528→ </button>
+   529→ </div>
+   530→
+   531→ <div className="bg-[var(--bg-accent)] rounded-[var(--radius-xl)] p-10 border border-[var(--border-primary)] relative overflow-hidden group transition-colors">
+   532→ <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
+   533→ <Star className="w-24 h-24" />
+   534→ </div>
+   535→ <h3 className="text-[11px] font-semibold text-[var(--text-muted)] mb-6">Expert Tips</h3>
+   536→ <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-bold italic opacity-80">
+   537→ "Candidates with T-SQL experience are seeing 40% higher match rates today."
+   538→ </p>
+   539→ </div>
+   540→ </div>
+   541→ </div>
+   542→ );
+   543→ }
+   544→ };
+   545→
+   546→ return (
+   547→ <DashboardShell
+   548→ title={activeTab === 'Discover Jobs' ? "Algorithmically Matched" : activeTab}
+   549→ subtitle={activeTab === 'Discover Jobs' ? "Your Career" : "Candidate Portal"}
+   550→ navigation={candidateNav}
+   551→ onNotificationClick={() => setShowNotifications(true)}
+   552→ onProfileClick={() => setActiveTab('Profile')}
+   553→ >
+   554→ {activeTab === 'Discover Jobs' && (
+   555→ <div className="space-y-5 sm:space-y-8">
+   556→ {/* Header */}
+   557→ <div className="flex items-center gap-3">
+   558→ <Briefcase className="w-5 h-5 text-indigo-500" />
+   559→ <h2 className="text-lg font-medium">Discover Jobs</h2>
+   560→ </div>
+   561→
+   562→ {/* Search Bar */}
+   563→ <div className="relative isolate p-8 rounded-[var(--radius-xl)] bg-[var(--bg-secondary)] border border-[var(--border-primary)] overflow-hidden shadow-3xl">
+   564→ <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 blur-[100px] rounded-full -z-10 animate-pulse"></div>
+   565→
+   566→ <div className="flex flex-col lg:flex-row gap-4 p-3 bg-[var(--bg-primary)]/50 backdrop-blur-xl border border-[var(--border-primary)] rounded-[var(--radius-xl)]">
+   567→ <div className="flex-1 relative group">
+   568→ <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] w-5 h-5" />
+   569→ <input
+   570→ type="text"
+   571→ placeholder="Project Architect, SQL dev, or skills..."
+   572→ value={searchQuery}
+   573→ onChange={(e) => setSearchQuery(e.target.value)}
+   574→ onKeyDown={handleSearchKeyDown}
+   575→ className="w-full bg-[var(--bg-accent)] border-transparent text-[var(--text-primary)] rounded-2xl py-4 pl-14 pr-4 focus:bg-white/10 dark:focus:bg-white/5 outline-none transition-all placeholder:text-[var(--text-muted)] font-bold text-sm"
+   576→ />
+   577→ </div>
+   578→ <div className="lg:w-64 relative group">
+   579→ <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] w-5 h-5" />
+   580→ <input
+   581→ type="text"
+   582→ placeholder="US / Remote"
+   583→ value={locationFilter}
+   584→ onChange={(e) => setLocationFilter(e.target.value)}
+   585→ onKeyDown={handleSearchKeyDown}
+   586→ className="w-full bg-[var(--bg-accent)] border-transparent text-[var(--text-primary)] rounded-2xl py-4 pl-14 pr-4 focus:bg-white/10 dark:focus:bg-white/5 outline-none transition-all placeholder:text-[var(--text-muted)] font-bold text-sm"
+   587→ />
+   588→ </div>
+   589→ <button
+   590→ onClick={handleSearch}
+   591→ className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-semibold text-xs hover:bg-indigo-500 transition-all flex items-center justify-center gap-2"
+   592→ >
+   593→ <Search size={16} />
+   594→ Query Jobs
+   595→ </button>
+   596→ {(searchQuery || locationFilter) && (
+   597→ <button
+   598→ onClick={() => {
+   599→ setSearchQuery('');
+   600→ setLocationFilter('');
+   601→ setFilteredJobs(discoverJobs);
+   602→ }}
+   603→ className="px-6 py-4 rounded-2xl font-semibold text-xs border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-accent)] transition-all"
+   604→ >
+   605→ Clear
+   606→ </button>
+   607→ )}
+   608→ </div>
+   609→
+   610→ {/* Search Results Count */}
+   611→ {(searchQuery || locationFilter) && (
+   612→ <div className="mt-4 text-sm text-[var(--text-muted)]">
+   613→ Showing {filteredJobs.length} of {discoverJobs.length} jobs
+   614→ {searchQuery && <span className="ml-2">for "<span className="text-indigo-500 font-bold">{searchQuery}</span>"</span>}
+   615→ {locationFilter && <span className="ml-2">in "<span className="text-indigo-500 font-bold">{locationFilter}</span>"</span>}
+   616→ </div>
+   617→ )}
+   618→ </div>
+   619→ </div>
+   620→ )}
+   621→
+   622→ <div key={activeTab} className="reveal-up">
+   623→ {renderMainContent()}
+   624→ </div>
+   625→
+   626→ <SkillManagementModal
+   627→ isOpen={isSkillModalOpen}
+   628→ onClose={() => setIsSkillModalOpen(false)}
+   629→ onRefresh={fetchData}
+   630→ currentSkills={profileSkills}
+   631→ />
+   632→
+   633→ {/* Notifications Modal */}
+   634→ {showNotifications && (
+   635→ <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+   636→ <div
+   637→ className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+   638→ onClick={() => setShowNotifications(false)}
+   639→ />
+   640→ <div className="relative w-full max-w-lg max-h-[80vh] overflow-hidden bg-[var(--bg-primary)] rounded-[var(--radius-xl)] border border-[var(--border-primary)] shadow-[var(--shadow-lg)] animate-in zoom-in-95 duration-200">
+   641→ <div className="flex items-center justify-between p-6 border-b border-[var(--border-primary)]">
+   642→ <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)]">Notifications</h2>
+   643→ <button
+   644→ onClick={() => setShowNotifications(false)}
+   645→ className="w-12 h-12 rounded-xl bg-[var(--bg-accent)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+   646→ >
+   647→ <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+   648→ <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+   649→ </svg>
+   650→ </button>
+   651→ </div>
+   652→ <div className="overflow-y-auto max-h-[calc(80vh-80px)]">
+   653→ <PushNotifications
+   654→ loading={loading}
+   655→ onRefresh={fetchData}
+   656→ showHeader={false}
+   657→ />
+   658→ </div>
+   659→ </div>
+   660→ </div>
+   661→ )}
+   662→ </DashboardShell>
+   663→ );
+   664→};
+   665→
+   666→export default CandidateDashboard;
+   667→

@@ -1,0 +1,1 @@
+function o(n,r=1){if(n==null||n==="")return"—";const t=typeof n=="string"?parseFloat(n):n;return isNaN(t)?"—":t.toFixed(r)}function i(n){if(n==null||n==="")return"0";const r=typeof n=="string"?parseFloat(n):n;return isNaN(r)?"0":Math.round(r).toString()}export{o as a,i as f};

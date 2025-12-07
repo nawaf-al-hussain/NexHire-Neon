@@ -1,0 +1,2001 @@
+{
+  "summary": {
+    "ok": 88,
+    "fail": 0,
+    "skip": 240
+  },
+  "by_file": {
+    "analytics.js": [
+      {
+        "line": 14,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT COUNT(*) as total FROM candidates"
+      },
+      {
+        "line": 15,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT COUNT(*) as total FROM vw_candidatematchscore WHERE totalmatchscore > 80"
+      },
+      {
+        "line": 16,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT COUNT(*) as total FROM jobpostings WHERE isactive = true AND isdeleted = "
+      },
+      {
+        "line": 39,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_applicationfunnel"
+      },
+      {
+        "line": 54,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_vacancyutilization"
+      },
+      {
+        "line": 69,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_hirerateperjob"
+      },
+      {
+        "line": 84,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_hiringbottlenecks"
+      },
+      {
+        "line": 99,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_diversityanalyticsfunnel"
+      },
+      {
+        "line": 114,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_diversitybygender"
+      },
+      {
+        "line": 129,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_diversitybydisability"
+      },
+      {
+        "line": 144,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_diversitybyveteran"
+      },
+      {
+        "line": 159,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_marketintelligencedashboard"
+      },
+      {
+        "line": 174,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_salarytransparency"
+      },
+      {
+        "line": 189,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_remotecompatibilitymatrix"
+      },
+      {
+        "line": 212,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_careerpathinsights"
+      },
+      {
+        "line": 227,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_organizationalcareerinsights"
+      },
+      {
+        "line": 242,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_referralintelligence"
+      },
+      {
+        "line": 258,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_silentrejections ORDER BY daysinactive DESC LIMIT 5"
+      },
+      {
+        "line": 259,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_ghostingriskdashboard WHERE overallrisklevel = 'High' LIMIT 5"
+      },
+      {
+        "line": 280,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                (SELECT COUNT(*) FROM candidates) AS candidatecount,\n   "
+      },
+      {
+        "line": 318,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT u.userid, u.username, u.email, u.roleid, u.isactive, r.rolename\n         "
+      },
+      {
+        "line": 338,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT a.auditid, a.tablename, a.recordid, a.operation, a.oldvalue, a.newvalue, "
+      },
+      {
+        "line": 359,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_bias_location"
+      },
+      {
+        "line": 360,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_bias_experience"
+      },
+      {
+        "line": 376,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_averagetimetohire"
+      },
+      {
+        "line": 391,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_interviewscorevsdecision"
+      },
+      {
+        "line": 437,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_interviewerconsistency"
+      },
+      {
+        "line": 452,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_interviewscorevsdecision"
+      },
+      {
+        "line": 467,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_rejectionanalysis"
+      },
+      {
+        "line": 482,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_skillgapanalysis"
+      },
+      {
+        "line": 552,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_candidateengagement"
+      },
+      {
+        "line": 567,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_hirerateperjob"
+      },
+      {
+        "line": 582,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_timetohire ORDER BY daystohire DESC"
+      },
+      {
+        "line": 597,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_ghostingriskdashboard ORDER BY overallriskscore DESC"
+      },
+      {
+        "line": 612,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_skillverificationstatus"
+      },
+      {
+        "line": 629,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                a.applicationid,\n                c.fullname AS candidate"
+      },
+      {
+        "line": 660,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_recruiterperformance"
+      },
+      {
+        "line": 675,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                cm.consentid,\n                cm.candidateid,\n          "
+      },
+      {
+        "line": 710,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_vacancyutilization"
+      },
+      {
+        "line": 733,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_predicthiresuccess($1)"
+      },
+      {
+        "line": 767,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                a.applicationid,\n                a.candidateid,\n        "
+      },
+      {
+        "line": 849,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_predictonboardingsuccess($1, $2)"
+      },
+      {
+        "line": 878,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                a.applicationid,\n                a.candidateid,\n        "
+      },
+      {
+        "line": 945,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                COUNT(*) AS totalinteractions,\n                COALESCE("
+      },
+      {
+        "line": 956,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                interactiontype,\n                COUNT(*) AS count,\n    "
+      },
+      {
+        "line": 968,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                CAST(interactiondate AS DATE) AS date,\n                C"
+      },
+      {
+        "line": 980,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                c.candidateid,\n                c.fullname,\n             "
+      },
+      {
+        "line": 997,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                communicationstyle,\n                COUNT(*) AS count,\n "
+      },
+      {
+        "line": 1028,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                c.candidateid,\n                c.fullname,\n             "
+      },
+      {
+        "line": 1069,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT dg.goalid, dg.metrictype, dg.targetpercentage, dg.currentpercentage, \n   "
+      },
+      {
+        "line": 1096,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 1101,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO diversitygoals (recruiterid, metrictype, targetpercentage, currentpe"
+      },
+      {
+        "line": 1125,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT bdl.detectionid, bdl.detectiontype, bdl.severity, bdl.details, \n         "
+      },
+      {
+        "line": 1150,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE biasdetectionlogs \n            SET isresolved = true, resolvedat = NOW()\n"
+      }
+    ],
+    "applications.js": [
+      {
+        "line": 20,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_updateapplicationstatus($1, $2, $3, $4, $5)"
+      },
+      {
+        "line": 41,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 49,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_hirecandidate($1, $2)"
+      },
+      {
+        "line": 67,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT h.*, s1.statusname as fromstatus, s2.statusname as tostatus, u.username a"
+      },
+      {
+        "line": 91,
+        "status": "EXPLAIN_OK",
+        "error": null,
+        "preview": "CALL sp_autorejectunqualified()"
+      },
+      {
+        "line": 110,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                a.applicationid as applicationid,\n                a.appl"
+      }
+    ],
+    "assessments.js": [
+      {
+        "line": 15,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid as candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 21,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                ma.assessmentid as assessmentid, \n                ma.ski"
+      },
+      {
+        "line": 55,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid as candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 60,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM microassessments WHERE assessmentid = ? AND isactive = TRUE"
+      },
+      {
+        "line": 65,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO assessmentattempts (candidateid, assessmentid, startedat, ispassed)\n"
+      },
+      {
+        "line": 89,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid as candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 94,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT a.*, m.passingscore as passingscore, m.skillid as skillid\n            FRO"
+      },
+      {
+        "line": 113,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE assessmentattempts \n            SET completedat = NOW(), score = ?, times"
+      },
+      {
+        "line": 123,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO skillverifications (candidateid, skillid, assessmentid, verification"
+      }
+    ],
+    "auth.js": [
+      {
+        "line": 19,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT userid, username, roleid, passwordhash FROM users WHERE username = ? AND "
+      },
+      {
+        "line": 37,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT verifypassword($1, $2) AS isvalid"
+      }
+    ],
+    "candidates.js": [
+      {
+        "line": 21,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT v.*, j.location, j.minexperience, j.vacancies FROM vw_candidatematchscore"
+      },
+      {
+        "line": 51,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT preferredlocations, remotepreference, willingtorelocate \n                "
+      },
+      {
+        "line": 119,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT cs.skillid, s.skillname, cs.proficiencylevel FROM candidateskills cs JOIN"
+      },
+      {
+        "line": 137,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "SELECT js.jobid as JobID, js.skillid as SkillID, s.skillname as SkillName, js.is"
+      },
+      {
+        "line": 192,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT a.applicationid, a.jobid, a.applieddate, s.statusname, j.jobtitle, j.loca"
+      },
+      {
+        "line": 219,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT cs.skillid, s.skillname, cs.proficiencylevel FROM candidateskills cs JOIN"
+      },
+      {
+        "line": 242,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM vw_candidateinterviews WHERE userid = ? ORDER BY interviewstart AS"
+      },
+      {
+        "line": 262,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_confirminterview($1, $2)"
+      },
+      {
+        "line": 277,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT m.*, s.skillname FROM microassessments m JOIN skills s ON m.skillid = s.s"
+      },
+      {
+        "line": 298,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM vw_skillverificationstatus WHERE candidateid = (SELECT candidateid"
+      },
+      {
+        "line": 316,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 321,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM applications WHERE candidateid = ? AND jobid = ?"
+      },
+      {
+        "line": 325,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO applications (candidateid, jobid, statusid) VALUES (?, ?, (SELECT st"
+      },
+      {
+        "line": 332,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_awardgamificationpoints($1, $2)"
+      },
+      {
+        "line": 354,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 357,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_withdrawapplication($1, $2, $3)"
+      },
+      {
+        "line": 375,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 379,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM candidateskills WHERE candidateid = ? AND skillid = ?"
+      },
+      {
+        "line": 382,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidateskills SET proficiencylevel = ? WHERE candidateid = ? AND skilli"
+      },
+      {
+        "line": 384,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO candidateskills (candidateid, skillid, proficiencylevel) VALUES (?, "
+      },
+      {
+        "line": 402,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM vw_careerpathinsights WHERE candidateid = (SELECT candidateid FROM"
+      },
+      {
+        "line": 428,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 435,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_predictcareerpath($1, $2, $3)"
+      },
+      {
+        "line": 455,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT DISTINCT torole AS rolename\n            FROM careerpaths\n            WHER"
+      },
+      {
+        "line": 482,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 491,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT jobid FROM jobpostings ORDER BY createdat DESC LIMIT 1"
+      },
+      {
+        "line": 513,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_generatelearningpath($1, $2)"
+      },
+      {
+        "line": 520,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM personalizedlearningpaths WHERE candidateid = ? ORDER BY createdat"
+      },
+      {
+        "line": 528,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT s.skillname, js.minproficiency, js.ismandatory\n                 FROM jobs"
+      },
+      {
+        "line": 537,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT skillid, proficiencylevel FROM candidateskills WHERE candidateid = ?"
+      },
+      {
+        "line": 612,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM personalizedlearningpaths WHERE candidateid = (SELECT candidateid "
+      },
+      {
+        "line": 653,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM candidategamification WHERE candidateid = (SELECT candidateid FROM"
+      },
+      {
+        "line": 673,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT cg.gameid, cg.candidateid, cg.points, cg.level, cg.badges, cg.streakdays,"
+      },
+      {
+        "line": 686,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT COUNT(*) + 1 AS userrank FROM candidategamification WHERE points > (SELEC"
+      },
+      {
+        "line": 717,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 723,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT lastactivitydate FROM candidategamification WHERE candidateid = ?"
+      },
+      {
+        "line": 751,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidategamification \n                        SET streakdays = streakday"
+      },
+      {
+        "line": 761,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidategamification \n                        SET streakdays = 1,\n      "
+      },
+      {
+        "line": 772,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM candidategamification WHERE candidateid = ?"
+      },
+      {
+        "line": 811,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 817,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_awardgamificationpoints($1, $2)"
+      },
+      {
+        "line": 837,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 843,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_awardgamificationpoints($1, $2)"
+      },
+      {
+        "line": 863,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM interviewprepmaterials WHERE isactive = true ORDER BY difficultyle"
+      },
+      {
+        "line": 883,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 888,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT jobtitle, description FROM jobpostings WHERE jobid = ?"
+      },
+      {
+        "line": 892,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_generateinterviewprep($1, $2)"
+      },
+      {
+        "line": 908,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM salarybenchmarks WHERE isactive = true ORDER BY avgsalary DESC"
+      },
+      {
+        "line": 938,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 943,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT j.jobid, j.jobtitle, j.location, \n                   jsr.minsalary, jsr.m"
+      },
+      {
+        "line": 957,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_generatenegotiationstrategy($1, $2, $3)"
+      },
+      {
+        "line": 961,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM negotiationhistory WHERE candidateid = ? AND jobid = ? ORDER BY st"
+      },
+      {
+        "line": 984,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                preferenceid, candidateid, \n                preferredloc"
+      },
+      {
+        "line": 1023,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 1036,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM candidatelocationpreferences WHERE candidateid = ?"
+      },
+      {
+        "line": 1039,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidatelocationpreferences \n                SET remotepreference = ?, p"
+      },
+      {
+        "line": 1046,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO candidatelocationpreferences (candidateid, remotepreference, preferr"
+      },
+      {
+        "line": 1069,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                ri.insightid,\n                ri.resumequalityscore,\n   "
+      },
+      {
+        "line": 1185,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT a.applicationid, a.applieddate, j.jobtitle, j.location, j.description, j."
+      },
+      {
+        "line": 1216,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 1220,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT statusid FROM applications WHERE applicationid = ? AND candidateid = ?"
+      },
+      {
+        "line": 1230,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE applications SET statusid = ?, applieddate = NOW() WHERE applicationid = "
+      },
+      {
+        "line": 1254,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                pn.notificationid,\n                pn.title,\n           "
+      },
+      {
+        "line": 1287,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM pushnotifications WHERE userid = ? AND devicetoken = ?"
+      },
+      {
+        "line": 1294,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE pushnotifications SET platform = ?, sentat = NOW() WHERE userid = ? AND d"
+      },
+      {
+        "line": 1300,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO pushnotifications (userid, devicetoken, platform, notificationtype, "
+      },
+      {
+        "line": 1325,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "UPDATE pushnotifications SET readat = NOW() \n                WHERE userid = ? AN"
+      },
+      {
+        "line": 1332,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE pushnotifications SET readat = NOW() WHERE userid = ? AND readat IS NULL"
+      },
+      {
+        "line": 1358,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT DISTINCT\n                s.skillid,\n                s.skillname,\n        "
+      },
+      {
+        "line": 1398,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                s.skillid,\n                s.skillname,\n                "
+      },
+      {
+        "line": 1432,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM candidatesentiment WHERE candidateid = ? ORDER BY interactiondate "
+      },
+      {
+        "line": 1437,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                COUNT(*) AS totalinteractions,\n                AVG(senti"
+      },
+      {
+        "line": 1478,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_analyzecandidatesentiment($1, $2, $3, $4)"
+      },
+      {
+        "line": 1484,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM candidatesentiment WHERE candidateid = ? ORDER BY interactiondate "
+      },
+      {
+        "line": 1505,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                COUNT(*) AS totalinteractions,\n                COALESCE("
+      },
+      {
+        "line": 1543,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT extractedskills, resumetext, yearsofexperience FROM candidates WHERE user"
+      },
+      {
+        "line": 1587,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT c.*, u.email, u.username, u.lastlogin \n             FROM candidates c \n  "
+      },
+      {
+        "line": 1604,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT consenttype, isactive AS isgranted, expirydate FROM consentmanagement WHE"
+      },
+      {
+        "line": 1616,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT notificationtype, platform FROM pushnotifications WHERE userid = ?"
+      },
+      {
+        "line": 1667,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT extractedskills, resumetext, yearsofexperience FROM candidates WHERE user"
+      },
+      {
+        "line": 1712,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 1721,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidates \n             SET fullname = ?, location = ?, yearsofexperienc"
+      },
+      {
+        "line": 1746,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 1760,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT consentid FROM consentmanagement WHERE candidateid = ? AND consenttype = "
+      },
+      {
+        "line": 1766,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE consentmanagement SET isactive = ?, givenat = NOW(), expirydate = NOW() +"
+      },
+      {
+        "line": 1772,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO consentmanagement (candidateid, consenttype, isactive, givenat, expi"
+      },
+      {
+        "line": 1826,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 1847,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT resumefile FROM candidates WHERE candidateid = ?"
+      },
+      {
+        "line": 1854,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidates SET resumefile = ?, resumefilename = ?, resumetext = NULL, ext"
+      },
+      {
+        "line": 1860,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidates SET resumefile = ?, resumefilename = ? WHERE candidateid = ?"
+      },
+      {
+        "line": 1887,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT documentid FROM candidatedocuments WHERE candidateid = ? AND documenttype"
+      },
+      {
+        "line": 1894,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "DELETE FROM candidatedocuments WHERE candidateid = ? AND documenttype = ?"
+      },
+      {
+        "line": 1901,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO candidatedocuments (candidateid, documenttype, filepath, uploadedat)"
+      },
+      {
+        "line": 1928,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 1942,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT documentid, documenttype, filepath, uploadedat FROM candidatedocuments WH"
+      },
+      {
+        "line": 1951,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT resumefilename, resumetext, extractedskills FROM candidates WHERE candida"
+      },
+      {
+        "line": 1985,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid, resumefile, resumefilename FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 2028,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 2041,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE candidates SET resumefile = NULL, resumefilename = NULL, resumetext = NUL"
+      },
+      {
+        "line": 2049,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "DELETE FROM candidatedocuments WHERE candidateid = ? AND documenttype = ?"
+      },
+      {
+        "line": 2079,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 2087,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT documentid, documenttype, filepath, uploadedat FROM candidatedocuments WH"
+      },
+      {
+        "line": 2096,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT resumefilename FROM candidates WHERE candidateid = ?"
+      },
+      {
+        "line": 2128,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT resumefile, resumefilename FROM candidates WHERE candidateid = ?"
+      },
+      {
+        "line": 2163,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT resumetext FROM candidates WHERE candidateid = ?"
+      },
+      {
+        "line": 2175,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT calculatesentiment($1) AS sentimentscore"
+      }
+    ],
+    "chatbot.js": [
+      {
+        "line": 34,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 43,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO chatbotinteractions \n            (candidateid, sessionid, userquery,"
+      },
+      {
+        "line": 85,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE chatbotinteractions \n            SET washelpful = ? \n            WHERE in"
+      },
+      {
+        "line": 112,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 123,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "SELECT \n                ci.interactionid,\n                ci.sessionid,\n        "
+      }
+    ],
+    "interviews.js": [
+      {
+        "line": 21,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 30,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT applicationid FROM applications WHERE applicationid = ?"
+      },
+      {
+        "line": 37,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_scheduleinterviewwithtimezone($1, $2, $3, $4)"
+      },
+      {
+        "line": 43,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT scheduleid FROM interviewschedules WHERE applicationid = $1 ORDER BY sche"
+      },
+      {
+        "line": 68,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 75,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT i.scheduleid, i.interviewstart, i.interviewend, i.candidateconfirmed, \n  "
+      },
+      {
+        "line": 129,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid, userid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 140,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT a.applicationid, a.statusid, s.statusname \n            FROM applications "
+      },
+      {
+        "line": 159,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO interviewfeedback (applicationid, interviewerid, technicalscore, com"
+      },
+      {
+        "line": 189,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT f.feedbackid, f.technicalscore, f.communicationscore, f.culturefitscore, "
+      },
+      {
+        "line": 258,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 266,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT i.scheduleid, i.applicationid, c.fullname as candidatename, j.jobtitle\n  "
+      },
+      {
+        "line": 280,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO interviewtranscriptions (scheduleid, audiofileurl, processingstatus)"
+      },
+      {
+        "line": 308,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT t.transcriptionid, t.scheduleid, t.audiofileurl, t.transcriptiontext, \n  "
+      },
+      {
+        "line": 392,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE interviewtranscriptions \n            SET transcriptiontext = ?, \n        "
+      },
+      {
+        "line": 433,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 439,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT jobid, jobtitle, location FROM jobpostings WHERE jobid = ?"
+      },
+      {
+        "line": 451,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_generateinterviewquestions($1, $2, $3)"
+      },
+      {
+        "line": 456,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM ai_generatedquestions WHERE jobid = ? ORDER BY lastused DESC NULLS"
+      },
+      {
+        "line": 461,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT js.skillid, s.skillname, js.ismandatory FROM jobskills js JOIN skills s O"
+      },
+      {
+        "line": 545,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT questionid, questiontype, skillid, difficultylevel, questiontext, \n      "
+      },
+      {
+        "line": 575,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 581,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO ai_generatedquestions (jobid, skillid, questiontype, difficultylevel"
+      },
+      {
+        "line": 628,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 634,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid, fullname FROM candidates WHERE candidateid = ?"
+      },
+      {
+        "line": 640,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT jobid, jobtitle FROM jobpostings WHERE jobid = ?"
+      },
+      {
+        "line": 648,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_optimizeinterviewrounds($1, $2)"
+      }
+    ],
+    "jobs.js": [
+      {
+        "line": 51,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO jobpostings (jobtitle, description, location, minexperience, vacanci"
+      },
+      {
+        "line": 68,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO jobskills (jobid, skillid, ismandatory, minproficiency) VALUES (?, ?"
+      },
+      {
+        "line": 77,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO jobsalaryranges (jobid, minsalary, maxsalary, istransparent) VALUES "
+      },
+      {
+        "line": 98,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM jobpostings WHERE jobid = ?"
+      },
+      {
+        "line": 104,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT js.*, s.skillname FROM jobskills js JOIN skills s ON js.skillid = s.skill"
+      },
+      {
+        "line": 110,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM jobsalaryranges WHERE jobid = ?"
+      },
+      {
+        "line": 176,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "UPDATE jobpostings SET ${updates.join(', ')} WHERE jobid = ?"
+      },
+      {
+        "line": 185,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "DELETE FROM jobskills WHERE jobid = ?"
+      },
+      {
+        "line": 189,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO jobskills (jobid, skillid, ismandatory, minproficiency) VALUES (?, ?"
+      },
+      {
+        "line": 199,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT rangeid FROM jobsalaryranges WHERE jobid = ?"
+      },
+      {
+        "line": 203,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE jobsalaryranges SET minsalary = ?, maxsalary = ?, istransparent = ? WHERE"
+      },
+      {
+        "line": 209,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO jobsalaryranges (jobid, minsalary, maxsalary, istransparent) VALUES "
+      },
+      {
+        "line": 230,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE jobpostings SET isdeleted = true, isactive = false WHERE jobid = ?"
+      },
+      {
+        "line": 248,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_advancedcandidatematchingenhanced($1, $2)"
+      },
+      {
+        "line": 283,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT a.*, c.fullname, c.location as candidatelocation, \n            s.statusna"
+      }
+    ],
+    "maintenance.js": [
+      {
+        "line": 14,
+        "status": "EXPLAIN_OK",
+        "error": null,
+        "preview": "CALL sp_archiveolddata()"
+      },
+      {
+        "line": 29,
+        "status": "EXPLAIN_OK",
+        "error": null,
+        "preview": "CALL sp_anonymizearchivedcandidates()"
+      },
+      {
+        "line": 44,
+        "status": "EXPLAIN_OK",
+        "error": null,
+        "preview": "CALL sp_checkconsentexpiry()"
+      },
+      {
+        "line": 60,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT table_name FROM information_schema.tables \n            WHERE table_name I"
+      },
+      {
+        "line": 73,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT COUNT(*) as total FROM jobpostingsarchive"
+      },
+      {
+        "line": 78,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT COUNT(*) as total FROM applicationsarchive"
+      },
+      {
+        "line": 103,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT 1 FROM information_schema.tables WHERE table_name = 'jobpostingsarchive'"
+      },
+      {
+        "line": 111,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM jobpostingsarchive ORDER BY archivedat DESC LIMIT 50"
+      },
+      {
+        "line": 134,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    aa.applicationid,\n                    aa.candidateid"
+      },
+      {
+        "line": 167,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "SELECT jobid, jobtitle FROM jobpostings \n                    WHERE jobid IN (${j"
+      },
+      {
+        "line": 175,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "SELECT statusid, statusname FROM applicationstatus \n                    WHERE st"
+      },
+      {
+        "line": 183,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "SELECT c.candidateid, c.fullname, c.linkedinurl, u.email \n                    FR"
+      },
+      {
+        "line": 259,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                COUNT(*) as total,\n                SUM(CASE WHEN issent "
+      },
+      {
+        "line": 284,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE emailqueue \n            SET issent = FALSE, createdat = NOW()\n           "
+      },
+      {
+        "line": 306,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "DELETE FROM emailqueue WHERE emailid = ?"
+      },
+      {
+        "line": 324,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO emailqueue (candidateid, emailtype, subject, body, issent)\n         "
+      },
+      {
+        "line": 339,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                table_name as viewname,\n                'SELECT * FROM '"
+      },
+      {
+        "line": 366,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "SELECT * FROM ${viewName}"
+      },
+      {
+        "line": 384,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT column_name, data_type, is_nullable \n            FROM information_schema."
+      }
+    ],
+    "recruiters.js": [
+      {
+        "line": 63,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT resumequalityscore FROM resumeinsights WHERE candidateid = ? LIMIT 1"
+      },
+      {
+        "line": 69,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT overallrisklevel FROM vw_ghostingriskdashboard WHERE candidateid = ? LIMI"
+      },
+      {
+        "line": 75,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT points, level, streakdays FROM candidategamification WHERE candidateid = "
+      },
+      {
+        "line": 87,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT remotepreference FROM candidatelocationpreferences WHERE candidateid = ? "
+      },
+      {
+        "line": 93,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT relationshiptype FROM referralnetwork WHERE referredcandidateid = ? LIMIT"
+      },
+      {
+        "line": 121,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_fuzzysearchcandidates($1, $2)"
+      },
+      {
+        "line": 127,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid as candidateid FROM candidates WHERE fullname ILIKE ?"
+      },
+      {
+        "line": 134,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid as candidateid FROM candidates WHERE fullname ILIKE ?"
+      },
+      {
+        "line": 146,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "SELECT \n                c.candidateid, \n                c.fullname, \n           "
+      },
+      {
+        "line": 164,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT resumequalityscore FROM resumeinsights WHERE candidateid = ? LIMIT 1"
+      },
+      {
+        "line": 168,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT overallrisklevel FROM vw_ghostingriskdashboard WHERE candidateid = ? LIMI"
+      },
+      {
+        "line": 172,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT points, level, streakdays FROM candidategamification WHERE candidateid = "
+      },
+      {
+        "line": 182,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT remotepreference FROM candidatelocationpreferences WHERE candidateid = ? "
+      },
+      {
+        "line": 186,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT relationshiptype FROM referralnetwork WHERE referredcandidateid = ? LIMIT"
+      },
+      {
+        "line": 213,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT statusid FROM applications WHERE jobid = ? AND candidateid = ? AND isdele"
+      },
+      {
+        "line": 229,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE applications SET statusid = 7, applieddate = NOW() WHERE jobid = ? AND ca"
+      },
+      {
+        "line": 235,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO applications (jobid, candidateid, statusid) VALUES (?, ?, 7)"
+      },
+      {
+        "line": 257,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM vw_candidateengagement\n            ORDER BY engagementrate DESC"
+      },
+      {
+        "line": 278,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                eps.syncid,\n                eps.platform,\n              "
+      },
+      {
+        "line": 320,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO externalplatformsync \n            (platform, candidateid, jobid, syn"
+      },
+      {
+        "line": 355,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                a.applicationid as applicationid, a.candidateid as candi"
+      },
+      {
+        "line": 375,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT sp_autoscreenapplicationenhanced($1)"
+      },
+      {
+        "line": 381,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT cs.skillid as skillid, cs.proficiencylevel as proficiencylevel, \n        "
+      },
+      {
+        "line": 394,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT COUNT(*) as cnt FROM jobskills WHERE jobid = ? AND ismandatory = TRUE"
+      },
+      {
+        "line": 420,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO screeningbotdecisions \n                            (applicationid, d"
+      },
+      {
+        "line": 431,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM screeningbotdecisions \n                    WHERE applicationid = ?"
+      },
+      {
+        "line": 524,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE screeningbotdecisions \n            SET humanoverride = TRUE, overridereas"
+      },
+      {
+        "line": 536,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE applications \n            SET statusid = ?, rejectionreason = 'screening "
+      },
+      {
+        "line": 574,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT a.statusid, s.statusname FROM applications a\n                JOIN applica"
+      },
+      {
+        "line": 608,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE applications \n                SET statusid = ?, statuschangedat = NOW()\n "
+      },
+      {
+        "line": 615,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO applicationstatushistory (applicationid, fromstatusid, tostatusid, c"
+      },
+      {
+        "line": 655,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT a.statusid, s.statusname FROM applications a\n                JOIN applica"
+      },
+      {
+        "line": 679,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE applications \n                SET statusid = 5, statuschangedat = NOW(), "
+      },
+      {
+        "line": 686,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO applicationstatushistory (applicationid, fromstatusid, tostatusid, c"
+      },
+      {
+        "line": 717,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT recruiterid, department FROM recruiters WHERE userid = ?"
+      },
+      {
+        "line": 727,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_generatemarketalerts($1)"
+      },
+      {
+        "line": 729,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM marketalerts ORDER BY triggeredat DESC LIMIT 20"
+      },
+      {
+        "line": 741,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    CASE WHEN mi.salarytrend IN ('Rising','Falling') THE"
+      },
+      {
+        "line": 771,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    CASE WHEN mi.salarytrend IN ('Rising','Falling') THE"
+      },
+      {
+        "line": 848,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    c.candidateid as candidateid,\n                    c."
+      },
+      {
+        "line": 870,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT\n                    resumequalityscore as resumequalityscore,\n           "
+      },
+      {
+        "line": 888,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    skillname as skillname,\n                    claimedl"
+      },
+      {
+        "line": 908,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    interviewsscheduled as interviewsscheduled,\n        "
+      },
+      {
+        "line": 923,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    candidateghostingscore as candidateghostingscore,\n  "
+      },
+      {
+        "line": 941,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    overallremotescore as overallremotescore,\n          "
+      },
+      {
+        "line": 959,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    targetrole as targetrole,\n                    transi"
+      },
+      {
+        "line": 977,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    points as points,\n                    level as level"
+      },
+      {
+        "line": 994,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    p.jobid as jobid,\n                    j.jobtitle as "
+      },
+      {
+        "line": 1012,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    credentialtype as credentialtype,\n                  "
+      },
+      {
+        "line": 1031,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    a.applicationid as applicationid,\n                  "
+      },
+      {
+        "line": 1053,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                    i.scheduleid as scheduleid,\n                    j.jo"
+      },
+      {
+        "line": 1110,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    COUNT(*) AS totalreferrals,\n                    SUM("
+      },
+      {
+        "line": 1129,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    c.candidateid AS referrerid,\n                    c.f"
+      },
+      {
+        "line": 1150,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    r.referralid as referralid,\n                    c1.f"
+      },
+      {
+        "line": 1185,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    c.candidateid, \n                    c.fullname, \n   "
+      },
+      {
+        "line": 1207,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    c.candidateid as candidateid,\n                    c."
+      },
+      {
+        "line": 1228,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                    relationshiptype as relationshiptype,\n              "
+      },
+      {
+        "line": 1265,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_suggestreferrals($1)"
+      },
+      {
+        "line": 1267,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT rn.*, c.fullname, u.email FROM referralnetwork rn JOIN candidates c ON rn"
+      },
+      {
+        "line": 1293,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT candidateid as candidateid, userid as userid, fullname as fullname FROM c"
+      },
+      {
+        "line": 1312,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO pushnotifications (userid, title, body, notificationtype, sentat, da"
+      },
+      {
+        "line": 1380,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO backgroundchecks (candidateid, checktype, vendor, requestid, status,"
+      },
+      {
+        "line": 1460,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "UPDATE backgroundchecks \n            SET ${updateFields.join(', ')}\n            "
+      },
+      {
+        "line": 1485,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                COUNT(*) AS totalchecks,\n                SUM(CASE WHEN s"
+      },
+      {
+        "line": 1517,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                checktype, \n                COUNT(*) AS count,\n         "
+      },
+      {
+        "line": 1534,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                bc.checkid as checkid,\n                bc.candidateid as"
+      },
+      {
+        "line": 1653,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO blockchainverifications \n            (candidateid, credentialtype, i"
+      },
+      {
+        "line": 1720,
+        "status": "JS_TEMPLATE",
+        "error": "Dynamic JS template \u2014 manual review needed",
+        "preview": "UPDATE blockchainverifications \n            SET ${updateFields.join(', ')}\n     "
+      },
+      {
+        "line": 1747,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT 1 FROM blockchainverifications WHERE 1=0"
+      },
+      {
+        "line": 1773,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                COUNT(*) AS totalverifications,\n                SUM(CASE"
+      },
+      {
+        "line": 1789,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                credentialtype as credentialtype,\n                COUNT("
+      },
+      {
+        "line": 1800,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT \n                bv.verificationid as verificationid,\n                bv."
+      },
+      {
+        "line": 1932,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "CALL sp_savecandidateranking($1, $2, $3)"
+      },
+      {
+        "line": 1959,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT \n                crh.historyid as historyid,\n                crh.candidat"
+      }
+    ],
+    "skills.js": [
+      {
+        "line": 13,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT * FROM skills ORDER BY skillname ASC"
+      }
+    ],
+    "users.js": [
+      {
+        "line": 13,
+        "status": "OK",
+        "error": null,
+        "preview": "SELECT u.userid, u.username, u.email, u.roleid, u.isactive, u.createdat, r.rolen"
+      },
+      {
+        "line": 38,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE users SET roleid = ? WHERE userid = ?"
+      },
+      {
+        "line": 58,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "UPDATE users SET isactive = ? WHERE userid = ?"
+      },
+      {
+        "line": 80,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT hashpassword($1) AS hash"
+      },
+      {
+        "line": 84,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO users (username, email, passwordhash, roleid, isactive)\n            "
+      },
+      {
+        "line": 91,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT userid FROM users \n            WHERE username = ? AND email = ? \n        "
+      },
+      {
+        "line": 106,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "INSERT INTO candidates (userid, fullname, location, yearsofexperience)\n         "
+      },
+      {
+        "line": 135,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT userid, username, email, roleid FROM users WHERE userid = ?"
+      },
+      {
+        "line": 147,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM candidates WHERE userid = ?"
+      },
+      {
+        "line": 150,
+        "status": "EXPLAIN_OK_PARAMS",
+        "error": null,
+        "preview": "SELECT * FROM recruiters WHERE userid = ?"
+      }
+    ]
+  }
+}
