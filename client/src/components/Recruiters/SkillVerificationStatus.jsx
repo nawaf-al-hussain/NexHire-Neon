@@ -11,6 +11,7 @@ const SkillVerificationStatus = () => {
  const [verificationLevel, setVerificationLevel] = React.useState('');
  const [verificationNotes, setVerificationNotes] = React.useState('');
  const [submitting, setSubmitting] = React.useState(false);
+ const [verificationError, setVerificationError] = React.useState(null);
 
  React.useEffect(() => {
  const fetchData = async () => {
@@ -78,12 +79,14 @@ const SkillVerificationStatus = () => {
  setSelectedSkill(item);
  setVerificationLevel(item.ClaimedLevel || '');
  setVerificationNotes('');
+ setVerificationError(null);
  setVerificationModal(true);
  };
 
  const handleVerify = async (approved) => {
  if (!selectedSkill) return;
  setSubmitting(true);
+ setVerificationError(null);
  try {
  await axios.post(`${API_BASE}/analytics/verify-skill`, {
  candidateId: selectedSkill.CandidateID || selectedSkill.candidateid,
@@ -111,6 +114,8 @@ const SkillVerificationStatus = () => {
  setSelectedSkill(null);
  } catch (err) {
  console.error('Verification Error:', err);
+ const apiError = err?.response?.data?.error || err?.message || 'Failed to verify skill.';
+ setVerificationError(apiError);
  } finally {
  setSubmitting(false);
  }
@@ -322,6 +327,14 @@ const SkillVerificationStatus = () => {
  />
  </div>
  </div>
+
+ {/* Verification Error (if any) */}
+ {verificationError && (
+ <div className="mb-4 p-3 rounded-xl bg-[var(--danger)]/10 border border-[var(--danger)]/30 flex items-start gap-2">
+ <AlertTriangle size={16} className="text-[var(--danger)] flex-shrink-0 mt-0.5" />
+ <span className="text-xs text-[var(--danger)]">{verificationError}</span>
+ </div>
+ )}
 
  {/* Action Buttons */}
  <div className="flex gap-3">

@@ -114,14 +114,28 @@ router.post('/feedback', protect, authorize(2), async (req, res) => {
     const userID = req.user.userid;
 
     // Validate required fields
-    if (!applicationId || !technicalScore || !communicationScore || !cultureFitScore) {
+    // Use explicit null/undefined check rather than !x so a score of 0
+    // (not in 1-10 range but still a number) doesn't trigger the missing-field path
+    if (applicationId === undefined || applicationId === null ||
+        technicalScore === undefined || technicalScore === null ||
+        communicationScore === undefined || communicationScore === null ||
+        cultureFitScore === undefined || cultureFitScore === null) {
         return res.status(400).json({ error: "Missing required fields: applicationId, technicalScore, communicationScore, cultureFitScore." });
     }
 
-    // Validate score ranges (1-10)
-    const scores = [technicalScore, communicationScore, cultureFitScore];
-    if (scores.some(s => s < 1 || s > 10 || !Number.isInteger(s))) {
-        return res.status(400).json({ error: "Scores must be integers between 1 and 10." });
+    // Coerce scores to numbers — frontend slider uses parseInt() so they're
+    // already numbers, but PostgreSQL / JSON could deliver strings. Number()
+    // handles both safely.
+    const tScore = Number(technicalScore);
+    const cScore = Number(communicationScore);
+    const fScore = Number(cultureFitScore);
+
+    // Validate score ranges (1-10) — use Number.isInteger on the coerced value
+    const scores = [tScore, cScore, fScore];
+    if (scores.some(s => isNaN(s) || s < 1 || s > 10 || !Number.isInteger(s))) {
+        return res.status(400).json({
+            error: `Scores must be integers between 1 and 10. Received: technical=${technicalScore}, communication=${communicationScore}, cultureFit=${cultureFitScore}.`
+        });
     }
 
     try {
@@ -148,9 +162,14 @@ router.post('/feedback', protect, authorize(2), async (req, res) => {
             return res.status(404).json({ error: "Application not found." });
         }
 
-        // Only allow feedback for applications at Interview stage (3)
-        if (appCheck[0].statusid !== 3) {
-            const errorMsg = `Cannot submit feedback. Application is at "${appCheck[0].statusname}" stage (requires Interview stage).`;
+        // Allow feedback for applications at Interview stage (3) or any later stage.
+        // Previously required statusid === 3 strictly, but recruiters sometimes
+        // need to add or amend feedback after the application has moved to
+        // Offer (4) / Hired (5) / Rejected (6) etc. Blocking those with a 400
+        // was a regression. We still block pre-interview stages (1, 2) because
+        // feedback on a candidate who hasn't been interviewed yet is meaningless.
+        if (appCheck[0].statusid < 3) {
+            const errorMsg = `Cannot submit feedback. Application is at "${appCheck[0].statusname}" stage (requires Interview stage or later).`;
             console.log("Feedback Error:", errorMsg, "ApplicationID:", applicationId, "CurrentStatus:", appCheck[0].statusid);
             return res.status(400).json({ error: errorMsg });
         }
@@ -160,7 +179,7 @@ router.post('/feedback', protect, authorize(2), async (req, res) => {
             INSERT INTO interviewfeedback (applicationid, interviewerid, technicalscore, communicationscore, culturefitscore, comments)
             VALUES (?, ?, ?, ?, ?, ?)
             RETURNING feedbackid
-        `, [applicationId, interviewerId, technicalScore, communicationScore, cultureFitScore, comments || null]);
+        `, [applicationId, interviewerId, tScore, cScore, fScore, comments || null]);
 
         const feedbackId = feedbackResult[0].feedbackid;
 

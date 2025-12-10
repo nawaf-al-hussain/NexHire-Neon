@@ -1202,9 +1202,46 @@ router.post('/verify-skill', protect, authorize([1, 2]), async (req, res) => {
         }
 
         const skillId = skillResult[0].skillid;
-        
-        // Parse verifiedLevel — frontend sends empty string when not set
-        const score = verifiedLevel ? parseInt(verifiedLevel) : 5;
+
+        // Parse verifiedLevel — frontend sends one of:
+        //   - empty string (no selection → default to 5)
+        //   - level name: "Beginner" | "Intermediate" | "Advanced" | "Expert"
+        //   - numeric string: "85" or number: 85
+        //   - already a number: 85
+        // We need to normalize all of these to an integer 0-100 score.
+        const LEVEL_TO_SCORE = {
+            beginner: 25,
+            intermediate: 50,
+            advanced: 75,
+            expert: 100
+        };
+
+        let score;
+        if (verifiedLevel === '' || verifiedLevel === null || verifiedLevel === undefined) {
+            score = 5; // default — no level selected
+        } else if (typeof verifiedLevel === 'number') {
+            score = verifiedLevel;
+        } else if (typeof verifiedLevel === 'string') {
+            const trimmed = verifiedLevel.trim();
+            const asNum = Number(trimmed);
+            if (!isNaN(asNum) && trimmed !== '') {
+                // Numeric string ("85" or "8.5")
+                score = asNum;
+            } else {
+                // Level name ("Beginner", etc.) — case-insensitive lookup
+                score = LEVEL_TO_SCORE[trimmed.toLowerCase()];
+                if (score === undefined) {
+                    return res.status(400).json({
+                        error: `Invalid verifiedLevel "${verifiedLevel}". Expected one of: Beginner, Intermediate, Advanced, Expert, or a number 0-100.`
+                    });
+                }
+            }
+        } else {
+            return res.status(400).json({ error: 'verifiedLevel must be a string or number.' });
+        }
+
+        // Round to integer and validate range
+        score = Math.round(score);
         if (isNaN(score) || score < 0 || score > 100) {
             return res.status(400).json({ error: 'Verification score must be between 0 and 100.' });
         }
@@ -1239,7 +1276,7 @@ router.post('/verify-skill', protect, authorize([1, 2]), async (req, res) => {
             candidateId,
             skillName,
             status,
-            verifiedLevel: status === 'Verified' ? verifiedLevel : null,
+            verifiedLevel: status === 'Verified' ? score : null,
         });
     } catch (err) {
         console.error("Skill Verification Error:", err.message);
