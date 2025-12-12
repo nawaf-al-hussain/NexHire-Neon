@@ -142,6 +142,15 @@ const BlockchainVerifications = () => {
  };
 
  const updateVerificationStatus = async (verificationId, updateData) => {
+ // Guard against undefined / null / non-numeric verificationId.
+ // Previously, if the API returned the field under a different case
+ // (e.g. verificationid instead of VerificationID), this would PUT to
+ // /blockchain-verifications/undefined and 500.
+ if (!verificationId || (typeof verificationId !== 'number' && isNaN(Number(verificationId)))) {
+ console.error("updateVerificationStatus: invalid verificationId", verificationId);
+ setError("Cannot update: verification ID is missing. Try refreshing the page.");
+ return;
+ }
  try {
  setLoading(true);
  await axios.put(
@@ -154,7 +163,7 @@ const BlockchainVerifications = () => {
  }
  } catch (err) {
  console.error("Update error:", err.message);
- setError("Failed to update blockchain verification");
+ setError(err?.response?.data?.error || "Failed to update blockchain verification");
  } finally {
  setLoading(false);
  }
@@ -727,8 +736,12 @@ const BlockchainVerifications = () => {
  {['Verified', 'Failed'].map(status => (
  <button
  key={status}
- onClick={() => updateVerificationStatus(selectedVerification.VerificationID, { verificationStatus: status })}
- disabled={selectedVerification.VerificationStatus === status}
+ onClick={() => updateVerificationStatus(
+ // Be defensive: support multiple possible field names from the API
+ selectedVerification.VerificationID || selectedVerification.verificationid || selectedVerification.id,
+ { verificationStatus: status }
+ )}
+ disabled={selectedVerification.VerificationStatus === selectedVerification.verificationstatus || selectedVerification.VerificationStatus === status}
  className={`px-4 py-2 text-sm rounded-xl transition-colors font-semibold ${status === 'Verified'
  ? 'bg-green-900/30 text-[var(--success)] border border-green-500/20 hover:bg-green-600 hover:text-white'
  : 'bg-rose-900/30 text-[var(--danger)] border border-[var(--danger)]/20 hover:bg-[var(--danger)] hover:text-white'

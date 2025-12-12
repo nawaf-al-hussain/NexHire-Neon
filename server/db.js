@@ -191,6 +191,29 @@ const query = async (sqlQuery, params = []) => {
                 'turnarounddays': 'TurnaroundDays',
                 'notes': 'Notes',
 
+                // Blockchain verification fields
+                // These are returned by GET /recruiters/blockchain-verifications/:candidateId
+                // and GET /recruiters/blockchain-dashboard. Without these mappings the
+                // frontend reads verif.VerificationID as undefined and ends up PUT-ing
+                // to /blockchain-verifications/undefined (500).
+                'verificationid': 'VerificationID',
+                'credentialtype': 'CredentialType',
+                'issuingauthority': 'IssuingAuthority',
+                'credentialhash': 'CredentialHash',
+                'blockchaintransactionid': 'BlockchainTransactionID',
+                'blocknumber': 'BlockNumber',
+                'network': 'Network',
+                'isimmutable': 'IsImmutable',
+                'verificationcost': 'VerificationCost',
+                'verificationstatus': 'VerificationStatus',
+                'metadata': 'Metadata',
+                'lastchecked': 'LastChecked',
+
+                // Blockchain dashboard summary aggregates
+                'totalverifications': 'TotalVerifications',
+                'totalcost': 'TotalCost',
+                'avgcost': 'AvgCost',
+
                 // Dashboard stats
                 'totalchecks': 'TotalChecks',
                 'pending': 'Pending',

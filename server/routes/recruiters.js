@@ -1685,7 +1685,7 @@ router.get('/blockchain-verifications/:candidateId', protect, authorize([1, 2]),
 
     try {
         let queryStr = `
-            SELECT 
+            SELECT
                 bv.verificationid as verificationid,
                 bv.candidateid as candidateid,
                 c.fullname as fullname,
@@ -1699,7 +1699,8 @@ router.get('/blockchain-verifications/:candidateId', protect, authorize([1, 2]),
                 bv.isimmutable as isimmutable,
                 bv.verificationcost as verificationcost,
                 bv.verificationstatus as verificationstatus,
-                bv.metadata as metadata
+                bv.metadata as metadata,
+                bv.lastchecked as lastchecked
             FROM blockchainverifications bv
             JOIN candidates c ON bv.candidateid = c.candidateid
             WHERE bv.candidateid = ?

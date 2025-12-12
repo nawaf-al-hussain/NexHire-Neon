@@ -150,9 +150,17 @@ router.post('/feedback', protect, authorize(2), async (req, res) => {
         const interviewerId = recruiterCheck[0].userid;  // Use UserID for InterviewerID FK
         console.log("Submitting feedback - UserID:", userID, "InterviewerID:", interviewerId, "RecruiterID:", recruiterCheck[0].recruiterid);
 
-        // Verify application exists and is at Interview stage
+        // Verify application exists.
+        // NOTE: We intentionally do NOT gate on application status here.
+        // The VideoInterviews page lists completed interviews (interviewstart < NOW())
+        // and lets recruiters submit feedback for them. But the application's
+        // statusid may still be 'Screening' (2) because nothing automatically
+        // advances it to 'Interview' (3) when an interview is scheduled.
+        // Gating on statusid used to 400 these legitimate feedback submissions.
+        // If the recruiter conducted an interview and wants to log feedback,
+        // we should accept it regardless of what the application status says.
         const appCheck = await query(`
-            SELECT a.applicationid, a.statusid, s.statusname 
+            SELECT a.applicationid, a.statusid, s.statusname
             FROM applications a
             JOIN applicationstatus s ON a.statusid = s.statusid
             WHERE a.applicationid = ?
@@ -160,18 +168,6 @@ router.post('/feedback', protect, authorize(2), async (req, res) => {
 
         if (appCheck.length === 0) {
             return res.status(404).json({ error: "Application not found." });
-        }
-
-        // Allow feedback for applications at Interview stage (3) or any later stage.
-        // Previously required statusid === 3 strictly, but recruiters sometimes
-        // need to add or amend feedback after the application has moved to
-        // Offer (4) / Hired (5) / Rejected (6) etc. Blocking those with a 400
-        // was a regression. We still block pre-interview stages (1, 2) because
-        // feedback on a candidate who hasn't been interviewed yet is meaningless.
-        if (appCheck[0].statusid < 3) {
-            const errorMsg = `Cannot submit feedback. Application is at "${appCheck[0].statusname}" stage (requires Interview stage or later).`;
-            console.log("Feedback Error:", errorMsg, "ApplicationID:", applicationId, "CurrentStatus:", appCheck[0].statusid);
-            return res.status(400).json({ error: errorMsg });
         }
 
         // Insert feedback - use RETURNING instead of SCOPE_IDENTITY()
