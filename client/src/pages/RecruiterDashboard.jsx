@@ -237,14 +237,14 @@ const RecruiterDashboard = () => {
  aria-hidden="true"
  style={{
  width: 6, height: 6, borderRadius: '999px',
- backgroundColor: riskAlerts.ghostingRisk.length > 0 ? 'var(--danger)' : 'var(--success)',
+ backgroundColor: (riskAlerts?.ghostingRisk?.length || 0) > 0 ? 'var(--danger)' : 'var(--success)',
  }}
  />
  <h3 className="eyebrow">Risk Intelligence</h3>
  </div>
 
  <div className="space-y-3">
- {riskAlerts.ghostingRisk.length > 0 ? (
+ {(riskAlerts?.ghostingRisk?.length || 0) > 0 ? (
  (riskAlerts?.ghostingRisk || []).map((risk, i) => (
  <div
  key={i}
@@ -257,7 +257,7 @@ const RecruiterDashboard = () => {
  >
  <Clock size={13} strokeWidth={1.75} className="text-[var(--danger)] mt-0.5 shrink-0" />
  <div className="min-w-0">
- <p className="text-xs font-medium truncate">{risk.FullName}</p>
+ <p className="text-xs font-medium truncate">{risk.CandidateName || risk.FullName || 'Unknown'}</p>
  <p className="text-[11px] text-[var(--danger)] mt-0.5">High ghosting risk</p>
  </div>
  </div>
@@ -288,8 +288,8 @@ const RecruiterDashboard = () => {
  >
  <AlertCircle size={13} strokeWidth={1.75} className="text-[var(--warning)] mt-0.5 shrink-0" />
  <div className="min-w-0">
- <p className="text-xs font-medium truncate">{rejection.FullName}</p>
- <p className="text-[11px] text-[var(--warning)] mt-0.5">Stale application: {rejection.DaysInactive}d</p>
+ <p className="text-xs font-medium truncate">{rejection.FullName || rejection.CandidateName || 'Unknown'}</p>
+ <p className="text-[11px] text-[var(--warning)] mt-0.5">Stale application: {Number(rejection.DaysInactive || 0)}d</p>
  </div>
  </div>
  ))}

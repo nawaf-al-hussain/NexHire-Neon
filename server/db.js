@@ -238,6 +238,102 @@ const query = async (sqlQuery, params = []) => {
                 'fromstatus': 'FromStatus',
                 'tostatus': 'ToStatus',
                 'changedbylabel': 'ChangedByLabel',
+
+                // ---- Ghosting / risk analytics ----
+                // Returned by GET /analytics/ghosting-detail and /analytics/risk-alerts
+                // Without these, GhostingRiskDetail.jsx shows 0 candidates in each
+                // risk bucket (High/Medium/Low) because OverallRiskLevel is undefined.
+                'overallrisklevel': 'OverallRiskLevel',
+                'overallriskscore': 'OverallRiskScore',
+                'candidateghostingscore': 'CandidateGhostingScore',
+                'recruiterghostingscore': 'RecruiterGhostingScore',
+                'avgresponsetime': 'AvgResponseTime',
+                'totalcommunications': 'TotalCommunications',
+                'dayssinceapplication': 'DaysSinceApplication',
+                'dayssincecontact': 'DaysSinceLastContact',  // alias used in some queries
+                'responsetimehours': 'ResponseTimeHours',
+                'communicationfrequency': 'CommunicationFrequency',
+                'lastcontactdate': 'LastContactDate',
+
+                // ---- Market intelligence / skill demand ----
+                // Returned by GET /analytics/market (MarketIntelligenceChart, SalaryCoach,
+                // MarketAlerts, HireAnalytics, SkillGapAnalysis)
+                'demandscore': 'DemandScore',
+                'supplyscore': 'SupplyScore',
+                'salarytrend': 'SalaryTrend',
+                'avgsalary': 'AvgSalary',
+
+                // ---- Referral intelligence ----
+                // Returned by /referrals routes (ReferralIntelligence.jsx)
+                'referralid': 'ReferralID',
+                'referraldate': 'ReferralDate',
+                'referralstrength': 'ReferralStrength',
+                'relationshiptype': 'RelationshipType',
+                'connectionstrength': 'ConnectionStrength',
+                'bonusamount': 'BonusAmount',
+                'totalbonusearned': 'TotalBonusEarned',
+                'totalreferrals': 'TotalReferrals',
+                'successfulreferrals': 'SuccessfulReferrals',
+                'converted': 'Converted',
+                'conversionrate': 'ConversionRate',
+
+                // ---- Candidate engagement / interviews ----
+                // Returned by /analytics/candidate-engagement (CandidateEngagement.jsx)
+                'engagementscore': 'EngagementScore',
+                'confirmedinterviews': 'ConfirmedInterviews',
+                'interviewsscheduled': 'InterviewsScheduled',
+                'interviewername': 'InterviewerName',
+                'qualityscore': 'QualityScore',
+                'avgqualityscore': 'AvgQualityScore',
+
+                // ---- Career path simulator ----
+                // Returned by /analytics/career-path (CareerPath.jsx, CareerPathSimulator.jsx)
+                'targetrole': 'TargetRole',
+                'transitionprobability': 'TransitionProbability',
+                'currentreadinessscore': 'CurrentReadinessScore',
+                'selfmotivationscore': 'SelfMotivationScore',
+                'timezonealignment': 'TimezoneAlignment',
+
+                // ---- Candidate profile enrichment ----
+                // Returned by candidate profile endpoints (CandidateProfileModal.jsx)
+                'candidatelocation': 'CandidateLocation',
+                'extractedskills': 'ExtractedSkills',
+                'resumequalityscore': 'ResumeQualityScore',
+                'resumetext': 'ResumeText',
+                'educationinstitutions': 'EducationInstitutions',
+                'certifications': 'Certifications',
+                'badges': 'Badges',
+                'trustlevel': 'TrustLevel',
+                'complianceverified': 'ComplianceVerified',
+
+                // ---- Skill verification ----
+                // Returned by /analytics/skill-verification (SkillVerificationStatus.jsx,
+                // CandidateSkillsVerification.jsx)
+                'claimedlevel': 'ClaimedLevel',
+                'verificationmethod': 'VerificationMethod',
+                'verificationscore': 'VerificationScore',
+                'expirydate': 'ExpiryDate',
+                'validitystatus': 'ValidityStatus',
+                'passingscore': 'PassingScore',
+                'predictedat': 'PredictedAt',
+
+                // ---- Assessment / question generation ----
+                // Returned by /assessment routes (AssessmentTestingEngine.jsx)
+                'attemptid': 'AttemptID',
+                'questionscount': 'QuestionsCount',
+                'timelimit': 'TimeLimit',
+
+                // ---- Hire success prediction breakdown ----
+                // Returned by /analytics/predict-hire-success response
+                'hireresult': 'HireResult',
+
+                // ---- Common audit fields ----
+                'changedby': 'ChangedBy',
+                'created': 'Created',
+                'submitted': 'Submitted',
+                'declined': 'Declined',
+                'detection': 'Detection',
+                'recruiter': 'Recruiter',
             };
 
             Object.keys(mappings).forEach(lowerKey => {

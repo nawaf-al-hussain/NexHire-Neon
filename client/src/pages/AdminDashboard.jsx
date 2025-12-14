@@ -565,22 +565,22 @@ const AdminDashboard = () => {
  {riskAlerts.ghostingRisk?.length > 0 ? riskAlerts.ghostingRisk.slice(0, 5).map((candidate, idx) => (
  <div key={idx} className="flex items-center justify-between p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl">
  <div>
- <p className="text-xs font-semibold uppercase">{candidate.CandidateName}</p>
+ <p className="text-xs font-semibold uppercase">{candidate.CandidateName || candidate.FullName || 'Unknown'}</p>
  <p className="text-[11px] text-[var(--text-muted)]">{candidate.JobTitle}</p>
  </div>
  <div className="text-right">
- <p className="text-xs font-semibold text-[var(--warning)]">{candidate.DaysSinceLastContact}d</p>
+ <p className="text-xs font-semibold text-[var(--warning)]">{Number(candidate.DaysSinceLastContact || candidate.DaysSinceApplication || 0)}d</p>
  <p className="text-[11px] text-[var(--warning)] uppercase">No Response</p>
  </div>
  </div>
  )) : riskAlerts.silentRejections?.length > 0 ? riskAlerts.silentRejections.slice(0, 5).map((candidate, idx) => (
  <div key={idx} className="flex items-center justify-between p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl">
  <div>
- <p className="text-xs font-semibold uppercase">{candidate.CandidateName}</p>
+ <p className="text-xs font-semibold uppercase">{candidate.CandidateName || candidate.FullName || 'Unknown'}</p>
  <p className="text-[11px] text-[var(--text-muted)]">{candidate.JobTitle}</p>
  </div>
  <div className="text-right">
- <p className="text-xs font-semibold text-[var(--warning)]">{candidate.DaysInactive}d</p>
+ <p className="text-xs font-semibold text-[var(--warning)]">{Number(candidate.DaysInactive || 0)}d</p>
  <p className="text-[11px] text-[var(--warning)] uppercase">Inactive</p>
  </div>
  </div>
