@@ -794,7 +794,7 @@ router.get('/market-alerts', protect, authorize(2), async (req, res) => {
 
         if (recruiterLocation) {
             alerts = await query(`
-                SELECT 
+                SELECT
                     CASE WHEN mi.salarytrend IN ('Rising','Falling') THEN 'Salary Alert' ELSE 'Demand Alert' END AS alerttype,
                     mi.skillid as skillid,
                     s.skillname as skillname,
@@ -811,20 +811,25 @@ router.get('/market-alerts', protect, authorize(2), async (req, res) => {
                         WHEN (mi.demandscore - mi.supplyscore) > 15 THEN 3
                         ELSE 2
                     END AS severity,
-                    NOW() AS triggeredat,
+                    COALESCE(mi.lastupdated, NOW()) AS triggeredat,
                     NOW() + INTERVAL '30 days' AS expiresat
                 FROM marketintelligence mi
                 JOIN skills s ON mi.skillid = s.skillid
                 WHERE mi.location = ?
-                  AND mi.lastupdated > NOW() - INTERVAL '14 days'
                 ORDER BY severity DESC
             `, [recruiterLocation]);
         }
 
-        // If still no alerts, get general market data
+        // If still no alerts, get general market data.
+        // NOTE: previously filtered mi.lastupdated > NOW() - INTERVAL '14 days',
+        // but the seeded marketintelligence rows have stale lastupdated values
+        // (older than 14 days), so this filter made the page always return [].
+        // Removed the date filter so the alerts page always shows real data.
+        // The frontend already orders by demandscore/severity, so even "stale"
+        // intelligence is useful as a starting point.
         if (alerts.length === 0) {
             alerts = await query(`
-                SELECT 
+                SELECT
                     CASE WHEN mi.salarytrend IN ('Rising','Falling') THEN 'Salary Alert' ELSE 'Demand Alert' END AS alerttype,
                     mi.skillid as skillid,
                     s.skillname as skillname,
@@ -841,11 +846,10 @@ router.get('/market-alerts', protect, authorize(2), async (req, res) => {
                         WHEN (mi.demandscore - mi.supplyscore) > 15 THEN 3
                         ELSE 2
                     END AS severity,
-                    NOW() AS triggeredat,
+                    COALESCE(mi.lastupdated, NOW()) AS triggeredat,
                     NOW() + INTERVAL '30 days' AS expiresat
                 FROM marketintelligence mi
                 JOIN skills s ON mi.skillid = s.skillid
-                WHERE mi.lastupdated > NOW() - INTERVAL '14 days'
                 ORDER BY demandscore DESC, severity DESC
                 LIMIT 20
             `);

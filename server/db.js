@@ -334,6 +334,16 @@ const query = async (sqlQuery, params = []) => {
                 'declined': 'Declined',
                 'detection': 'Detection',
                 'recruiter': 'Recruiter',
+
+                // ---- Market alerts (returned by /recruiters/market-alerts) ----
+                // These are computed in the SQL query (CASE/CONCAT expressions),
+                // not from a view, so they need their own PascalCase mappings.
+                // Without these, MarketAlerts.jsx reads a.SkillName as undefined.
+                'alerttype': 'AlertType',
+                'imbalancescore': 'ImbalanceScore',
+                'severity': 'Severity',
+                'triggeredat': 'TriggeredAt',
+                'expiresat': 'ExpiresAt',
             };
 
             Object.keys(mappings).forEach(lowerKey => {
