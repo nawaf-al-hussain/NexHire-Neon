@@ -896,19 +896,19 @@ router.post('/predict-onboarding-success', protect, authorize([1, 2]), async (re
             // Persist the prediction so it appears in the prediction history.
             // The SP in this DB does NOT insert into onboardingpredictions,
             // so we have to do it ourselves.
+            // NOTE: the table does NOT have a risklevel column.
             try {
                 await query(`
                     INSERT INTO onboardingpredictions
-                        (candidateid, jobid, successprobability, risklevel,
+                        (candidateid, jobid, successprobability,
                          riskfactors, recommendations, predictedretentionmonths,
                          predictiondate)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+                    VALUES ($1, $2, $3, $4, $5, $6, NOW())
                     ON CONFLICT DO NOTHING
                 `, [
                     candidateId,
                     jobId,
                     result[0].successprobability,
-                    result[0].risklevel,
                     result[0].riskfactors,
                     result[0].recommendations,
                     result[0].predictedretentionmonths
@@ -1007,6 +1007,8 @@ router.get('/onboarding-predictions', protect, authorize([1, 2]), async (req, re
                 // Run prediction for each one. The SP returns the prediction
                 // but (in this DB) does NOT insert into onboardingpredictions,
                 // so we have to do the INSERT ourselves.
+                // NOTE: the table does NOT have a risklevel column — RiskLevel
+                // is derived from SuccessProbability at query time.
                 for (const hc of hiredCandidates) {
                     try {
                         const predResult = await query(
@@ -1017,16 +1019,15 @@ router.get('/onboarding-predictions', protect, authorize([1, 2]), async (req, re
                             const p = predResult[0];
                             await query(`
                                 INSERT INTO onboardingpredictions
-                                    (candidateid, jobid, successprobability, risklevel,
+                                    (candidateid, jobid, successprobability,
                                      riskfactors, recommendations, predictedretentionmonths,
                                      predictiondate)
-                                VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+                                VALUES ($1, $2, $3, $4, $5, $6, NOW())
                                 ON CONFLICT DO NOTHING
                             `, [
                                 hc.candidateid,
                                 hc.jobid,
                                 p.successprobability,
-                                p.risklevel,
                                 p.riskfactors,
                                 p.recommendations,
                                 p.predictedretentionmonths
