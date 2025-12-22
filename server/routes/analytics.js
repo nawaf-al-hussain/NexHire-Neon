@@ -893,6 +893,31 @@ router.post('/predict-onboarding-success', protect, authorize([1, 2]), async (re
         const result = await query(`SELECT * FROM sp_predictonboardingsuccess($1, $2)`, [candidateId, jobId]);
 
         if (result && result.length > 0) {
+            // Persist the prediction so it appears in the prediction history.
+            // The SP in this DB does NOT insert into onboardingpredictions,
+            // so we have to do it ourselves.
+            try {
+                await query(`
+                    INSERT INTO onboardingpredictions
+                        (candidateid, jobid, successprobability, risklevel,
+                         riskfactors, recommendations, predictedretentionmonths,
+                         predictiondate)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+                    ON CONFLICT DO NOTHING
+                `, [
+                    candidateId,
+                    jobId,
+                    result[0].successprobability,
+                    result[0].risklevel,
+                    result[0].riskfactors,
+                    result[0].recommendations,
+                    result[0].predictedretentionmonths
+                ]);
+            } catch (insertErr) {
+                // Don't fail the request if the insert fails — still return the prediction
+                console.log("Failed to persist onboarding prediction:", insertErr.message);
+            }
+
             res.json({
                 success: true,
                 prediction: {
@@ -979,10 +1004,34 @@ router.get('/onboarding-predictions', protect, authorize([1, 2]), async (req, re
                     ORDER BY a.applicationid
                 `);
 
-                // Run prediction for each one
+                // Run prediction for each one. The SP returns the prediction
+                // but (in this DB) does NOT insert into onboardingpredictions,
+                // so we have to do the INSERT ourselves.
                 for (const hc of hiredCandidates) {
                     try {
-                        await query(`SELECT * FROM sp_predictonboardingsuccess($1, $2)`, [hc.candidateid, hc.jobid]);
+                        const predResult = await query(
+                            `SELECT * FROM sp_predictonboardingsuccess($1, $2)`,
+                            [hc.candidateid, hc.jobid]
+                        );
+                        if (predResult && predResult.length > 0) {
+                            const p = predResult[0];
+                            await query(`
+                                INSERT INTO onboardingpredictions
+                                    (candidateid, jobid, successprobability, risklevel,
+                                     riskfactors, recommendations, predictedretentionmonths,
+                                     predictiondate)
+                                VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+                                ON CONFLICT DO NOTHING
+                            `, [
+                                hc.candidateid,
+                                hc.jobid,
+                                p.successprobability,
+                                p.risklevel,
+                                p.riskfactors,
+                                p.recommendations,
+                                p.predictedretentionmonths
+                            ]);
+                        }
                     } catch (predErr) {
                         // Skip individual failures — keep generating for others
                         console.log("Auto-prediction failed for candidate", hc.candidateid, ":", predErr.message);
