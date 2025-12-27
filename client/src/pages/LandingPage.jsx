@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Briefcase, ShieldCheck, Users, Zap, Globe, Cpu, Palette } from 'lucide-react';
+import { ArrowRight, Briefcase, ShieldCheck, Users, Zap, Globe, Cpu, Palette, BookOpen } from 'lucide-react';
 import NexHireLogo from '../assets/nexhire_logo.svg';
 import ScrollReveal from '../components/ui/ScrollReveal';
 
@@ -51,6 +51,9 @@ const LandingPage = () => {
  </div>
 
  <div className="hidden md:flex items-center gap-7 text-sm text-[var(--text-secondary)]">
+ <Link to="/documentation" className="flex items-center gap-1.5 hover:text-[var(--text-primary)] focus-ring" style={{ transition: 'color var(--dur-base) var(--ease-out-soft)', borderRadius: 'var(--radius-sm)', padding: '4px 6px' }}>
+ <BookOpen size={14} strokeWidth={1.75} /> Documentation
+ </Link>
  <a href="#features" className="hover:text-[var(--text-primary)] focus-ring" style={{ transition: 'color var(--dur-base) var(--ease-out-soft)', borderRadius: 'var(--radius-sm)', padding: '4px 6px' }}>Features</a>
  <a href="#features" className="hover:text-[var(--text-primary)] focus-ring" style={{ transition: 'color var(--dur-base) var(--ease-out-soft)', borderRadius: 'var(--radius-sm)', padding: '4px 6px' }}>Views</a>
  <a href="#features" className="hover:text-[var(--text-primary)] focus-ring" style={{ transition: 'color var(--dur-base) var(--ease-out-soft)', borderRadius: 'var(--radius-sm)', padding: '4px 6px' }}>Procs</a>

@@ -10,6 +10,7 @@ import ConfirmProvider from './components/ui/ConfirmDialog'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import DesignSystemPage from './pages/DesignSystemPage'
+import DocumentationPage from './pages/DocumentationPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Pages — lazy loaded (large dashboards, only needed for authenticated users
@@ -76,6 +77,7 @@ function App() {
  <Routes>
  <Route path="/" element={<LandingPage />} />
  <Route path="/design-system" element={<DesignSystemPage />} />
+ <Route path="/documentation" element={<DocumentationPage />} />
  <Route path="/login" element={<LoginPage />} />
 
  <Route path="/admin" element={
