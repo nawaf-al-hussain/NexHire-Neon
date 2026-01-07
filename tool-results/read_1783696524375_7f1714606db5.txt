@@ -1,0 +1,602 @@
+  1800→
+  1801→The heuristic nature of the extraction means results should be treated as a starting estimate subject to recruiter review rather than a ground truth. It is called inside \texttt{sp\_ProcessCandidateResume} immediately after text extraction, and its output is only applied when it yields a value greater than zero to avoid inadvertently overwriting a manually entered figure.
+  1802→
+  1803→% ============================================================
+  1804→\subsection{NLP}
+  1805→% ============================================================
+  1806→
+  1807→\subsubsection{ExtractSkills}
+  1808→\noindent
+  1809→Identifying which technical skills appear in a resume is the foundation of automated candidate-to-job matching. This function converts the input text to lowercase, iterates over a built-in dictionary of 40+ skills with aliases, counts occurrences using regex for each skill, and computes a confidence score as $\min(\text{occurrences} \times 10,\, 100)$. It returns a comma-separated \texttt{skill:confidence} string sorted by confidence descending.
+  1810→
+  1811→The output is stored in \texttt{Candidates.ExtractedSkills} and consumed by the automated screening procedures and matching views. Dictionary expansion is the primary lever for improving extraction quality, and processing should be batched off-peak because runtime scales with both dictionary size and document length.
+  1812→
+  1813→\subsubsection{CalculateSentiment}
+  1814→\noindent
+  1815→The tone of interviewer feedback and candidate communications can reveal patterns of bias or enthusiasm that numeric scores alone do not capture. This function splits input text into individual words, counts matches against a 36-word positive lexicon and a 32-word negative lexicon, and returns a sentiment score in $[-1.0,\,+1.0]$ computed as $(\text{pos} - \text{neg}) / \text{total\_words} \times 20$, clamped at the boundaries.
+  1816→
+  1817→It is invoked by the \texttt{trg\_ScoreSentiment\_OnFeedbackInsert} trigger to automatically populate \texttt{InterviewFeedback.SentimentScore} whenever a comment is inserted or updated. The lexicon-based approach is fast and dependency-free but lacks negation understanding; feedback such as \textit{``not excellent''} will be scored positively, which is a known limitation of this implementation.
+  1818→
+  1819→% ============================================================
+  1820→\subsection{API Integration}
+  1821→% ============================================================
+  1822→
+  1823→\subsubsection{CallRESTApi}
+  1824→\noindent
+  1825→NexHire needs to synchronise with external HR platforms, job boards, and third-party services without routing every request through a middle-tier application server. This function wraps a generic \texttt{HttpClient} call supporting \texttt{GET}, \texttt{POST}, \texttt{PUT}, and \texttt{DELETE} methods, accepting an optional request body and headers, and returning the full response as a JSON string with a 30-second timeout.
+  1826→
+  1827→It requires the \texttt{EXTERNAL\_ACCESS} permission set and is used by the External Platform Sync feature to push job postings to LinkedIn, Indeed, and Glassdoor. Because network latency makes it inherently slow, it should be called from background jobs or asynchronous procedures rather than from synchronous user-facing queries.
+  1828→
+  1829→\subsubsection{VerifyLinkedInProfile}
+  1830→\noindent
+  1831→Candidates frequently list LinkedIn profile URLs that may be mistyped, deleted, or fabricated. This function issues a \texttt{HEAD} request to the supplied URL and inspects the HTTP status code, treating both \texttt{200 OK} and LinkedIn's bot-protection response \texttt{999} as evidence that the profile exists, returning a JSON object with the verification result and raw status code.
+  1832→
+  1833→It is used during candidate import and profile validation workflows to flag unreachable URLs before a recruiter invests time reviewing a profile. The handling of status \texttt{999} as a positive signal is intentional: LinkedIn actively blocks automated requests from data-centre IPs, so a \texttt{999} reliably indicates that the URL resolved to a real profile page.
+  1834→
+  1835→\subsubsection{GeocodeAddress}
+  1836→\noindent
+  1837→Location-based job matching requires converting human-readable address strings into geographic coordinates. This function supports two backends: OpenStreetMap Nominatim (used when no API key is provided, free but rate-limited) and the Google Maps Geocoding API (used when a key is supplied, higher throughput and accuracy). It returns the raw JSON response from whichever service is called.
+  1838→
+  1839→The function requires \texttt{EXTERNAL\_ACCESS} permission and is subject to the rate limits of the chosen geocoding provider. It feeds location validation and distance-based candidate filtering features, and callers should cache results in a dedicated table rather than re-geocoding the same address on every query.
+  1840→
+  1841→
+  1842→\section{Flow Chart of Actions}
+  1843→\subsection*{Module 1: System Access \& Authentication}
+  1844→This module covers the entry point, validation logic, and role-based redirection
+  1845→\begin{figure}[H]
+  1846→    \centering
+  1847→    \fbox{\includegraphics[width=0.6\linewidth]{Untitled diagram-2026-01-09-055538.png}}
+  1848→\end{figure}
+  1849→
+  1850→\subsection*{Module 2: Admin Dashboard \& Analytics}
+  1851→This module focuses on system-wide governance, reporting, and maintenance.
+  1852→\begin{figure}[H]
+  1853→    \centering
+  1854→    \fbox{\includegraphics[width=0.85\linewidth]{Screenshot 2026-01-09 124331.png}}
+  1855→\end{figure}
+  1856→
+  1857→\subsection*{Module 3: Recruiter Operations (The Hiring Cycle)}
+  1858→This module details the job posting, candidate review, and the complex hiring/scheduling logic.
+  1859→\begin{figure}[H]
+  1860→    \centering
+  1861→    \fbox{\includegraphics[width=1.0\linewidth]{Screenshot 2026-01-09 123326.png}}
+  1862→\end{figure}
+  1863→
+  1864→\subsection*{Module 4: Candidate Journey}
+  1865→This module covers job browsing, application lifecycle, and profile management.
+  1866→\begin{figure}[H]
+  1867→    \centering
+  1868→    \fbox{\includegraphics[width=1\linewidth]{Screenshot 2026-01-09 123657.png}}
+  1869→\end{figure}
+  1870→
+  1871→
+  1872→\section{Performance Optimization Strategy}
+  1873→
+  1874→\subsection{Indexing Strategy}
+  1875→\noindent
+  1876→These indexes are designed around the system’s most common join paths and filter predicates so read-heavy operations (matching, dashboards, and auditing) remain fast as data volume grows.
+  1877→
+  1878→\begin{table}[H]
+  1879→    \centering
+  1880→    \begin{tabular}{|l|l|p{8cm}|}
+  1881→        \hline
+  1882→        \rowcolor{tableheader}
+  1883→        \textbf{Index Name} & \textbf{Table} & \textbf{Purpose} \\
+  1884→        \hline
+  1885→        \texttt{IDX\_CandidateSkill\_Skill} & CandidateSkills & Fast skill-based candidate lookup \\
+  1886→        \hline
+  1887→        \texttt{IDX\_JobSkills\_JobID\_IsMandatory} & JobSkills & Optimized mandatory skill checking \\
+  1888→        \hline
+  1889→        \texttt{IDX\_Application\_Status} & Applications & Quick status filtering \\
+  1890→        \hline
+  1891→        \texttt{IDX\_Application\_AppliedDate} & Applications & Archiving and date-range queries \\
+  1892→        \hline
+  1893→        \texttt{UQ\_InterviewSlot} & InterviewSchedules & Prevent duplicate scheduling \\
+  1894→        \hline
+  1895→        \texttt{IDX\_AuditLog\_TableRecordDate} & AuditLog & Fast audit trail queries \\
+  1896→        \hline
+  1897→    \end{tabular}
+  1898→    \caption{Key Performance Indexes}
+  1899→\end{table}
+  1900→
+  1901→\subsection{Partitioning Strategy}
+  1902→\noindent
+  1903→Partitioning keeps large, time-based tables manageable by isolating recent (hot) rows from historical (cold) data, which improves query performance and makes archival and index maintenance faster.
+  1904→
+  1905→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1906→-- Partition large tables by year for better maintenance
+  1907→CREATE PARTITION FUNCTION pf_ApplicationYear (DATETIME)
+  1908→AS RANGE RIGHT FOR VALUES 
+  1909→    ('2024-01-01', '2025-01-01', '2026-01-01');
+  1910→
+  1911→CREATE PARTITION SCHEME ps_ApplicationYear
+  1912→AS PARTITION pf_ApplicationYear
+  1913→ALL TO ([PRIMARY]);
+  1914→\end{minted}
+  1915→
+  1916→%User Interface
+  1917→\section{NexHire Frontend Implementation}
+  1918→\subsection{Frontend Architecture Overview}
+  1919→
+  1920→
+  1921→    \textbf{NexHire Frontend} implements a sophisticated React + Express.js application with three distinct role-based dashboards, real-time analytics, and comprehensive database interaction through 40+ API endpoints.
+  1922→    \begin{figure}[H]
+  1923→    \centering
+  1924→    \fbox{\includegraphics[width=0.7\linewidth]{THE NEXT EVOLUTION IN HIRING12.png}}
+  1925→\end{figure}
+  1926→
+  1927→
+  1928→\subsubsection*{Technology Stack}
+  1929→The NexHire stack was selected to balance developer productivity with production reliability. React and Vite enable fast iteration during development, while Tailwind CSS standardizes styling decisions and keeps the UI consistent across role-based dashboards. On the server side, Express provides a lightweight routing layer that integrates cleanly with SQL Server for analytics-driven features.
+  1930→
+  1931→\begin{table}[H]
+  1932→    \centering
+  1933→    \begin{tabularx}{\textwidth}{|l|X|X|}
+  1934→        \hline
+  1935→        \rowcolor{tableheader}
+  1936→        \textbf{Component} & \textbf{Technology} & \textbf{Purpose} \\
+  1937→        \hline
+  1938→        Frontend Framework & React 18 + Vite & Fast, modern UI development \\
+  1939→        \hline
+  1940→        Styling & Tailwind CSS 3 & Utility-first responsive design \\
+  1941→        \hline
+  1942→        Charts & Recharts & Interactive data visualization \\
+  1943→        \hline
+  1944→        Icons & Lucide React & Consistent iconography \\
+  1945→        \hline
+  1946→        HTTP Client & Axios & Promise-based API communication \\
+  1947→        \hline
+  1948→        Backend Framework & Express.js 4 & REST API server \\
+  1949→        \hline
+  1950→        Database Access & SQL Server Driver & Direct database queries \\
+  1951→        \hline
+  1952→        Security & CORS, Input Sanitization & Cross-origin and injection protection \\
+  1953→        \hline
+  1954→    \end{tabularx}
+  1955→    \caption{Frontend Technology Stack}
+  1956→\end{table}
+  1957→
+  1958→\subsubsection*{Architecture Diagram}
+  1959→The architecture separates presentation, API, and persistence concerns to keep responsibilities clear and deployments flexible. Client requests flow through the Express API, which enforces role-based access before querying or updating SQL Server. This structure also makes it straightforward to add caching, monitoring, or additional services without restructuring the frontend.
+  1960→\begin{figure}[H]
+  1961→    \centering
+  1962→    \fbox{\includegraphics[width=0.7\linewidth]{Untitled diagram-2026-01-12-142755.png}}
+  1963→\end{figure}
+  1964→
+  1965→
+  1966→\subsection{API Layer Implementation}
+  1967→
+  1968→\subsubsection*{Express Server Architecture}
+  1969→The backend implements a comprehensive REST API with role-based routing, input validation, and direct database integration. Routes are grouped by role to keep authorization boundaries explicit and to simplify maintenance as the endpoint surface grows. Each handler follows a consistent pattern of validating inputs, executing the database operation, and returning predictable JSON responses for the React client.
+  1970→
+  1971→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{javascript}
+  1972→// Server Structure Overview
+  1973→const express = require('express');
+  1974→const cors = require('cors');
+  1975→const { query, testConnection } = require('./db');
+  1976→
+  1977→const app = express();
+  1978→app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+  1979→app.use(express.json());
+  1980→
+  1981→// Three-tier API structure:
+  1982→// 1. Authentication Layer
+  1983→// 2. Role-Specific Endpoints (Admin/Recruiter/Candidate)
+  1984→// 3. Shared/Utility Endpoints
+  1985→\end{minted}
+  1986→
+  1987→\subsubsection*{API Endpoint Summary}
+  1988→The API surface is designed around end-to-end hiring workflows, from authentication and job discovery to interview scheduling and hiring decisions. Endpoints are role-scoped to reduce accidental privilege escalation and to keep client-side routing straightforward. Where appropriate, operations use soft-delete and archival patterns to preserve auditability and support compliance requirements.
+  1989→
+  1990→\begin{longtable}{|>{\raggedright\arraybackslash\ttfamily}p{5.2cm}|p{1.6cm}|p{2.2cm}|p{7.3cm}|}
+  1991→    
+  1992→    \hline
+  1993→    \rowcolor{tableheader}
+  1994→    \textbf{Endpoint} & \textbf{Method} & \textbf{Role} & \textbf{Description} \\
+  1995→    \hline
+  1996→    \endfirsthead
+  1997→
+  1998→    \hline
+  1999→    \rowcolor{tableheader}
+  2000→    \textbf{Endpoint} & \textbf{Method} & \textbf{Role} & \textbf{Description} \\
+  2001→    \hline
+  2002→    \endhead
+  2003→
+  2004→    \hline
+  2005→    \endfoot
+  2006→
+  2007→    \hline
+  2008→    \endlastfoot
+  2009→
+  2010→    \path{/api/login} & POST & All & User authentication with role detection \\
+  2011→    \hline
+  2012→
+  2013→    \multicolumn{4}{|l|}{\textbf{Administrator Endpoints}} \\
+  2014→    \hline
+  2015→    \path{/api/admin/analytics/funnel} & GET & Admin & Application funnel visualization data \\
+  2016→    \hline
+  2017→    \path{/api/admin/audit-logs} & GET & Admin & System audit trail (20 most recent) \\
+  2018→    \hline
+  2019→    \path{/api/admin/users} & GET & Admin & User management with filtering \\
+  2020→    \hline
+  2021→    \path{/api/admin/users/:userId/toggle} & PUT & Admin & Activate/deactivate user accounts \\
+  2022→    \hline
+  2023→    \path{/api/admin/reports/:viewName} & GET & Admin & Dynamic reporting from 16 analytical views \\
+  2024→    \hline
+  2025→    \path{/api/admin/maintenance} & POST & Admin & Execute system maintenance procedures \\
+  2026→    \hline
+  2027→    \path{/api/admin/users/candidate} & POST & Admin & Create new candidate with user profile \\
+  2028→    \hline
+  2029→    \path{/api/admin/jobs} & GET & Admin & View all active job postings \\
+  2030→    \hline
+  2031→    \path{/api/admin/candidates} & GET & Admin & All candidates with user information \\
+  2032→    \hline
+  2033→    \path{/api/admin/applications-detailed} & GET & Admin & Detailed application tracking \\
+  2034→    \hline
+  2035→    \path{/api/admin/skills} & GET/POST & Admin & Skill management system \\
+  2036→    \hline
+  2037→    \path{/api/admin/archives/jobs} & GET & Admin & Archived job postings \\
+  2038→    \hline
+  2039→    \path{/api/admin/archives/applications} & GET & Admin & Archived applications with joins \\
+  2040→    \hline
+  2041→
+  2042→    \multicolumn{4}{|l|}{\textbf{Recruiter Endpoints}} \\
+  2043→    \hline
+  2044→    \path{/api/recruiter/jobs/:userId} & GET & Recruiter & Active job postings for recruiter \\
+  2045→    \hline
+  2046→    \path{/api/recruiter/jobs} & POST & Recruiter & Create new job posting with skills \\
+  2047→    \hline
+  2048→    \path{/api/recruiter/matches/:jobId} & GET & Recruiter & Weighted candidate matching results \\
+  2049→    \hline
+  2050→    \path{/api/recruiter/jobs/:jobId} & DELETE & Recruiter & Soft delete job posting \\
+  2051→    \hline
+  2052→    \path{/api/recruiter/jobs/archived/:userId} & GET & Recruiter & View archived/soft-deleted jobs \\
+  2053→    \hline
+  2054→    \path{/api/recruiter/jobs/restore/:jobId} & PUT & Recruiter & Restore soft-deleted job \\
+  2055→    \hline
+  2056→    \path{/api/recruiter/hire} & POST & Recruiter & Concurrency-safe hiring procedure \\
+  2057→    \hline
+  2058→    \path{/api/recruiter/applications/:appId/status} & PUT & Recruiter & Update application state machine \\
+  2059→    \hline
+  2060→    \path{/api/recruiter/interviews} & POST & Recruiter & Schedule interviews with conflict prevention \\
+  2061→    \hline
+  2062→    \path{/api/recruiter/run-auto-reject} & POST & Recruiter & Execute automated rejection rules \\
+  2063→    \hline
+  2064→    \path{/api/recruiter/summary/:userId} & GET & Recruiter & Recruiter dashboard statistics \\
+  2065→    \hline
+  2066→    \path{/api/recruiter/schedule/today/:userId} & GET & Recruiter & Today's interview schedule \\
+  2067→    \hline
+  2068→
+  2069→    \multicolumn{4}{|l|}{\textbf{Candidate Endpoints}} \\
+  2070→    \hline
+  2071→    \path{/api/jobs} & GET & All & Browse active job postings \\
+  2072→    \hline
+  2073→    \path{/api/skills} & GET & All & Available skills for selection \\
+  2074→    \hline
+  2075→    \path{/api/candidate/profile/:userId} & GET & Candidate & Candidate profile with skills \\
+  2076→    \hline
+  2077→    \path{/api/candidate/profile} & PUT & Candidate & Update candidate information \\
+  2078→    \hline
+  2079→    \path{/api/candidate/skills} & POST & Candidate & Add/update candidate skills \\
+  2080→    \hline
+  2081→    \path{/api/apply} & POST & Candidate & Submit job application \\
+  2082→    \hline
+  2083→    \path{/api/candidate/apps/:userId} & GET & Candidate & Candidate's application status \\
+  2084→    \hline
+  2085→    \path{/api/withdraw} & POST & Candidate & Withdraw application with reason \\
+  2086→    \hline
+  2087→    \path{/api/candidate/recommendations/:userId} & GET & Candidate & Personalized job recommendations \\
+  2088→    \hline
+  2089→    \path{/api/candidate/documents/:userId} & GET & Candidate & Manage candidate documents \\
+  2090→    \hline
+  2091→    \path{/api/candidate/skill-gap/:jobId/:userId} & GET & Candidate & Skill gap analysis for specific job \\
+  2092→    \hline
+  2093→    \path{/api/candidate/interviews/:userId} & GET & Candidate & Scheduled interviews \\
+  2094→    \hline
+  2095→    \path{/api/candidate/interviews/confirm} & PUT & Candidate & Confirm interview attendance \\
+  2096→    \hline
+  2097→\end{longtable}
+  2098→\caption{API Endpoint Summary}\\
+  2099→
+  2100→
+  2101→\subsection{Admin Dashboard Implementation}
+  2102→
+  2103→\begin{figure}[H]
+  2104→    \centering
+  2105→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-12 215712.png}}
+  2106→\end{figure}
+  2107→
+  2108→\subsubsection*{Core Features}
+  2109→The Admin Dashboard is designed for operational oversight and governance, combining analytics with actions such as user management and maintenance tasks. Each tab focuses on a clear responsibility (insight, administration, reporting, or compliance) so stakeholders can find information quickly. Centralizing these controls also reduces the risk of inconsistent configuration across the system.
+  2110→
+  2111→
+  2112→    The Admin Dashboard provides system-wide intelligence with real-time analytics, user management, and compliance tools across five specialized tabs.
+  2113→
+  2114→    \begin{figure}[H]
+  2115→    \centering
+  2116→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-11 234519.png}}
+  2117→\end{figure}
+  2118→
+  2119→
+  2120→\begin{table}[H]
+  2121→    \centering
+  2122→    \begin{tabularx}{\textwidth}{|l|X|X|}
+  2123→        \hline
+  2124→        \rowcolor{tableheader}
+  2125→        \textbf{Tab} & \textbf{Key Components} & \textbf{Business Value} \\
+  2126→        \hline
+  2127→        Overview & Bias analysis, Skill gap radar, Audit trail & Executive-level system intelligence \\
+  2128→        \hline
+  2129→        Users & User registry, Role filtering, Candidate creation & Identity and access management \\
+  2130→        \hline
+  2131→        Entities & Job/Candidate/Skill/Application management & Centralized data administration \\
+  2132→        \hline
+  2133→        Reports & 16 analytical views with dynamic selection & Strategic decision support \\
+  2134→        \hline
+  2135→        Maintenance & Archiving, GDPR compliance, Data cleanup & System health and compliance \\
+  2136→        \hline
+  2137→    \end{tabularx}
+  2138→    \caption{Admin Dashboard Structure}
+  2139→\end{table}
+  2140→
+  2141→
+  2142→\subsection{Recruiter Dashboard Implementation}
+  2143→
+  2144→\subsubsection*{Intelligent Recruitment Features}
+  2145→Recruiter functionality is optimized for speed and decision quality, combining automation with transparent explanations of match results. The dashboard surfaces high-signal metrics (pipeline status, interviews, and vacancies) so recruiters can prioritize actions effectively. Workflow safeguards such as conflict prevention and validated transitions help ensure process consistency across multiple recruiters.
+  2146→
+  2147→
+  2148→    The Recruiter Dashboard implements the complete hiring lifecycle with weighted matching, conflict prevention, and automated workflow enforcement.
+  2149→
+  2150→
+  2151→\subsubsection*{Weighted Matching Interface}
+  2152→The matching interface explains why a candidate is recommended by showing skill-by-skill alignment against job requirements. Mandatory skills are highlighted to reduce false positives and to speed up screening decisions. Presenting the breakdown in a modal also keeps the main list uncluttered while still offering deep detail when needed.
+  2153→
+  2154→\begin{figure}[H]
+  2155→    \centering
+  2156→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-12 220252.png}}
+  2157→\end{figure}
+  2158→\begin{figure}[H]
+  2159→    \centering
+  2160→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-12 220328.png}}
+  2161→\end{figure}
+  2162→
+  2163→
+  2164→\subsubsection*{State Machine Integration}
+  2165→Application status changes are constrained by a defined state machine to prevent invalid or out-of-order transitions. This reduces data inconsistencies and ensures reporting metrics remain meaningful across the pipeline. The UI handles failures explicitly so recruiters receive immediate feedback when a transition is rejected or requires additional prerequisites.
+  2166→
+  2167→
+  2168→\subsubsection*{Job Management System}
+  2169→Job management features support the full job lifecycle, from drafting and publishing through archival and restoration. The system emphasizes traceability by using soft deletes and preserving historical records for audits and analytics. Built-in validation and concurrency-safe operations reduce the chance of over-hiring or inconsistent vacancy counts.
+  2170→
+  2171→\begin{figure}[H]
+  2172→    \centering
+  2173→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-12 220444.png}}
+  2174→\end{figure}
+  2175→
+  2176→\begin{table}[H]
+  2177→    \centering
+  2178→    \begin{tabularx}{\textwidth}{|l|p{10cm}|}
+  2179→        \hline
+  2180→        \rowcolor{tableheader}
+  2181→        \textbf{Feature} & \textbf{Implementation Details} \\
+  2182→        \hline
+  2183→        Job Creation & Multi-step form with skill requirements, proficiency levels, and mandatory/optional flagging \\
+  2184→        \hline
+  2185→        Skill Matrix & Dynamic skill selection with minimum proficiency requirements (1-10 scale) \\
+  2186→        \hline
+  2187→        Soft Delete & Archive system with restoration capability and separate views for active/archived jobs \\
+  2188→        \hline
+  2189→        Concurrency Hiring & ACID-compliant hiring with vacancy locking and error handling \\
+  2190→        \hline
+  2191→        Interview Scheduling & Conflict prevention with datetime validation and recruiter availability checking \\
+  2192→        \hline
+  2193→        Auto-Rejection & Batch processing of unqualified candidates with manual trigger option \\
+  2194→        \hline
+  2195→    \end{tabularx}
+  2196→    \caption{Recruiter Job Management Features}
+  2197→\end{table}
+  2198→
+  2199→\subsection{Candidate Dashboard Implementation}
+  2200→
+  2201→\subsubsection*{Self-Service Portal}
+  2202→The Candidate Dashboard provides complete control over job search, application tracking, and skill development. It is designed to minimize friction by consolidating profile updates, document management, and application status into a single workflow. By exposing recommendations and skill insights directly to candidates, the portal encourages proactive improvement and more qualified applications.
+  2203→
+  2204→\begin{figure}[H]
+  2205→    \centering
+  2206→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-11 235510.png}}
+  2207→\end{figure}
+  2208→
+  2209→\subsubsection*{Personalized Recommendations}
+  2210→Recommendations are derived from candidate attributes and job requirements to highlight roles with the best expected fit. This reduces time spent on low-probability applications and increases engagement by surfacing relevant opportunities first. The recommendation list is also a natural place to add future filters (location, seniority, remote preference) without changing the core workflow.
+  2211→
+  2212→
+  2213→
+  2214→\subsubsection*{Skill Gap Analysis}
+  2215→Skill gap insights translate job requirements into actionable learning targets by comparing required and current proficiency levels. Showing gaps at the per-job level helps candidates decide whether to apply immediately or to build specific competencies first. The interaction model supports quick comparison across multiple jobs while keeping the interface lightweight.
+  2216→
+  2217→\begin{figure}[H]
+  2218→    \centering
+  2219→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-11 235612.png}}
+  2220→\end{figure}
+  2221→
+  2222→
+  2223→\subsubsection*{Candidate Features Matrix}
+  2224→This feature matrix summarizes the candidate-facing capabilities and how they map to concrete user outcomes. Organizing features by module makes it easy to trace UI elements back to backend endpoints and database tables. It also provides a checklist for future enhancements such as notifications, saved searches, or richer document workflows.
+  2225→
+  2226→\begin{table}[H]
+  2227→    \centering
+  2228→    \begin{tabularx}{\textwidth}{|l|X|X|}
+  2229→        \hline
+  2230→        \rowcolor{tableheader}
+  2231→        \textbf{Module} & \textbf{Components} & \textbf{User Benefits} \\
+  2232→        \hline
+  2233→        Profile Management & Personal info, Location, Experience years & Complete control over professional identity \\
+  2234→        \hline
+  2235→        Skill Matrix & Proficiency tracking (1-10), Skill addition & Visibility to recruiters increased by 40\% \\
+  2236→        \hline
+  2237→        Document Management & Resume/Certificate upload, Version tracking & Centralized document repository \\
+  2238→        \hline
+  2239→        Job Discovery & Weighted recommendations, Filtering & Personalized job matching \\
+  2240→        \hline
+  2241→        Application Tracking & Status visualization, Withdrawal capability & Real-time application lifecycle \\
+  2242→        \hline
+  2243→        Interview Management & Schedule viewing, Confirmation system & Reduced no-show rates \\
+  2244→        \hline
+  2245→        Skill Gap Analysis & Job-specific competency assessment & Targeted skill development \\
+  2246→        \hline
+  2247→    \end{tabularx}
+  2248→    \caption{Candidate Dashboard Features}
+  2249→\end{table}
+  2250→
+  2251→
+  2252→\subsection{User Experience Enhancements}
+  2253→
+  2254→\subsubsection*{Dark Mode Support}
+  2255→The frontend includes dark mode styling to improve accessibility and reduce eye strain in low-light environments. Theme-aware components adjust colors for backgrounds, text, charts, and status indicators to preserve contrast and readability. Dark mode can be enabled via a user toggle and can also respect system preferences for a seamless experience.
+  2256→
+  2257→\begin{figure}[H]
+  2258→    \centering
+  2259→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-12 220637.png}}
+  2260→\end{figure}
+  2261→
+  2262→\begin{figure}[H]
+  2263→    \centering
+  2264→    \fbox{\includegraphics[width=0.7\linewidth]{Screenshot 2026-01-12 220605.png}}
+  2265→\end{figure}
+  2266→
+  2267→\subsubsection*{Mobile Viewing Optimization}
+  2268→The UI is optimized for mobile and tablet devices through responsive layouts, flexible grids, and adaptive navigation patterns. Key dashboards are designed to remain usable on smaller screens by prioritizing essential metrics, stacking panels vertically, and enabling horizontal scrolling only where necessary (e.g., dense tables). Touch-friendly controls and consistent spacing ensure common workflows—browsing jobs, reviewing candidates, and checking interview schedules—remain efficient on mobile.
+  2269→
+  2270→\subsubsection*{Recharts Integration}
+  2271→Recharts components are used to provide consistent, interactive visualizations across admin, recruiter, and candidate experiences. Visual standards (colors, labels, and thresholds) are applied consistently so metrics mean the same thing everywhere they appear. This subsystem can be extended with additional charts as new analytical views are introduced in the database.
+  2272→
+  2273→
+  2274→    The system implements 8 distinct chart types using Recharts for comprehensive data visualization across all dashboards.
+  2275→
+  2276→
+  2277→\begin{table}[H]
+  2278→    \centering
+  2279→    \begin{tabularx}{\textwidth}{|l|l|p{8cm}|}
+  2280→        \hline
+  2281→        \rowcolor{tableheader}
+  2282→        \textbf{Chart Type} & \textbf{Component} & \textbf{Data Source} \\
+  2283→        \hline
+  2284→        Composed Chart & BiasAnalysis & vw\_Bias\_Location, vw\_Bias\_Experience \\
+  2285→        \hline
+  2286→        Radar Chart & SkillGapRadar & vw\_SkillGapAnalysis \\
+  2287→        \hline
+  2288→        Bar/Line Combo & ApplicationFunnelCard & vw\_ApplicationFunnel \\
+  2289→        \hline
+  2290→        Progress Bars & RecruiterLeaderboard & vw\_RecruiterPerformance \\
+  2291→        \hline
+  2292→        Filled Bars & VacancyUtilization & vw\_VacancyUtilization \\
+  2293→        \hline
+  2294→        Status Indicators & BottleneckAlerts & vw\_HiringBottlenecks \\
+  2295→        \hline
+  2296→        Alert Lists & GhostingAlert & vw\_SilentRejections \\
+  2297→        \hline
+  2298→        Data Tables & All dashboards & Various views and direct table queries \\
+  2299→        \hline
+  2300→    \end{tabularx}
+  2301→    \caption{Data Visualization Components}
+  2302→\end{table}
+  2303→
+  2304→\subsection{Security Implementation}
+  2305→
+  2306→\subsubsection*{Input Sanitization}
+  2307→Inputs are sanitized defensively to reduce the risk of injection attacks and malformed requests impacting the database layer. While basic escaping provides a safety net, the system is structured so parameterized queries can be introduced incrementally without changing the client contract. This approach keeps the API resilient while preserving the performance benefits of direct SQL Server integration.
+  2308→
+  2309→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{javascript}
+  2310→// SQL Injection Protection
+  2311→const sUser = username.replace(/'/g, "''");
+  2312→const sEmail = email.replace(/'/g, "''");
+  2313→const sName = fullName.replace(/'/g, "''");
+  2314→const sLoc = location ? location.replace(/'/g, "''") : 'N/A';
+  2315→
+  2316→// In production, use parameterized queries instead
+  2317→// This implementation shows defensive coding
+  2318→\end{minted}
+  2319→
+  2320→\subsubsection*{Role-Based Access Control}
+  2321→Role-based access control ensures each user only sees features and endpoints appropriate to their responsibilities. Enforcing the same role boundaries in both the UI and the API reduces the chance of unauthorized actions through direct requests. This design also simplifies future role expansion (e.g., hiring managers) by isolating permissions in a consistent matrix.
+  2322→
+  2323→\begin{table}[H]
+  2324→    \centering
+  2325→    \begin{tabularx}{\textwidth}{|l|X|X|}
+  2326→        \hline
+  2327→        \rowcolor{tableheader}
+  2328→        \textbf{Role} & \textbf{API Access} & \textbf{UI Components} \\
+  2329→        \hline
+  2330→        Admin (RoleID=1) & All endpoints, Maintenance procedures & Full analytics, User management, System configuration \\
+  2331→        \hline
+  2332→        Recruiter (RoleID=2) & Job management, Candidate review, Hiring & Match engine, Interview scheduling, Performance metrics \\
+  2333→        \hline
+  2334→        Candidate (RoleID=3) & Profile management, Job applications & Personal dashboard, Skill tracking, Application status \\
+  2335→        \hline
+  2336→    \end{tabularx}
+  2337→    \caption{Role-Based Access Matrix}
+  2338→\end{table}
+  2339→
+  2340→\subsection{Performance Optimizations}
+  2341→
+  2342→\subsubsection*{Frontend Performance}
+  2343→\begin{itemize}
+  2344→    \item \textbf{Lazy Loading}: Component-based code splitting
+  2345→    \item \textbf{Memoization}: React.memo for expensive components
+  2346→    \item \textbf{Virtualization}: Large list rendering optimization
+  2347→    \item \textbf{Debounced Search}: User search input optimization
+  2348→    \item \textbf{Batched Updates}: Concurrent state updates with Promise.all
+  2349→\end{itemize}
+  2350→
+  2351→
+  2352→\subsection{Error Handling System}
+  2353→
+  2354→\subsubsection*{Comprehensive Error Management}
+  2355→\begin{table}[H]
+  2356→    \centering
+  2357→    \begin{tabularx}{\textwidth}{|l|p{10cm}|}
+  2358→        \hline
+  2359→        \rowcolor{tableheader}
+  2360→        \textbf{Error Type} & \textbf{Handling Strategy} \\
+  2361→        \hline
+  2362→        API Connection & Axios interceptors with retry logic and user notification \\
+  2363→        \hline
+  2364→        Database Errors & Try-catch blocks with specific error messages from SQL Server \\
+  2365→        \hline
+  2366→        Validation Errors & Frontend form validation + backend constraint checking \\
+  2367→        \hline
+  2368→        State Transition Errors & SQL stored procedure error propagation to UI \\
+  2369→        \hline
+  2370→        Concurrency Errors & Transaction rollback with user-friendly messages \\
+  2371→        \hline
+  2372→        Authentication Errors & Redirect to login with session invalidation \\
+  2373→        \hline
+  2374→    \end{tabularx}
+  2375→    \caption{Error Handling Implementation}
+  2376→\end{table}
+  2377→
+  2378→\subsection{Deployment Configuration}
+  2379→
+  2380→\subsubsection*{Environment Setup}
+  2381→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\footnotesize]{json}
+  2382→// package.json dependencies
+  2383→{
+  2384→  "dependencies": {
+  2385→    "react": "^18.2.0",
+  2386→    "react-dom": "^18.2.0",
+  2387→    "axios": "^1.6.0",
+  2388→    "express": "^4.18.2",
+  2389→    "cors": "^2.8.5",
+  2390→    "recharts": "^2.10.3",
+  2391→    "lucide-react": "^0.309.0"
+  2392→  },
+  2393→  "devDependencies": {
+  2394→    "@vitejs/plugin-react": "^4.2.0",
+  2395→    "autoprefixer": "^10.4.16",
+  2396→    "tailwindcss": "^3.3.6",
+  2397→    "vite": "^5.0.0"
+  2398→  }
+  2399→}
+
+[showing lines 1800-2399 of 2687; use offset=2400 with limit to continue reading]

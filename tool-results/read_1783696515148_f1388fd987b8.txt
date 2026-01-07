@@ -1,0 +1,602 @@
+  1200→    -- Validate action & fetch points/badge
+  1201→    -- Insert candidate row if first-time
+  1202→    -- UPDATE points, level, streak, LastActivityDate
+  1203→    -- Append badge via JSON_MODIFY if not already earned
+  1204→END;
+  1205→\end{minted}
+  1206→
+  1207→
+  1208→
+  1209→\subsection{Personalized Learning Paths}
+  1210→
+  1211→\noindent
+  1212→Candidates who are not yet fully qualified for a target role often leave the platform rather than upskill. NexHire generates a personalised learning roadmap driven by the actual skill requirements of the job they are targeting.
+  1213→
+  1214→\textbf{Problem:} Generic career advice is not actionable. Candidates lose motivation without a measurable readiness goal tied to a specific role.
+  1215→
+  1216→\textbf{Solution:} The system compares current skill proficiencies against job requirements, calculates a readiness score (0--100), and outputs a prioritised JSON skills gap list with mandatory gaps flagged as High Priority. Resources and an estimated completion timeline are attached.
+  1217→
+  1218→\textbf{Implementation:} \texttt{PersonalizedLearningPaths} stores readiness scores, gap analysis, and progress state per candidate--job pair. \texttt{sp\_GenerateLearningPath} builds the gap list using \texttt{FOR JSON PATH} and upserts the result, so repeated calls update progress rather than creating duplicates.
+  1219→
+  1220→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{sql}
+  1221→CREATE TABLE PersonalizedLearningPaths (
+  1222→    PathID                INT IDENTITY(1,1) PRIMARY KEY,
+  1223→    CandidateID           INT NOT NULL,
+  1224→    GoalJobID             INT NOT NULL,
+  1225→    CurrentReadinessScore INT CHECK (CurrentReadinessScore BETWEEN 0 AND 100),
+  1226→    TargetReadinessScore  INT CHECK (TargetReadinessScore BETWEEN 0 AND 100),
+  1227→    SkillsGapAnalysis     NVARCHAR(MAX),   -- JSON array of skill gaps
+  1228→    RecommendedResources  NVARCHAR(MAX),   -- JSON resource list
+  1229→    EstimatedCompletionWeeks INT,
+  1230→    ProgressPercentage    DECIMAL(5,2) DEFAULT 0,
+  1231→    CurrentPhase          VARCHAR(50) DEFAULT 'NotStarted',
+  1232→    IsActive              BIT DEFAULT 1,
+  1233→    CreatedAt             DATETIME DEFAULT GETDATE(),
+  1234→    FOREIGN KEY (CandidateID) REFERENCES Candidates(CandidateID) ON DELETE CASCADE,
+  1235→    FOREIGN KEY (GoalJobID)   REFERENCES JobPostings(JobID)
+  1236→);
+  1237→\end{minted}
+  1238→
+  1239→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{sql}
+  1240→CREATE PROCEDURE sp_GenerateLearningPath
+  1241→    @CandidateID INT,
+  1242→    @TargetJobID INT
+  1243→AS
+  1244→BEGIN
+  1245→    -- Build prioritised JSON skill-gap list (High / Medium / Low)
+  1246→    -- Calculate readiness score (% of skills meeting min proficiency)
+  1247→    -- Upsert PersonalizedLearningPaths (refresh or insert new path)
+  1248→END;
+  1249→\end{minted}
+  1250→
+  1251→\subsection{Resume Quality Scoring}
+  1252→
+  1253→\noindent
+  1254→Manual resume screening is time-consuming and inconsistent. NexHire automates first-pass evaluation by applying CLR-based NLP to extract structured signals from resume text and compute an objective quality score.
+  1255→
+  1256→\textbf{Problem:} Without a consistent scoring baseline, weak resumes consume the same recruiter effort as strong ones, and good candidates with non-standard formatting get overlooked.
+  1257→
+  1258→\textbf{Solution:} CLR functions (\texttt{ExtractSkills}, \texttt{ExtractYearsOfExperience}, \texttt{CalculateSentiment}) process raw resume text and populate \texttt{ResumeInsights} with structured attributes --- technologies, leadership terms, achievement density, readability --- combining into a single \texttt{ResumeQualityScore} (1--100).
+  1259→
+  1260→\textbf{Implementation:} When a candidate uploads a resume, \texttt{sp\_ProcessCandidateResume} calls the appropriate CLR extractor based on file extension, runs the NLP pipeline, and writes results back to \texttt{Candidates} and \texttt{ResumeInsights}.
+  1261→
+  1262→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{sql}
+  1263→CREATE TABLE ResumeInsights (
+  1264→    InsightID             INT IDENTITY(1,1) PRIMARY KEY,
+  1265→    CandidateID           INT NOT NULL,   -- FK → Candidates
+  1266→    DocumentID            INT NULL,       -- FK → CandidateDocuments
+  1267→    -- NLP Extraction
+  1268→    EducationInstitutions NVARCHAR(MAX),
+  1269→    Certifications        NVARCHAR(MAX),
+  1270→    TechnologiesMentioned NVARCHAR(MAX),
+  1271→    ExtractedSkills       NVARCHAR(MAX),  -- "Python:0.9, SQL:0.8, ..."
+  1272→    -- Scoring & Metrics
+  1273→    ResumeQualityScore    INT,            -- 1–100
+  1274→    ConfidenceScore       DECIMAL(3,2),   -- 0–1
+  1275→    ReadabilityScore      DECIMAL(5,2),
+  1276→    AchievementDensity    DECIMAL(5,2),
+  1277→    -- Status & Audit
+  1278→    ProcessingStatus      VARCHAR(20) DEFAULT 'Pending',
+  1279→    NLPProcessedAt        DATETIME NULL,
+  1280→    .....
+  1281→);
+  1282→\end{minted}
+  1283→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{sql}
+  1284→-- CLR-powered extraction and NLP pipeline
+  1285→DECLARE @ResumeText NVARCHAR(MAX);
+  1286→SET @ResumeText = CASE
+  1287→    WHEN @ResumeFileName LIKE '%.pdf'  THEN dbo.ExtractTextFromPDF(@ResumeFile)
+  1288→    WHEN @ResumeFileName LIKE '%.docx' THEN dbo.ExtractTextFromDocx(@ResumeFile)
+  1289→    ELSE NULL
+  1290→END;
+  1291→
+  1292→SET @ExtractedSkills = dbo.ExtractSkills(@ResumeText);
+  1293→        -- Returns: "Python:0.92, SQL:0.87, Docker:0.75, ..."
+  1294→SET @YearsExp        = dbo.ExtractYearsOfExperience(@ResumeText);
+  1295→        -- Returns: integer years parsed from resume context
+  1296→
+  1297→UPDATE Candidates SET
+  1298→    ResumeText        = @ResumeText,
+  1299→    ExtractedSkills   = @ExtractedSkills,
+  1300→    YearsOfExperience = CASE WHEN @YearsExp > 0
+  1301→                             THEN @YearsExp ELSE YearsOfExperience END
+  1302→WHERE CandidateID = @CandidateID;
+  1303→\end{minted}
+  1304→
+  1305→\newpage
+  1306→
+  1307→\subsection{Document Text Extraction (PDF \& DOCX)}
+  1308→
+  1309→\noindent
+  1310→NexHire stores candidate documents as binary blobs. To enable NLP, scoring, and keyword matching, binary content must be converted to plain text. This is handled natively inside SQL Server via CLR functions, with no dependency on external parsing services.
+  1311→
+  1312→\textbf{Problem:} Binary storage means the database cannot search or analyse document content. Routing files to external parsers introduces latency and data residency concerns.
+  1313→
+  1314→\textbf{Solution:} Two CLR functions --- \texttt{dbo.ExtractTextFromPDF()} and \texttt{dbo.ExtractTextFromDocx()} --- accept a \texttt{VARBINARY(MAX)} blob and return \texttt{NVARCHAR(MAX)} plain text, which flows directly into the NLP pipeline.
+  1315→
+  1316→\textbf{Implementation:} \texttt{CandidateDocuments} stores file metadata. \texttt{sp\_ProcessCandidateResume} detects the format by filename extension, calls the correct extractor, then passes the result through \texttt{ExtractSkills} and \texttt{ExtractYearsOfExperience} before persisting all outputs.
+  1317→
+  1318→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{sql}
+  1319→CREATE TABLE CandidateDocuments (
+  1320→    DocumentID   INT IDENTITY(1,1) PRIMARY KEY,
+  1321→    CandidateID  INT NOT NULL,
+  1322→    DocumentType VARCHAR(50) CHECK (DocumentType IN
+  1323→                     ('Resume', 'CoverLetter', 'Certificate')),
+  1324→    FilePath     NVARCHAR(500),
+  1325→    UploadedAt   DATETIME DEFAULT GETDATE(),
+  1326→    FOREIGN KEY (CandidateID) REFERENCES Candidates(CandidateID) ON DELETE CASCADE
+  1327→);
+  1328→\end{minted}
+  1329→
+  1330→\begin{minted}[bgcolor=codebg,frame=single,fontsize=\small]{sql}
+  1331→CREATE PROCEDURE sp_ProcessCandidateResume
+  1332→    @CandidateID INT
+  1333→AS
+  1334→BEGIN
+  1335→    -- Fetch resume binary & filename from Candidates
+  1336→    -- Validate file exists; raise error if not found
+  1337→    -- Route to CLR extractor: ExtractTextFromPDF / ExtractTextFromDocx
+  1338→    -- Run NLP helpers: ExtractSkills(), ExtractYearsOfExperience()
+  1339→    -- UPDATE Candidates with ResumeText, ExtractedSkills, YearsOfExperience
+  1340→    -- Return summary result set (TextLength, Skills, Years, Status)
+  1341→END;
+  1342→\end{minted}
+  1343→
+  1344→\newpage
+  1345→
+  1346→\section{Real-Time Intelligence: 29 Analytical Views}
+  1347→The following views provide management with live intelligence without the need for external BI tools.
+  1348→
+  1349→\noindent
+  1350→{\footnotesize
+  1351→\setlength{\extrarowheight}{-2pt}
+  1352→\begin{tabular}{
+  1353→  >{\footnotesize\RaggedRight\arraybackslash\columncolor{white}}p{52mm}
+  1354→  >{\footnotesize\RaggedRight\arraybackslash\columncolor{white}}p{108mm}
+  1355→}
+  1356→\toprule
+  1357→\rowcolor{headerblue}
+  1358→\color{white}\textbf{View Name} &
+  1359→\color{white}\textbf{Purpose / Description} \\
+  1360→\midrule
+  1361→\rowcolor{rowgray}
+  1362→vw\_CandidateMatchScore & Calculates weighted match scores for candidates against job requirements based on skills, experience, and location \\[-2pt]
+  1363→vw\_SkillGapAnalysis & Identifies skills in high demand but low supply by comparing job requirements vs. candidate qualifications \\[-2pt]
+  1364→\rowcolor{rowgray}
+  1365→vw\_SkillVerificationStatus & Shows verification status of candidate skills including claimed vs. verified proficiency levels \\[-2pt]
+  1366→vw\_CandidateInterviews & Provides a comprehensive view of all scheduled interviews with time status (Past/Upcoming) \\[-2pt]
+  1367→\rowcolor{rowgray}
+  1368→vw\_InterviewScoreVsDecision & Correlates average interview scores with final hiring decisions to assess scoring effectiveness \\[-2pt]
+  1369→vw\_InterviewerConsistency & Measures interviewer scoring patterns, averages, and variance to identify calibration needs \\[-2pt]
+  1370→\rowcolor{rowgray}
+  1371→vw\_TimeToHire & Calculates the number of days from application to hire for each successful candidate \\[-2pt]
+  1372→vw\_AverageTimeToHire & Provides the organization-wide average days-to-hire metric \\[-2pt]
+  1373→\rowcolor{rowgray}
+  1374→vw\_HireRatePerJob & Shows application volume, hire count, and conversion rate percentage for each job posting \\[-2pt]
+  1375→vw\_RecruiterPerformance & Tracks recruiter effectiveness through interviews conducted and successful hires \\[-2pt]
+  1376→\rowcolor{rowgray}
+  1377→vw\_ApplicationFunnel & Provides a pipeline view showing candidate counts at each application status stage \\[-2pt]
+  1378→vw\_HiringBottlenecks & Identifies stages where applications stall by measuring time spent in each status \\[-2pt]
+  1379→\rowcolor{rowgray}
+  1380→vw\_RejectionAnalysis & Categorizes and quantifies reasons for candidate rejection to identify patterns \\[-2pt]
+  1381→vw\_VacancyUtilization & Shows remaining vacancies alongside application volume and filled positions \\[-2pt]
+  1382→\rowcolor{rowgray}
+  1383→vw\_SilentRejections & Detects applications stuck in non-terminal states for over 30 days with no updates \\[-2pt]
+  1384→vw\_Bias\_Location & Analyzes hire rates by candidate location to detect potential geographic bias \\[-2pt]
+  1385→\rowcolor{rowgray}
+  1386→vw\_Bias\_Experience & Analyzes hire rates by experience level (Junior, Mid, Senior) to detect experience-based bias \\[-2pt]
+  1387→vw\_DiversityAnalyticsFunnel & Tracks diversity metrics through the hiring pipeline from application to hire \\[-2pt]
+  1388→\rowcolor{rowgray}
+  1389→vw\_GhostingRiskDashboard & Consolidates ghosting risk factors including historical patterns, response times, and communication volume \\[-2pt]
+  1390→vw\_SalaryTransparency & Compares job salary ranges against market benchmarks and tracks transparency levels \\[-2pt]
+  1391→\rowcolor{rowgray}
+  1392→vw\_RemoteCompatibilityMatrix & Provides a comprehensive view of candidate vs. company remote work compatibility \\[-2pt]
+  1393→vw\_CareerPathInsights & Shows candidate career goals, transition probabilities, and available learning resources \\[-2pt]
+  1394→\rowcolor{rowgray}
+  1395→vw\_ReferralIntelligence & Tracks referral performance, relationship strength, and outcome analysis \\[-2pt]
+  1396→vw\_MarketIntelligenceDashboard & Provides supply/demand metrics, salary trends, and hiring difficulty by skill and location \\[-2pt]
+  1397→\rowcolor{rowgray}
+  1398→vw\_CandidateEngagement & Measures candidate responsiveness through interview confirmation rates \\[-2pt]
+  1399→vw\_OnboardingPredictions & Would show onboarding success predictions - referenced in sp\_PredictOnboardingSuccess \\[-2pt]
+  1400→\rowcolor{rowgray}
+  1401→vw\_AI\_Predictions & Would show AI-generated success predictions - based on AI\_Predictions table \\[-2pt]
+  1402→vw\_ResumeInsights & Would show NLP-extracted resume insights - based on ResumeInsights table \\
+  1403→\arrayrulecolor{black}\bottomrule
+  1404→\end{tabular}
+  1405→}
+  1406→
+  1407→
+  1408→% ============================================================
+  1409→% ANALYTICAL VIEWS — GROUPED DESCRIPTION
+  1410→% ============================================================
+  1411→
+  1412→\subsection{Analytical Views}
+  1413→
+  1414→NexHire exposes its core analytical capabilities through a set of database views organised into five functional groups. Each view is a pre-built, reusable query that dashboards, reports, and stored procedures can reference directly, keeping business logic consistent and auditable across the system.
+  1415→
+  1416→% ─────────────────────────────────────────────────────────────
+  1417→\subsubsection{Group 1 — Candidate Matching \& Scoring}
+  1418→
+  1419→This group translates raw candidate data into ranked, comparable scores so recruiters can evaluate large applicant pools objectively.
+  1420→
+  1421→\textbf{vw\_CandidateMatchScore} is the centrepiece of the matching engine. It joins a candidate's skills and experience against a job's requirements and produces a single \texttt{TotalMatchScore} per candidate–job pair. Only skills that satisfy the job's minimum proficiency threshold are counted, preventing unqualified skill claims from inflating scores.
+  1422→
+  1423→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1424→-- vw_CandidateMatchScore (simplified)
+  1425→SELECT
+  1426→    c.CandidateID, j.JobID,
+  1427→    SUM(cs.ProficiencyLevel)                               AS SkillScore,
+  1428→    c.YearsOfExperience * 2                                AS ExperienceScore,
+  1429→    CASE WHEN c.Location = j.Location THEN 10 ELSE 0 END   AS LocationBonus,
+  1430→    SUM(cs.ProficiencyLevel) + c.YearsOfExperience * 2
+  1431→      + CASE WHEN c.Location = j.Location THEN 10 ELSE 0 END
+  1432→                                                           AS TotalMatchScore
+  1433→FROM Candidates c
+  1434→JOIN Applications    a  ON c.CandidateID = a.CandidateID
+  1435→JOIN JobPostings     j  ON a.JobID        = j.JobID
+  1436→JOIN CandidateSkills cs ON c.CandidateID = cs.CandidateID
+  1437→JOIN JobSkills       js ON cs.SkillID    = js.SkillID
+  1438→                       AND js.JobID      = j.JobID
+  1439→WHERE cs.ProficiencyLevel >= js.MinProficiency
+  1440→GROUP BY c.CandidateID, j.JobID, c.YearsOfExperience,
+  1441→         c.Location, j.Location;
+  1442→\end{minted}
+  1443→
+  1444→\textbf{vw\_SkillGapAnalysis} pivots the same data in the opposite direction — instead of scoring individuals it surfaces organisation-wide shortages by counting how many jobs require a skill versus how many candidates have it. A positive \texttt{SkillGap} value flags a sourcing priority.
+  1445→
+  1446→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1447→-- vw_SkillGapAnalysis (simplified)
+  1448→SELECT
+  1449→    s.SkillName,
+  1450→    COUNT(DISTINCT js.JobID)           AS JobsRequiringSkill,
+  1451→    COUNT(DISTINCT cs.CandidateID)     AS CandidatesWithSkill,
+  1452→    COUNT(DISTINCT js.JobID)
+  1453→      - COUNT(DISTINCT cs.CandidateID) AS SkillGap
+  1454→FROM Skills s
+  1455→LEFT JOIN JobSkills       js ON s.SkillID = js.SkillID
+  1456→LEFT JOIN CandidateSkills cs ON s.SkillID = cs.SkillID
+  1457→GROUP BY s.SkillName
+  1458→ORDER BY SkillGap DESC;
+  1459→\end{minted}
+  1460→
+  1461→\textbf{vw\_SkillVerificationStatus} complements the above by showing whether a candidate's claimed proficiency has been independently verified, helping recruiters distinguish self-reported skill levels from validated ones.
+  1462→
+  1463→% ─────────────────────────────────────────────────────────────
+  1464→\subsubsection{Group 2 — Interview Management}
+  1465→
+  1466→These views standardise how interview outcomes are stored and compared, supporting both real-time scheduling visibility and post-process quality analysis.
+  1467→
+  1468→\textbf{vw\_CandidateInterviews} provides a live calendar-style view of every scheduled interview, labelling each record as \texttt{Past} or \texttt{Upcoming} based on the current date.
+  1469→
+  1470→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1471→-- vw_CandidateInterviews (simplified)
+  1472→SELECT
+  1473→    c.FullName, j.JobTitle,
+  1474→    i.ScheduledAt,
+  1475→    CASE WHEN i.ScheduledAt < GETDATE()
+  1476→         THEN 'Past' ELSE 'Upcoming' END AS TimeStatus,
+  1477→    u.Username                           AS Interviewer
+  1478→FROM InterviewSchedules i
+  1479→JOIN Applications a ON i.ApplicationID = a.ApplicationID
+  1480→JOIN Candidates   c ON a.CandidateID   = c.CandidateID
+  1481→JOIN JobPostings  j ON a.JobID         = j.JobID
+  1482→JOIN Recruiters   r ON i.RecruiterID   = r.RecruiterID
+  1483→JOIN Users        u ON r.UserID        = u.UserID;
+  1484→\end{minted}
+  1485→
+  1486→\textbf{vw\_InterviewerConsistency} measures scoring variance per interviewer using standard deviation across their scores. A standard deviation above 2.0 triggers a calibration flag.
+  1487→
+  1488→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1489→-- vw_InterviewerConsistency (simplified)
+  1490→SELECT
+  1491→    u.Username,
+  1492→    COUNT(f.FeedbackID)            AS TotalInterviews,
+  1493→    AVG(f.TechnicalScore * 1.0)    AS AvgTechnical,
+  1494→    STDEV(f.TechnicalScore * 1.0)  AS StdDevTechnical,
+  1495→    CASE WHEN STDEV(f.TechnicalScore * 1.0) > 2.0
+  1496→         THEN 'CALIBRATION NEEDED' ELSE 'CONSISTENT'
+  1497→    END AS ConsistencyFlag
+  1498→FROM InterviewFeedback f
+  1499→JOIN Users u ON f.InterviewerID = u.UserID
+  1500→GROUP BY u.Username, u.UserID;
+  1501→\end{minted}
+  1502→
+  1503→\textbf{vw\_InterviewScoreVsDecision} correlates average interview scores with final hiring decisions (Hired / Rejected), giving management a data-driven way to validate whether scores are predictive of outcomes or being systematically overridden.
+  1504→
+  1505→% ─────────────────────────────────────────────────────────────
+  1506→\subsubsection{Group 3 — Analytics \& Reporting}
+  1507→
+  1508→This is the largest group and powers the real-time recruitment dashboard. Each view exposes a distinct operational metric; together they give management a complete picture of pipeline health.
+  1509→
+  1510→\textbf{vw\_TimeToHire} and its aggregate companion \textbf{vw\_AverageTimeToHire} calculate elapsed days from application submission to the \textit{Hired} status change, enabling benchmarking against the 30-day target.
+  1511→
+  1512→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1513→-- vw_TimeToHire (simplified)
+  1514→SELECT
+  1515→    c.FullName, j.JobTitle,
+  1516→    a.AppliedDate, h.ChangedAt AS HireDate,
+  1517→    DATEDIFF(DAY, a.AppliedDate, h.ChangedAt) AS DaysToHire
+  1518→FROM Applications a
+  1519→JOIN Candidates  c ON a.CandidateID = c.CandidateID
+  1520→JOIN JobPostings j ON a.JobID       = j.JobID
+  1521→JOIN ApplicationStatusHistory h ON a.ApplicationID = h.ApplicationID
+  1522→JOIN ApplicationStatus        s ON h.StatusID      = s.StatusID
+  1523→WHERE s.StatusName = 'Hired';
+  1524→\end{minted}
+  1525→
+  1526→\textbf{vw\_ApplicationFunnel} counts active candidates at each pipeline stage (Applied $\rightarrow$ Screening $\rightarrow$ Interview $\rightarrow$ Hired / Rejected), making drop-off points immediately visible. \textbf{vw\_HiringBottlenecks} goes further by flagging any stage where average dwell time exceeds seven days.
+  1527→
+  1528→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1529→-- vw_HiringBottlenecks (simplified)
+  1530→SELECT
+  1531→    s.StatusName,
+  1532→    COUNT(a.ApplicationID) AS ApplicationsInStage,
+  1533→    AVG(DATEDIFF(DAY, a.AppliedDate,
+  1534→        ISNULL(a.StatusChangedAt, GETDATE()))) AS AvgDaysInStage,
+  1535→    CASE WHEN AVG(DATEDIFF(DAY, a.AppliedDate,
+  1536→         ISNULL(a.StatusChangedAt, GETDATE()))) > 7
+  1537→         THEN 'BOTTLENECK' ELSE 'NORMAL' END   AS Status
+  1538→FROM ApplicationStatus s
+  1539→LEFT JOIN Applications a ON s.StatusID = a.StatusID
+  1540→WHERE a.IsDeleted = 0
+  1541→GROUP BY s.StatusName;
+  1542→\end{minted}
+  1543→
+  1544→\textbf{vw\_SilentRejections} protects candidate experience by surfacing applications inactive for over 30 days without a terminal decision. Severity escalates from \texttt{WARNING} (30+ days) to \texttt{CRITICAL} (60+ days).
+  1545→
+  1546→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1547→-- vw_SilentRejections (simplified)
+  1548→SELECT
+  1549→    a.ApplicationID, c.FullName, j.JobTitle,
+  1550→    DATEDIFF(DAY, a.AppliedDate, GETDATE()) AS DaysInactive,
+  1551→    CASE
+  1552→        WHEN DATEDIFF(DAY, a.AppliedDate, GETDATE()) > 60 THEN 'CRITICAL'
+  1553→        WHEN DATEDIFF(DAY, a.AppliedDate, GETDATE()) > 30 THEN 'WARNING'
+  1554→    END AS AlertLevel
+  1555→FROM Applications     a
+  1556→JOIN Candidates        c ON a.CandidateID = c.CandidateID
+  1557→JOIN ApplicationStatus s ON a.StatusID    = s.StatusID
+  1558→JOIN JobPostings       j ON a.JobID       = j.JobID
+  1559→WHERE s.StatusName NOT IN ('Hired','Rejected','Withdrawn')
+  1560→  AND DATEDIFF(DAY, a.AppliedDate, GETDATE()) > 30;
+  1561→\end{minted}
+  1562→
+  1563→Additional views in this group include \textbf{vw\_HireRatePerJob} (conversion rate per posting), \textbf{vw\_RecruiterPerformance} (interviews conducted vs.\ hires per recruiter), \textbf{vw\_RejectionAnalysis} (rejection reason breakdown), and \textbf{vw\_VacancyUtilization} (remaining headcount vs.\ filled positions).
+  1564→
+  1565→% ─────────────────────────────────────────────────────────────
+  1566→\subsubsection{Group 4 — DEI \& Bias Detection}
+  1567→
+  1568→These views implement an early-warning system for unfair hiring patterns. They surface statistical anomalies for management review rather than automatically asserting bias.
+  1569→
+  1570→\textbf{vw\_Bias\_Location} computes the hire rate per candidate location and flags any location whose rate deviates more than 20 percentage points from the organisation average.
+  1571→
+  1572→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1573→-- vw_Bias_Location (simplified)
+  1574→SELECT
+  1575→    c.Location,
+  1576→    COUNT(a.ApplicationID) AS TotalApplicants,
+  1577→    CAST(SUM(CASE WHEN s.StatusName = 'Hired' THEN 1 ELSE 0 END)
+  1578→         * 100.0 / NULLIF(COUNT(a.ApplicationID), 0)
+  1579→         AS DECIMAL(5,2)) AS HireRatePercent,
+  1580→    CASE WHEN ABS(HireRatePercent
+  1581→               - AVG(HireRatePercent) OVER()) > 20
+  1582→         THEN 'POTENTIAL_BIAS' ELSE 'NORMAL'
+  1583→    END AS BiasStatus
+  1584→FROM Applications a
+  1585→JOIN Candidates       c ON a.CandidateID = c.CandidateID
+  1586→JOIN ApplicationStatus s ON a.StatusID   = s.StatusID
+  1587→WHERE a.IsDeleted = 0
+  1588→GROUP BY c.Location;
+  1589→\end{minted}
+  1590→
+  1591→\textbf{vw\_Bias\_Experience} applies the same logic across experience brackets (Junior / Mid / Senior), flagging deviations greater than 15 percentage points. \textbf{vw\_DiversityAnalyticsFunnel} extends this by tracking diversity cohorts through every pipeline stage, pinpointing exactly where underrepresented groups drop off.
+  1592→
+  1593→% ─────────────────────────────────────────────────────────────
+  1594→\subsubsection{Group 5 — Ghosting Risk \& Advanced Analytics}
+  1595→
+  1596→This group addresses emerging recruitment challenges that go beyond traditional pipeline metrics.
+  1597→
+  1598→\textbf{vw\_GhostingRiskDashboard} consolidates multiple risk signals — historical non-response patterns, average communication response times, and message volume — into a single per-application risk score.
+  1599→
+  1600→\begin{minted}[bgcolor=codebg,frame=single]{sql}
+  1601→-- vw_GhostingRiskDashboard (simplified)
+  1602→SELECT
+  1603→    a.ApplicationID, c.FullName, j.JobTitle,
+  1604→    gp.NonResponseCount, cl.AvgResponseHours,
+  1605→    CASE
+  1606→        WHEN gp.NonResponseCount > 3
+  1607→          OR cl.AvgResponseHours  > 48 THEN 'HIGH RISK'
+  1608→        WHEN gp.NonResponseCount > 1   THEN 'MEDIUM RISK'
+  1609→        ELSE 'LOW RISK'
+  1610→    END AS GhostingRisk
+  1611→FROM Applications          a
+  1612→JOIN Candidates             c  ON a.CandidateID   = c.CandidateID
+  1613→JOIN JobPostings            j  ON a.JobID          = j.JobID
+  1614→LEFT JOIN GhostingPatterns  gp ON c.CandidateID   = gp.UserID
+  1615→LEFT JOIN CommunicationLogs cl ON a.ApplicationID = cl.ApplicationID;
+  1616→\end{minted}
+  1617→
+  1618→\textbf{vw\_SalaryTransparency} benchmarks each job's posted salary range against market data in \texttt{SalaryBenchmarks}, identifying uncompetitive postings at risk of candidate drop-off. \textbf{vw\_RemoteCompatibilityMatrix} matches candidate remote-work preferences against company policies and timezone overlap data, surfacing mismatches early.
+  1619→
+  1620→\textbf{vw\_MarketIntelligenceDashboard} provides macro-level workforce planning data — supply-demand ratios, salary trends, and hiring difficulty per skill and location. \textbf{vw\_ReferralIntelligence} tracks referral performance (relationship strength, offer acceptance, and retention) to help optimise referral programmes.
+  1621→
+  1622→Finally, \textbf{vw\_CandidateEngagement} measures responsiveness through interview confirmation rates, \textbf{vw\_CareerPathInsights} surfaces candidate career goals and transition probabilities, and the inferred views \textbf{vw\_AI\_Predictions}, \textbf{vw\_OnboardingPredictions}, and \textbf{vw\_ResumeInsights} expose machine-learning outputs (success probabilities, onboarding risk scores, and NLP-extracted résumé highlights) as standard queryable views.
+  1623→
+  1624→
+  1625→\section{CLR Functions}
+  1626→% ============================================================
+  1627→
+  1628→\noindent
+  1629→NexHire extends SQL Server with a suite of Common Language Runtime (CLR) functions, compiled from managed .NET assemblies and registered as database objects. These functions handle tasks that are impractical or impossible to implement efficiently in pure T-SQL, including cryptographic security, natural language processing, document parsing, fuzzy string matching, statistical analysis, timezone conversion, and external API communication. The following subsections organise all CLR functions by their functional group.
+  1630→
+  1631→% ============================================================
+  1632→\subsection{Email Validation}
+  1633→% ============================================================
+  1634→
+  1635→\subsubsection{ValidateEmail}
+  1636→\noindent
+  1637→This function serves as a foundational data-integrity gate, ensuring that every email address entering the system conforms to a structurally valid format before it is persisted. Standard SQL \texttt{LIKE} patterns are insufficient for RFC-5322 compliance, so this CLR function applies a proper regex against a trimmed input, returning \texttt{1} for valid and \texttt{0} otherwise.
+  1638→
+  1639→In practice, it is called inside the \texttt{trg\_ValidateEmail\_OnInsert} trigger and the \texttt{sp\_AuditCandidateEmails} procedure to reject malformed addresses at the point of insertion, replacing the weaker \texttt{CHK\_Email\_Format} check constraint. This keeps email data clean across the \texttt{Users} and \texttt{Candidates} tables without relying on application-layer validation alone.
+  1640→
+  1641→\subsubsection{IsDisposableEmail}
+  1642→\noindent
+  1643→Disposable or temporary email providers are routinely used to circumvent registration controls, making it necessary to detect and block them at the database tier. This function extracts the domain from the supplied address using \texttt{ExtractEmailDomain} and then checks it against a hardcoded blacklist of 15+ known disposable providers, returning \texttt{1} if a match is found.
+  1644→
+  1645→It is used in conjunction with \texttt{ValidateEmail} inside the email validation trigger so that an address can be simultaneously checked for format correctness and domain legitimacy. Any registration attempt using a flagged domain is rejected with a descriptive error, protecting the platform from throwaway accounts.
+  1646→
+  1647→\subsubsection{ExtractEmailDomain}
+  1648→\noindent
+  1649→This lightweight utility function isolates the domain portion of an email address --- the substring to the right of the \texttt{@} symbol --- returning \texttt{NULL} if no \texttt{@} is present. Although simple in design, it is reused by both \texttt{IsDisposableEmail} and analytics queries that need to aggregate or segment users by their email provider.
+  1650→
+  1651→In analytical contexts, persisted computed columns and reporting views call this function to enable domain-level statistics such as the proportion of candidates from corporate versus free-tier providers, supporting recruiter insights without duplicating parsing logic.
+  1652→
+  1653→% ============================================================
+  1654→\subsection{Security}
+  1655→% ============================================================
+  1656→
+  1657→\subsubsection{HashPassword (PBKDF2)}
+  1658→\noindent
+  1659→Storing passwords in plain text or using weak hashing algorithms represents a critical security vulnerability. This function addresses that by implementing PBKDF2 with HMAC-SHA256, a 32-byte cryptographically random salt, and 100{,}000 iterations --- the industry-standard configuration recommended by NIST. The salt and derived key are concatenated and returned as a Base64 string.
+  1660→
+  1661→Because PBKDF2 is intentionally slow (approximately 100\,ms per call), this function must never be called inside loops or batch operations. It is used during user registration and password changes, where the output is stored in \texttt{Users.PasswordHash}. The high iteration count makes offline brute-force attacks computationally expensive even if the hash database is compromised.
+  1662→
+  1663→\subsubsection{VerifyPassword}
+  1664→\noindent
+  1665→Authentication requires not only hashing but also secure comparison between a supplied plain-text password and a previously stored PBKDF2 hash. This function decodes the Base64 hash, extracts the embedded 32-byte salt, re-derives the hash using identical parameters, and then compares the result byte-by-byte in constant time to eliminate timing-based side-channel attacks.
+  1666→
+  1667→It is invoked during the login flow, returning \texttt{1} on success and \texttt{0} on failure. The constant-time comparison is critical: a naive early-exit comparison leaks information about how many bytes matched, which can be exploited by an attacker measuring response times across many login attempts.
+  1668→
+  1669→\subsubsection{GenerateSecureToken}
+  1670→\noindent
+  1671→Many recruitment workflows depend on unpredictable tokens: password reset links, session identifiers, and API keys all require cryptographic randomness that \texttt{NEWID()} or \texttt{RAND()} cannot reliably provide. This function fills a byte array using a CSPRNG (\texttt{RandomNumberGenerator}), converts to Base64, and produces a URL-safe string by replacing unsafe characters, trimmed to the requested length.
+  1672→
+  1673→The output is used in \texttt{Users.SessionToken} and emailed as one-time password-reset links. Because the token space is astronomically large and derived from a CSPRNG, brute-forcing or predicting issued tokens is computationally infeasible under normal operating conditions.
+  1674→
+  1675→\subsubsection{EncryptSensitiveData}
+  1676→\noindent
+  1677→Certain candidate fields --- such as national ID numbers --- are classified as personally identifiable information (PII) and must be stored in encrypted form to comply with data protection regulations such as GDPR. This function implements AES-256 in CBC mode: it derives a 256-bit key by hashing the supplied key string with SHA-256, generates a random 16-byte IV, encrypts the payload, and prepends the IV to the ciphertext before returning a Base64 string.
+  1678→
+  1679→The IV prepended to the output ensures that identical plain-text inputs produce different ciphertext on each call, preventing pattern analysis. Callers should be aware that the encryption key appears in query logs, so this function should be invoked from within stored procedures with restricted execution rights rather than ad hoc queries.
+  1680→
+  1681→% ============================================================
+  1682→\subsection{String Similarity}
+  1683→% ============================================================
+  1684→
+  1685→\subsubsection{LevenshteinDistance}
+  1686→\noindent
+  1687→Exact string matching fails when candidate names or skill labels contain typos, abbreviations, or minor spelling variations. \texttt{LevenshteinDistance} computes the minimum number of single-character insertions, deletions, and substitutions required to transform one string into another using the Wagner-Fischer dynamic programming algorithm, with $O(m \times n)$ time and space complexity.
+  1688→
+  1689→It is used inside \texttt{sp\_FuzzySearchCandidates} alongside \texttt{JaroWinklerSimilarity} as a secondary ranking signal: candidates whose names are close in edit distance are surfaced even when an exact match does not exist. Because complexity scales with string length, it is best suited for short identifiers such as names and skill tags rather than long free-text fields.
+  1690→
+  1691→\subsubsection{JaroWinklerSimilarity}
+  1692→\noindent
+  1693→While Levenshtein distance works well for general strings, it underweights common name prefixes --- a critical weakness for person-name matching in a recruitment context. \texttt{JaroWinklerSimilarity} computes the Jaro score (based on matching characters within a window and transpositions) and then adds a prefix bonus for up to four leading matching characters scaled by 0.1, returning a similarity score in the range $[0,\,1]$.
+  1694→
+  1695→This function is the primary similarity metric in \texttt{sp\_FuzzySearchCandidates} and duplicate-candidate detection routines. A configurable threshold (default 0.85) determines which candidates are surfaced as potential matches, striking a balance between precision and recall for name-based deduplication.
+  1696→
+  1697→\subsubsection{CosineSimilarity}
+  1698→\noindent
+  1699→Semantic similarity between a resume and a job description cannot be captured by character-level edit distances. \texttt{CosineSimilarity} tokenises both input strings into word arrays, builds term-frequency vectors, and computes the cosine of the angle between them --- returning a value in $[0,\,1]$ where 1 indicates identical vocabularies and 0 indicates no shared terms.
+  1700→
+  1701→In NexHire it is the core ranking signal for resume-to-job-description matching and skill similarity scoring. Its performance is dependent on text length and vocabulary size, so large-scale matching operations should be batched and executed off-peak to avoid blocking the OLTP workload.
+  1702→
+  1703→% ============================================================
+  1704→\subsection{Date \& Time}
+  1705→% ============================================================
+  1706→
+  1707→\subsubsection{CalculateBusinessDays}
+  1708→\noindent
+  1709→SLA and time-to-hire metrics measured in calendar days are misleading because they include weekends when no recruiting activity occurs. This function iterates day by day between two dates, counting only Monday-through-Friday occurrences, and automatically swaps the start and end if provided in the wrong order to prevent negative results.
+  1710→
+  1711→It underpins \texttt{sp\_TimeToHireReport} and the \texttt{vw\_HiringBottlenecks} view, where accurate business-day counts allow managers to identify which pipeline stages are consuming the most working time. The $O(n)$ iteration is appropriate for typical date ranges encountered in hiring workflows but should not be used over multi-year spans in a tight loop.
+  1712→
+  1713→\subsubsection{AddBusinessDays}
+  1714→\noindent
+  1715→Interview scheduling and deadline computation require adding a specific number of working days to a starting date while correctly skipping weekends. This function loops forward one day at a time, incrementing a business-day counter only on weekdays, and returns the resulting \texttt{DATETIME}. Negative values for $n$ allow backward date arithmetic as well.
+  1716→
+  1717→It is used for computing SLA deadlines and scheduling follow-up reminders. For large values of $n$ (greater than approximately 100 days), a closed-form calculation would be more efficient, but for the typical ranges encountered in hiring pipelines the iterative approach is both correct and fast enough.
+  1718→
+  1719→\subsubsection{IsWithinWorkingHours}
+  1720→\noindent
+  1721→Interviews and automated communications should not be scheduled outside of conventional business hours, both for candidate experience and compliance reasons. This function accepts a \texttt{DATETIME} and configurable start and end hours, returning \texttt{1} only if the timestamp falls on a weekday and within the specified hour window.
+  1722→
+  1723→The parameterised hour boundaries make it flexible across different regional office policies. It is applied in interview scheduling validation to prevent the system from generating slots on weekends or at unusual hours, and in off-hours application detection for SLA monitoring dashboards.
+  1724→
+  1725→\subsubsection{GetRelativeTime}
+  1726→\noindent
+  1727→Raw timestamps such as \texttt{2024-01-15 14:30:00} are difficult for users to parse at a glance in activity feeds and dashboards. \texttt{GetRelativeTime} computes the elapsed time between the supplied \texttt{DATETIME} and the current moment, then selects the most appropriate human-readable unit --- returning a string such as \texttt{"3 hours ago"} or \texttt{"2 days ago"}.
+  1728→
+  1729→Because this function calls \texttt{DateTime.Now} internally it is non-deterministic and cannot be used in persisted computed columns, but it is well-suited for view-level projections in \texttt{vw\_SilentRejections} and other activity feeds where recency labelling significantly improves readability.
+  1730→
+  1731→% ============================================================
+  1732→\subsection{Timezone}
+  1733→% ============================================================
+  1734→
+  1735→\subsubsection{ConvertTimezone}
+  1736→\noindent
+  1737→Remote and internationally distributed hiring means that interview times must be communicated correctly in each participant's local timezone, accounting for Daylight Saving Time transitions. This function uses .NET's \texttt{TimeZoneInfo} to convert a \texttt{DATETIME} from a named source timezone to a named destination timezone via UTC as an intermediate representation, handling DST offsets automatically.
+  1738→
+  1739→It is the backbone of \texttt{sp\_ScheduleInterviewWithTimezone}, which stores interview times in UTC in \texttt{InterviewSchedules} but presents localised times to both the recruiter and the candidate. An invalid timezone ID causes the function to return \texttt{NULL} rather than raise an exception, so callers should validate timezone strings against accepted Windows timezone identifiers before calling.
+  1740→
+  1741→\subsubsection{GetTimezoneOffset}
+  1742→\noindent
+  1743→For display purposes --- candidate profiles, scheduler confirmations, and notification emails --- it is often sufficient to show the current UTC offset of a timezone rather than performing a full conversion. This function calls \texttt{TimeZoneInfo.GetUtcOffset} against the current UTC moment and formats the result as a signed string such as \texttt{UTC+06:00} or \texttt{UTC-05:00}.
+  1744→
+  1745→It is a low-overhead utility used in views and UI-layer queries where the formatted offset string is embedded directly into labels and headings, providing geographical context without requiring a full timezone conversion calculation.
+  1746→
+  1747→\subsubsection{CalculateTimezoneOverlap}
+  1748→\noindent
+  1749→Remote work compatibility analysis depends on knowing how many working hours two parties in different timezones share each day. This function converts the configured working-hour window (e.g., 09:00--17:00) in both timezones to UTC ranges and returns the length of their intersection in whole hours, providing a quantitative measure of scheduling compatibility.
+  1750→
+  1751→It feeds the \texttt{vw\_RemoteCompatibilityMatrix} view and the \texttt{RemoteCompatibility} scoring system, helping recruiters and candidates understand the practical overlap available for meetings and real-time collaboration when considering a remote role across distant time zones.
+  1752→
+  1753→% ============================================================
+  1754→\subsection{Statistics}
+  1755→% ============================================================
+  1756→
+  1757→\subsubsection{StandardDeviation}
+  1758→\noindent
+  1759→Interviewer consistency monitoring requires measuring how much an individual interviewer's scores vary relative to the pool. This function accepts a comma-separated string of numeric values, parses them into a double array, computes the mean, and returns the population standard deviation $\sigma = \sqrt{\sum(x_i - \bar{x})^2 / N}$.
+  1760→
+  1761→It is called by \texttt{sp\_InterviewerConsistencyCLR} and surfaces in \texttt{vw\_InterviewerConsistency} to flag interviewers whose scoring variance is abnormally high or low, which can indicate halo effects, anchoring bias, or insufficient familiarity with the evaluation rubric.
+  1762→
+  1763→\subsubsection{Percentile}
+  1764→\noindent
+  1765→Ranking candidates or benchmarking salaries requires percentile calculations that SQL Server does not expose as a general-purpose scalar function. This CLR function sorts the input values, computes a fractional index $\text{idx} = (N-1) \times (p / 100)$, and linearly interpolates between adjacent elements to return the requested percentile with sub-integer precision.
+  1766→
+  1767→It is used for salary benchmarking and for identifying which quartile a candidate's interview performance falls into, supporting fair and data-driven compensation decisions as well as transparent candidate ranking in the selection pipeline.
+  1768→
+  1769→\subsubsection{ZScore}
+  1770→\noindent
+  1771→When comparing candidate scores across interviewers or rounds with different baseline tendencies, raw scores can be misleading. The Z-score normalises a value relative to the distribution it belongs to --- $z = (x - \mu) / \sigma$ --- expressing it as the number of standard deviations from the mean. The function returns \texttt{NULL} if the standard deviation is zero to avoid division errors.
+  1772→
+  1773→In NexHire it is applied for outlier detection in interviewer scoring and for normalising candidate scores before they are combined into a composite hiring-suitability index, ensuring that no single round disproportionately dominates the final ranking due to scale differences.
+  1774→
+  1775→\subsubsection{CorrelationCoefficient}
+  1776→\noindent
+  1777→Understanding whether higher interview scores genuinely predict hiring success requires measuring the statistical relationship between two numeric series. This function computes the Pearson correlation coefficient $r$ from two equal-length comma-separated value strings, returning $r \in [-1,\,1]$, where $1$ indicates perfect positive correlation and $-1$ perfect negative correlation.
+  1778→
+  1779→It drives the \texttt{vw\_InterviewScoreVsDecision} view and is used in experience-versus-salary correlation analysis, giving data analysts and HR leaders an evidence-based foundation for validating or revising the weighting of interview components in the overall candidate evaluation model.
+  1780→
+  1781→% ============================================================
+  1782→\subsection{Document Parsing}
+  1783→% ============================================================
+  1784→
+  1785→\subsubsection{ExtractTextFromPDF}
+  1786→\noindent
+  1787→Resume files submitted as PDFs are stored as \texttt{VARBINARY(MAX)} blobs, which are opaque to standard SQL queries. This function decodes the raw bytes as Latin-1 text and scans the PDF stream for text operators --- literal strings (\texttt{Tj}) and hex-encoded strings --- concatenating all found text spans into a single \texttt{NVARCHAR(MAX)} result without requiring an external PDF library.
+  1788→
+  1789→The extracted text is written to \texttt{Candidates.ResumeText} and then passed to NLP functions such as \texttt{ExtractSkills} and \texttt{ExtractYearsOfExperience}. Because the approach relies on regex scanning rather than a full PDF parser, it works best on text-layer PDFs; scanned image PDFs will produce empty results and should be pre-processed with OCR before ingestion.
+  1790→
+  1791→\subsubsection{ExtractTextFromDocx}
+  1792→\noindent
+  1793→Word documents use the Open Office XML format, which is a ZIP archive containing XML files. This function interprets the binary blob as UTF-8, locates all \texttt{<w:t>} XML elements using a regex, concatenates their content, and normalises whitespace to produce a clean plain-text representation of the document body.
+  1794→
+  1795→Like its PDF counterpart it writes to \texttt{Candidates.ResumeText} via \texttt{sp\_ProcessCandidateResume}, which selects between the two parsers based on the file extension stored in \texttt{ResumeFileName}. The XML parsing overhead is moderate and batch processing is recommended during off-peak hours for bulk resume imports.
+  1796→
+  1797→\subsubsection{ExtractYearsOfExperience}
+  1798→\noindent
+  1799→Automatically populating \texttt{YearsOfExperience} from resume text eliminates a common source of data-entry inconsistency. This function applies three complementary pattern-matching strategies: explicit mentions such as \textit{``5 years experience''}, labelled lines such as \textit{``Experience: 5 years''}, and date-range arithmetic such as \textit{``2018--2023''}. It returns the maximum value found across all strategies.
+
+[showing lines 1200-1799 of 2687; use offset=1800 with limit to continue reading]
