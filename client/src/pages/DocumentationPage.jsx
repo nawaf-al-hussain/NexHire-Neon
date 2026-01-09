@@ -4,9 +4,12 @@ import {
     ArrowLeft, BookOpen, Database, Code2, Table, Eye, Zap, Shield,
     Layers, Server, Cpu, Search, ChevronDown, ChevronRight,
     Boxes, GitBranch, FileText, Users, Lock, TrendingUp,
-    ArrowRight, CheckCircle, X
+    ArrowRight, CheckCircle, X, Network, GitMerge, Workflow,
+    Brain, Link2, Award, GraduationCap, FileSearch, Mail,
+    Calendar, Globe, BarChart, Sparkles, Lightbulb
 } from 'lucide-react';
 import { docData } from '../data/docData';
+import { enrichedDocs } from '../data/enrichedDocs';
 
 const DocumentationPage = () => {
     const [activeSection, setActiveSection] = useState('overview');
@@ -40,10 +43,14 @@ const DocumentationPage = () => {
         { id: 'overview', label: 'Overview', icon: BookOpen },
         { id: 'architecture', label: 'Architecture', icon: Layers },
         { id: 'roles', label: 'User Roles', icon: Users },
-        { id: 'features', label: 'Features', icon: Zap },
+        { id: 'er-diagrams', label: 'ER Diagrams', icon: Network },
+        { id: 'core-features', label: 'Core Features', icon: Workflow },
+        { id: 'advanced-features', label: 'Advanced Features', icon: Brain },
+        { id: 'features', label: 'Feature Catalog', icon: Zap },
         { id: 'tables', label: 'Database Tables', icon: Table },
         { id: 'views', label: 'Views', icon: Eye },
         { id: 'procedures', label: 'Stored Procedures', icon: Code2 },
+        { id: 'clr', label: 'CLR Functions', icon: Cpu },
         { id: 'triggers', label: 'Triggers', icon: GitBranch },
         { id: 'security', label: 'Security', icon: Lock },
         { id: 'deployment', label: 'Deployment', icon: Server },
@@ -220,6 +227,39 @@ const DocumentationPage = () => {
                                         </div>
                                     ))}
                                 </div>
+
+                                {/* Architectural Decisions */}
+                                <div className="mt-6 pt-6 border-t border-[var(--border-primary)]">
+                                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                        <Layers size={15} className="text-[var(--accent)]" /> Key Architectural Decisions
+                                    </h4>
+                                    <div className="space-y-2">
+                                        {enrichedDocs.architecturalDecisions.map((d, i) => (
+                                            <div key={i} className="flex items-start gap-3 p-3 border border-[var(--border-primary)]" style={{ backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                                                <CheckCircle size={14} className="text-[var(--success)] shrink-0 mt-0.5" />
+                                                <div>
+                                                    <span className="text-sm font-semibold">{d.decision}</span>
+                                                    <span className="text-xs text-[var(--text-muted)] ml-2">— {d.rationale}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* System Scope */}
+                                <div className="mt-6 pt-6 border-t border-[var(--border-primary)]">
+                                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                        <Boxes size={15} className="text-[var(--accent)]" /> System Scope
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {enrichedDocs.systemScope.map((s, i) => (
+                                            <div key={i} className="p-4 border border-[var(--border-primary)]" style={{ backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                                                <div className="text-sm font-semibold mb-1">{s.title}</div>
+                                                <p className="text-[11px] text-[var(--text-muted)]" style={{ lineHeight: 1.5 }}>{s.desc}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
@@ -327,9 +367,244 @@ const DocumentationPage = () => {
                             </div>
                         </section>
 
+                        {/* ============================================
+                            ER DIAGRAMS — with images
+                            ============================================ */}
+                        <section id="section-er-diagrams" className="scroll-mt-20">
+                            <SectionHeader icon={Network} title="Entity-Relationship Diagrams" subtitle={`${enrichedDocs.erGroups.length} table groups with visual ER diagrams`} />
+                            <p className="text-sm text-[var(--text-secondary)] mb-4" style={{ lineHeight: 1.6 }}>
+                                The NexHire schema is organized into {enrichedDocs.erGroups.length} functional groups, each containing related tables
+                                that work together to power a specific domain of the recruitment platform. Click any diagram to view it full-size.
+                            </p>
+                            <div className="space-y-6">
+                                {enrichedDocs.erGroups.map((grp) => (
+                                    <div key={grp.group} className="border border-[var(--border-primary)] overflow-hidden" style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: 'var(--radius-xl)' }}>
+                                        <div className="p-6 border-b border-[var(--border-primary)]" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div
+                                                    className="w-8 h-8 flex items-center justify-center text-sm font-bold shrink-0"
+                                                    style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: 'var(--radius-sm)' }}
+                                                >
+                                                    {grp.group}
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-base font-semibold">{grp.title}</h4>
+                                                    <p className="text-[11px] text-[var(--text-muted)]">{grp.subtitle}</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>{grp.description}</p>
+                                        </div>
+                                        <div className="p-4 sm:p-6">
+                                            <img
+                                                src={`/images/docs/${grp.image}`}
+                                                alt={`ER Diagram — ${grp.title}`}
+                                                className="w-full rounded-lg border border-[var(--border-primary)]"
+                                                style={{ backgroundColor: 'var(--bg-tertiary)' }}
+                                                loading="lazy"
+                                            />
+                                            <div className="mt-4 flex flex-wrap gap-2">
+                                                <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] mr-1 pt-1">Tables:</span>
+                                                {grp.tables.map((t, i) => (
+                                                    <code
+                                                        key={i}
+                                                        className="text-[11px] font-mono px-2 py-1 rounded"
+                                                        style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--accent)' }}
+                                                    >
+                                                        {t}
+                                                    </code>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* ============================================
+                            CORE OPERATIONAL FEATURES — narrative
+                            ============================================ */}
+                        <section id="section-core-features" className="scroll-mt-20">
+                            <SectionHeader icon={Workflow} title="Core Operational Features" subtitle={`${enrichedDocs.coreFeatures.length} foundational features that power the hiring pipeline`} />
+                            <div className="space-y-4">
+                                {enrichedDocs.coreFeatures.map((feat) => {
+                                    const cardId = `core-${feat.id}`;
+                                    const isExpanded = expandedCards[cardId];
+                                    return (
+                                        <div
+                                            key={feat.id}
+                                            className="border border-[var(--border-primary)] overflow-hidden"
+                                            style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: 'var(--radius-xl)' }}
+                                        >
+                                            <button
+                                                onClick={() => toggleCard(cardId)}
+                                                className="w-full flex items-center justify-between gap-3 p-5 text-left hover:bg-[var(--bg-accent)] transition-colors"
+                                            >
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div
+                                                        className="w-9 h-9 flex items-center justify-center shrink-0"
+                                                        style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: 'var(--radius-md)' }}
+                                                    >
+                                                        <Workflow size={16} strokeWidth={1.75} />
+                                                    </div>
+                                                    <h4 className="text-sm font-semibold">{feat.title}</h4>
+                                                </div>
+                                                {isExpanded ? <ChevronDown size={16} className="text-[var(--text-muted)] shrink-0" /> : <ChevronRight size={16} className="text-[var(--text-muted)] shrink-0" />}
+                                            </button>
+                                            {isExpanded && (
+                                                <div className="px-5 pb-5 space-y-3 border-t border-[var(--border-primary)] pt-4">
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--danger)] mb-1">Problem</div>
+                                                        <p className="text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>{feat.problem}</p>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--success)] mb-1">Solution</div>
+                                                        <p className="text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>{feat.solution}</p>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent)] mb-1">Implementation</div>
+                                                        <p className="text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>{feat.implementation}</p>
+                                                    </div>
+                                                    {feat.statusTable && (
+                                                        <div className="mt-3 overflow-x-auto">
+                                                            <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] mb-2">State Machine Transitions</div>
+                                                            <table className="w-full text-xs">
+                                                                <thead>
+                                                                    <tr className="border-b border-[var(--border-primary)]">
+                                                                        <th className="text-left py-2 pr-3 text-[10px] font-bold uppercase text-[var(--text-muted)]">ID</th>
+                                                                        <th className="text-left py-2 pr-3 text-[10px] font-bold uppercase text-[var(--text-muted)]">Status</th>
+                                                                        <th className="text-left py-2 pr-3 text-[10px] font-bold uppercase text-[var(--text-muted)]">Terminal</th>
+                                                                        <th className="text-left py-2 text-[10px] font-bold uppercase text-[var(--text-muted)]">Valid Next</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {feat.statusTable.map((s, i) => (
+                                                                        <tr key={i} className="border-b border-[var(--border-primary)]">
+                                                                            <td className="py-2 pr-3 tabular-nums">{s.id}</td>
+                                                                            <td className="py-2 pr-3 font-medium">{s.name}</td>
+                                                                            <td className="py-2 pr-3">
+                                                                                {s.terminal ? <X size={12} className="text-[var(--danger)]" /> : <CheckCircle size={12} className="text-[var(--success)]" />}
+                                                                            </td>
+                                                                            <td className="py-2 text-[var(--text-muted)]">{s.next}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        {/* ============================================
+                            ADVANCED FEATURES — narrative with formulas
+                            ============================================ */}
+                        <section id="section-advanced-features" className="scroll-mt-20">
+                            <SectionHeader icon={Brain} title="Advanced & Analytics Features" subtitle={`${enrichedDocs.advancedFeatures.length} AI-driven and intelligent features`} />
+                            <div className="space-y-4">
+                                {enrichedDocs.advancedFeatures.map((feat) => {
+                                    const cardId = `adv-${feat.id}`;
+                                    const isExpanded = expandedCards[cardId];
+                                    const iconMap = {
+                                        'ghosting-prediction': TrendingUp,
+                                        'predictive-hiring': Brain,
+                                        'blockchain-verification': Link2,
+                                        'skill-verification': Award,
+                                        'gamification': Sparkles,
+                                        'learning-paths': GraduationCap,
+                                        'resume-quality': FileSearch,
+                                        'document-extraction': FileText,
+                                    };
+                                    const Icon = iconMap[feat.id] || Brain;
+                                    return (
+                                        <div
+                                            key={feat.id}
+                                            className="border border-[var(--border-primary)] overflow-hidden"
+                                            style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: 'var(--radius-xl)' }}
+                                        >
+                                            <button
+                                                onClick={() => toggleCard(cardId)}
+                                                className="w-full flex items-center justify-between gap-3 p-5 text-left hover:bg-[var(--bg-accent)] transition-colors"
+                                            >
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div
+                                                        className="w-9 h-9 flex items-center justify-center shrink-0"
+                                                        style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: 'var(--radius-md)' }}
+                                                    >
+                                                        <Icon size={16} strokeWidth={1.75} />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <h4 className="text-sm font-semibold">{feat.title}</h4>
+                                                        <p className="text-[11px] text-[var(--text-muted)] truncate">{feat.problem}</p>
+                                                    </div>
+                                                </div>
+                                                {isExpanded ? <ChevronDown size={16} className="text-[var(--text-muted)] shrink-0" /> : <ChevronRight size={16} className="text-[var(--text-muted)] shrink-0" />}
+                                            </button>
+                                            {isExpanded && (
+                                                <div className="px-5 pb-5 space-y-3 border-t border-[var(--border-primary)] pt-4">
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--danger)] mb-1">Problem</div>
+                                                        <p className="text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>{feat.problem}</p>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--success)] mb-1">Solution</div>
+                                                        <p className="text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>{feat.solution}</p>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent)] mb-1">Implementation</div>
+                                                        <p className="text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>{feat.implementation}</p>
+                                                    </div>
+                                                    {feat.formula && (
+                                                        <div>
+                                                            <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] mb-1">Formula</div>
+                                                            <pre className="p-3 rounded-lg text-[11px] font-mono overflow-x-auto whitespace-pre-wrap" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--accent)' }}>
+                                                                {feat.formula}
+                                                            </pre>
+                                                        </div>
+                                                    )}
+                                                    {feat.riskLevels && (
+                                                        <div>
+                                                            <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] mb-2">Risk Classification</div>
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                                                {feat.riskLevels.map((r, i) => (
+                                                                    <div key={i} className="p-3 border border-[var(--border-primary)]" style={{ backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                                                                        <div className="text-[10px] text-[var(--text-muted)]">{r.range}</div>
+                                                                        <div className="text-sm font-semibold mt-0.5">{r.level}</div>
+                                                                        <div className="text-[11px] text-[var(--text-muted)] mt-1">{r.action}</div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {feat.images && (
+                                                        <div className="space-y-3 mt-2">
+                                                            <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)]">Screenshots</div>
+                                                            {feat.images.map((img, i) => (
+                                                                <img
+                                                                    key={i}
+                                                                    src={`/images/docs/${img}`}
+                                                                    alt={`${feat.title} screenshot ${i + 1}`}
+                                                                    className="w-full rounded-lg border border-[var(--border-primary)]"
+                                                                    style={{ backgroundColor: 'var(--bg-tertiary)' }}
+                                                                    loading="lazy"
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
                         {/* Features Section */}
                         <section id="section-features" className="scroll-mt-20">
-                            <SectionHeader icon={Zap} title="Features" subtitle={`${stats.features} features across ${stats.categories} categories`} />
+                            <SectionHeader icon={Zap} title="Feature Catalog" subtitle={`${stats.features} features across ${stats.categories} categories — searchable`} />
                             <div className="mb-4">
                                 <div
                                     className="flex items-center gap-2 px-4 py-2.5 border border-[var(--border-primary)]"
@@ -527,6 +802,62 @@ const DocumentationPage = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </section>
+
+                        {/* ============================================
+                            CLR FUNCTIONS — .NET integration
+                            ============================================ */}
+                        <section id="section-clr" className="scroll-mt-20">
+                            <SectionHeader icon={Cpu} title="CLR Functions" subtitle={`${enrichedDocs.clrFunctions.reduce((sum, c) => sum + c.functions.length, 0)} .NET functions across ${enrichedDocs.clrFunctions.length} categories`} />
+                            <p className="text-sm text-[var(--text-secondary)] mb-4" style={{ lineHeight: 1.6 }}>
+                                NexHire integrates .NET CLR (Common Language Runtime) functions directly into the database layer,
+                                enabling computationally expensive operations — sentiment analysis, fuzzy string matching,
+                                timezone conversion, PDF parsing — to run inside SQL Server for maximum performance.
+                            </p>
+                            <div className="space-y-4">
+                                {enrichedDocs.clrFunctions.map((cat, ci) => {
+                                    const catIcons = {
+                                        'Email Validation': Mail,
+                                        'Security': Lock,
+                                        'String Similarity': GitMerge,
+                                        'Date & Time': Calendar,
+                                        'Timezone': Globe,
+                                        'Statistics': BarChart,
+                                        'Document Parsing': FileText,
+                                        'NLP': Brain,
+                                        'API Integration': Link2,
+                                    };
+                                    const CatIcon = catIcons[cat.category] || Cpu;
+                                    return (
+                                        <div key={ci} className="border border-[var(--border-primary)]" style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: 'var(--radius-xl)' }}>
+                                            <div className="p-5 border-b border-[var(--border-primary)]" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className="w-8 h-8 flex items-center justify-center shrink-0"
+                                                        style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: 'var(--radius-sm)' }}
+                                                    >
+                                                        <CatIcon size={15} strokeWidth={1.75} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold">{cat.category}</h4>
+                                                        <p className="text-[11px] text-[var(--text-muted)]">{cat.functions.length} function{cat.functions.length !== 1 ? 's' : ''}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="divide-y divide-[var(--border-primary)]">
+                                                {cat.functions.map((fn, fi) => (
+                                                    <div key={fi} className="p-4 flex items-start gap-3">
+                                                        <code className="text-xs font-mono font-semibold shrink-0 pt-0.5" style={{ color: 'var(--accent)', minWidth: '180px' }}>
+                                                            {fn.name}()
+                                                        </code>
+                                                        <p className="text-xs flex-1" style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>{fn.desc}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </section>
 
