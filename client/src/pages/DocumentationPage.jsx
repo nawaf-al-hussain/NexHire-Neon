@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { docData } from '../data/docData';
 import { enrichedDocs } from '../data/enrichedDocs';
+import FlowchartSection from '../components/ui/FlowchartSection';
 
 const DocumentationPage = () => {
     const [activeSection, setActiveSection] = useState('overview');
@@ -43,6 +44,7 @@ const DocumentationPage = () => {
         { id: 'overview', label: 'Overview', icon: BookOpen },
         { id: 'architecture', label: 'Architecture', icon: Layers },
         { id: 'roles', label: 'User Roles', icon: Users },
+        { id: 'flowchart', label: 'Flowchart', icon: GitBranch },
         { id: 'er-diagrams', label: 'ER Diagrams', icon: Network },
         { id: 'core-features', label: 'Core Features', icon: Workflow },
         { id: 'advanced-features', label: 'Advanced Features', icon: Brain },
@@ -366,6 +368,11 @@ const DocumentationPage = () => {
                                 ))}
                             </div>
                         </section>
+
+                        {/* ============================================
+                            FLOWCHART — full system action flow
+                            ============================================ */}
+                        <FlowchartSection />
 
                         {/* ============================================
                             ER DIAGRAMS — with images
