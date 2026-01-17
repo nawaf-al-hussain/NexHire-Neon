@@ -148,7 +148,7 @@ const FlowchartSection = () => {
             {/* Controls */}
             <div className="flex items-center justify-between mb-3">
                 <p className="text-xs text-[var(--text-muted)]">
-                    💡 Scroll horizontally to explore the full diagram. Use zoom controls to adjust.
+                    💡 Scroll vertically and horizontally to explore the full diagram. Use zoom controls to adjust. Dotted lines connect platform features (chatbot, notifications, theme) to all dashboards.
                 </p>
                 <div className="flex items-center gap-2">
                     <button
@@ -228,13 +228,15 @@ const FlowchartSection = () => {
 
             {/* Stats below diagram */}
             {status === 'rendered' && (
-                <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-7 gap-2 text-center">
                     {[
-                        { label: 'Admin Nodes', count: 17, color: '#ff6b6b' },
-                        { label: 'Recruiter Nodes', count: 28, color: '#4dabf7' },
-                        { label: 'Candidate Nodes', count: 25, color: '#51cf66' },
-                        { label: 'Process Nodes', count: 18, color: '#ffd43b' },
-                        { label: 'Security Nodes', count: 3, color: '#ff6b9d' },
+                        { label: 'Entry', count: 5, color: '#94a3b8' },
+                        { label: 'Security', count: 3, color: '#ff6b9d' },
+                        { label: 'Admin', count: 24, color: '#ff6b6b' },
+                        { label: 'Recruiter', count: 44, color: '#4dabf7' },
+                        { label: 'Candidate', count: 33, color: '#51cf66' },
+                        { label: 'Process', count: 18, color: '#ffd43b' },
+                        { label: 'Platform', count: 3, color: '#a78bfa' },
                     ].map((s, i) => (
                         <div key={i} className="p-2 border border-[var(--border-primary)]" style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)' }}>
                             <div className="w-2 h-2 rounded-full mx-auto mb-1" style={{ backgroundColor: s.color }} />
