@@ -3,11 +3,12 @@
 // Source: NexHire Documentation For Collaboration (main.tex, Section 7)
 //         + expanded to cover all recruiter/candidate/admin feature pages.
 //
-// Layout: TD (top-down) with category groupings to keep the tree
-// deep rather than wide. Each role menu branches to ~5 category nodes
-// instead of 20+ feature pages directly.
+// Layout: LR (left-to-right) with category groupings.
+// LR stacks the 3 role branches vertically (Admin/Recruiter/Candidate
+// as horizontal bands), producing a more balanced aspect ratio than TD
+// which placed all category siblings side-by-side making it 4:1 wide.
 
-export const flowchartMermaid = `flowchart TD
+export const flowchartMermaid = `flowchart LR
     Start(["User Visits System"]) --> Login{"Login / Signup"}
     Login -- New User --> Signup["Sign Up Form"]
     Login -- Existing User --> Auth["Authentication"]
