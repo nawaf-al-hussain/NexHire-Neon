@@ -52,6 +52,7 @@ const FlowchartSection = () => {
     const [status, setStatus] = useState('idle'); // idle | loading | rendered | error
     const [errorMsg, setErrorMsg] = useState('');
     const [zoom, setZoom] = useState(0.75);
+    const [svgDims, setSvgDims] = useState({ w: 0, h: 0 });
     const containerRef = useRef(null);
     const renderId = useRef(0);
 
@@ -79,6 +80,14 @@ const FlowchartSection = () => {
                 if (svgEl) {
                     svgEl.style.maxWidth = 'none';
                     svgEl.style.height = 'auto';
+                    // Apply zoom transform to the SVG itself (not the container)
+                    // so the container's layout size matches the visual size
+                    svgEl.style.transformOrigin = 'top left';
+                    svgEl.style.transition = 'transform 0.2s ease-out';
+                    // Capture dimensions for sizing the scrollable container
+                    const w = parseFloat(svgEl.getAttribute('width')) || 0;
+                    const h = parseFloat(svgEl.getAttribute('height')) || 0;
+                    setSvgDims({ w, h });
                 }
             }
             setStatus('rendered');
@@ -89,6 +98,17 @@ const FlowchartSection = () => {
             setStatus('error');
         }
     }, []);
+
+    // Apply zoom transform to the SVG element directly (not the container)
+    // so the container's layout size matches the visual size exactly
+    useEffect(() => {
+        if (containerRef.current && status === 'rendered') {
+            const svgEl = containerRef.current.querySelector('svg');
+            if (svgEl) {
+                svgEl.style.transform = `scale(${zoom})`;
+            }
+        }
+    }, [zoom, status, svgDims]);
 
     // Render when section becomes visible (via IntersectionObserver)
     useEffect(() => {
@@ -184,7 +204,7 @@ const FlowchartSection = () => {
                 style={{
                     backgroundColor: 'var(--bg-tertiary)',
                     borderRadius: 'var(--radius-xl)',
-                    maxHeight: '75vh',
+                    height: '75vh',
                     position: 'relative',
                 }}
             >
@@ -216,12 +236,14 @@ const FlowchartSection = () => {
                 <div
                     ref={containerRef}
                     style={{
-                        transform: `scale(${zoom})`,
-                        transformOrigin: 'top left',
-                        transition: 'transform 0.2s ease-out',
-                        padding: '2rem',
-                        minHeight: status === 'rendered' ? 'auto' : '0',
+                        display: status === 'rendered' ? 'inline-block' : 'block',
+                        padding: '1rem',
+                        margin: 0,
                         opacity: status === 'rendered' ? 1 : 0,
+                        // Container layout size = scaled SVG dims + padding
+                        // This makes the scrollbar match the visual content
+                        width: status === 'rendered' && svgDims.w ? `${svgDims.w * zoom + 32}px` : 'auto',
+                        height: status === 'rendered' && svgDims.h ? `${svgDims.h * zoom + 32}px` : 'auto',
                     }}
                 />
             </div>
