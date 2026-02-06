@@ -35,9 +35,11 @@ const SalaryTransparencyAnalytics = () => {
  setData(rawData);
 
  // Calculate summary stats
+ // IsTransparent may be null (job has no salary range set).
+ // Treat null/false as "not transparent" (hidden).
  if (rawData.length > 0) {
- const transparent = rawData.filter(d => d.IsTransparent === true || d.IsTransparent === 1);
- const hidden = rawData.filter(d => d.IsTransparent === false || d.IsTransparent === 0);
+ const transparent = rawData.filter(d => d.IsTransparent === true || d.IsTransparent === 1 || d.istransparent === true || d.istransparent === 1);
+ const hidden = rawData.filter(d => !d.IsTransparent || d.IsTransparent === false || d.IsTransparent === 0 || d.istransparent === false || d.istransparent === 0 || d.istransparent === null);
 
  const avgTransApps = transparent.length > 0
  ? transparent.reduce((sum, d) => sum + (d.ApplicationCount || d.TotalApplications || 0), 0) / transparent.length

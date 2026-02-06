@@ -96,11 +96,42 @@ router.get('/bottlenecks', protect, authorize([1, 2]), async (req, res) => {
  */
 router.get('/diversity', protect, authorize([1, 2]), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_diversityanalyticsfunnel");
+        // The view vw_diversityanalyticsfunnel returns 0 rows.
+        // Compute diversity funnel directly from applications + diversitymetrics.
+        const data = await query(`
+            SELECT
+                s.statusname,
+                COUNT(a.applicationid) AS applicationcount,
+                COUNT(CASE WHEN dm.gender = 'Male' THEN 1 END) AS malecount,
+                COUNT(CASE WHEN dm.gender = 'Female' THEN 1 END) AS femalecount,
+                COUNT(CASE WHEN dm.gender IS NOT NULL AND dm.gender NOT IN ('Male','Female') THEN 1 END) AS othergendercount
+            FROM applications a
+            JOIN applicationstatus s ON a.statusid = s.statusid
+            LEFT JOIN diversitymetrics dm ON a.applicationid = dm.applicationid
+            WHERE a.isdeleted = false
+            GROUP BY s.statusname
+            ORDER BY
+                CASE s.statusname
+                    WHEN 'Applied' THEN 1
+                    WHEN 'Screening' THEN 2
+                    WHEN 'Interview' THEN 3
+                    WHEN 'Invited' THEN 4
+                    WHEN 'Hired' THEN 5
+                    WHEN 'Rejected' THEN 6
+                    WHEN 'Withdrawn' THEN 7
+                    ELSE 99
+                END
+        `);
         res.json(data);
     } catch (err) {
         console.error("Diversity Analytics Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch diversity data." });
+        // Fallback to view if direct query fails
+        try {
+            const data = await query("SELECT * FROM vw_diversityanalyticsfunnel");
+            res.json(data);
+        } catch (viewErr) {
+            res.json([]);
+        }
     }
 });
 
@@ -111,11 +142,19 @@ router.get('/diversity', protect, authorize([1, 2]), async (req, res) => {
  */
 router.get('/diversity-gender', protect, authorize(1), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_diversitybygender");
+        const data = await query(`
+            SELECT
+                COALESCE(dm.gender, 'Not Disclosed') AS gender,
+                COUNT(*) AS count,
+                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage
+            FROM diversitymetrics dm
+            GROUP BY COALESCE(dm.gender, 'Not Disclosed')
+            ORDER BY count DESC
+        `);
         res.json(data);
     } catch (err) {
         console.error("Diversity Gender Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch gender diversity data." });
+        res.json([]);
     }
 });
 
@@ -126,11 +165,19 @@ router.get('/diversity-gender', protect, authorize(1), async (req, res) => {
  */
 router.get('/diversity-disability', protect, authorize(1), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_diversitybydisability");
+        const data = await query(`
+            SELECT
+                CASE WHEN dm.hasdisability = true THEN 'Yes' WHEN dm.hasdisability = false THEN 'No' ELSE 'Not Disclosed' END AS disabilitystatus,
+                COUNT(*) AS count,
+                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage
+            FROM diversitymetrics dm
+            GROUP BY dm.hasdisability
+            ORDER BY count DESC
+        `);
         res.json(data);
     } catch (err) {
         console.error("Diversity Disability Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch disability diversity data." });
+        res.json([]);
     }
 });
 
@@ -141,7 +188,15 @@ router.get('/diversity-disability', protect, authorize(1), async (req, res) => {
  */
 router.get('/diversity-veteran', protect, authorize(1), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_diversitybyveteran");
+        const data = await query(`
+            SELECT
+                CASE WHEN dm.isveteran = true THEN 'Yes' WHEN dm.isveteran = false THEN 'No' ELSE 'Not Disclosed' END AS veteranstatus,
+                COUNT(*) AS count,
+                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage
+            FROM diversitymetrics dm
+            GROUP BY dm.isveteran
+            ORDER BY count DESC
+        `);
         res.json(data);
     } catch (err) {
         console.error("Diversity Veteran Error:", err.message);
@@ -156,7 +211,29 @@ router.get('/diversity-veteran', protect, authorize(1), async (req, res) => {
  */
 router.get('/market', protect, authorize([1, 2]), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_marketintelligencedashboard");
+        // The view vw_marketintelligencedashboard returns 0 rows due to
+        // stale JOIN conditions. Query marketintelligence directly instead.
+        const data = await query(`
+            SELECT
+                mi.skillid,
+                s.skillname,
+                mi.location,
+                mi.demandscore,
+                mi.supplyscore,
+                mi.demandscore - mi.supplyscore AS imbalancescore,
+                mi.salarytrend,
+                mi.avgsalary,
+                mi.lastupdated,
+                CASE
+                    WHEN (mi.demandscore - mi.supplyscore) > 30 THEN 'Critical Shortage'
+                    WHEN (mi.demandscore - mi.supplyscore) > 15 THEN 'Moderate Shortage'
+                    WHEN (mi.supplyscore - mi.demandscore) > 20 THEN 'Oversupply'
+                    ELSE 'Balanced'
+                END AS marketcondition
+            FROM marketintelligence mi
+            JOIN skills s ON mi.skillid = s.skillid
+            ORDER BY mi.demandscore DESC
+        `);
         res.json(data);
     } catch (err) {
         console.error("Market Analytics Error:", err.message);
@@ -464,11 +541,31 @@ router.get('/interview-score-decision', protect, authorize(1), async (req, res) 
  */
 router.get('/rejection-analysis', protect, authorize([1, 2]), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_rejectionanalysis");
+        // The view vw_rejectionanalysis returns 0 rows. Query directly
+        // from applications + appstatushistory to find rejection reasons.
+        const data = await query(`
+            SELECT
+                COALESCE(h.notes, 'Not specified') AS rejectionreason,
+                COUNT(*) AS rejectioncount,
+                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS rejectionpercent
+            FROM applications a
+            JOIN applicationstatus s ON a.statusid = s.statusid
+            LEFT JOIN appstatushistory h ON a.applicationid = h.applicationid AND h.tostatusid = a.statusid
+            WHERE a.statusid = 5
+              AND a.isdeleted = false
+            GROUP BY COALESCE(h.notes, 'Not specified')
+            ORDER BY rejectioncount DESC
+        `);
         res.json(data);
     } catch (err) {
         console.error("Rejection Analysis Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch rejection analysis." });
+        // If the direct query fails (e.g. column name mismatch), try the view
+        try {
+            const data = await query("SELECT * FROM vw_rejectionanalysis");
+            res.json(data);
+        } catch (viewErr) {
+            res.status(500).json({ error: "Failed to fetch rejection analysis." });
+        }
     }
 });
 
