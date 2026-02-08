@@ -167,11 +167,11 @@ router.get('/diversity-disability', protect, authorize(1), async (req, res) => {
     try {
         const data = await query(`
             SELECT
-                CASE WHEN dm.hasdisability = true THEN 'Yes' WHEN dm.hasdisability = false THEN 'No' ELSE 'Not Disclosed' END AS disabilitystatus,
+                CASE WHEN dm.disabilitystatus = true THEN 'Yes' WHEN dm.disabilitystatus = false THEN 'No' ELSE 'Not Disclosed' END AS disabilitystatus,
                 COUNT(*) AS count,
                 ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage
             FROM diversitymetrics dm
-            GROUP BY dm.hasdisability
+            GROUP BY dm.disabilitystatus
             ORDER BY count DESC
         `);
         res.json(data);
@@ -190,11 +190,11 @@ router.get('/diversity-veteran', protect, authorize(1), async (req, res) => {
     try {
         const data = await query(`
             SELECT
-                CASE WHEN dm.isveteran = true THEN 'Yes' WHEN dm.isveteran = false THEN 'No' ELSE 'Not Disclosed' END AS veteranstatus,
+                CASE WHEN dm.veteranstatus = true THEN 'Yes' WHEN dm.veteranstatus = false THEN 'No' ELSE 'Not Disclosed' END AS veteranstatus,
                 COUNT(*) AS count,
                 ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage
             FROM diversitymetrics dm
-            GROUP BY dm.isveteran
+            GROUP BY dm.veteranstatus
             ORDER BY count DESC
         `);
         res.json(data);
@@ -542,7 +542,7 @@ router.get('/interview-score-decision', protect, authorize(1), async (req, res) 
 router.get('/rejection-analysis', protect, authorize([1, 2]), async (req, res) => {
     try {
         // The view vw_rejectionanalysis returns 0 rows. Query directly
-        // from applications + appstatushistory to find rejection reasons.
+        // from applications + applicationstatushistory to find rejection reasons.
         const data = await query(`
             SELECT
                 COALESCE(h.notes, 'Not specified') AS rejectionreason,
@@ -550,7 +550,7 @@ router.get('/rejection-analysis', protect, authorize([1, 2]), async (req, res) =
                 ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS rejectionpercent
             FROM applications a
             JOIN applicationstatus s ON a.statusid = s.statusid
-            LEFT JOIN appstatushistory h ON a.applicationid = h.applicationid AND h.tostatusid = a.statusid
+            LEFT JOIN applicationstatushistory h ON a.applicationid = h.applicationid AND h.tostatusid = a.statusid
             WHERE a.statusid = 5
               AND a.isdeleted = false
             GROUP BY COALESCE(h.notes, 'Not specified')
