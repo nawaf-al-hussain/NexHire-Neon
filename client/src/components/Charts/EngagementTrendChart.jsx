@@ -1,4 +1,5 @@
 import React from 'react';
+import { Activity } from 'lucide-react';
 import {
  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -9,6 +10,32 @@ import {
  * Token-based colors so it works in both light and dark themes.
  */
 const EngagementTrendChart = ({ data }) => {
+ // Filter to candidates who actually have interviews scheduled (otherwise
+ // the chart is cluttered with 55 candidates all at 0%). Limit to top 20
+ // by engagement rate for readability.
+ const chartData = (data || [])
+ .filter(d => Number(d.InterviewsScheduled) > 0)
+ .slice(0, 20);
+
+ // If no candidates have interviews, show a friendly empty state
+ if (chartData.length === 0) {
+ return (
+ <div
+ className="h-[350px] w-full flex flex-col items-center justify-center"
+ role="img"
+ aria-label="No candidate engagement data available"
+ >
+ <Activity size={32} className="text-[var(--text-muted)] opacity-40 mb-3" />
+ <p className="text-sm font-medium text-[var(--text-muted)]">
+ No interview data yet
+ </p>
+ <p className="text-xs text-[var(--text-muted)] opacity-70 mt-1">
+ Engagement metrics will appear once interviews are scheduled
+ </p>
+ </div>
+ );
+ }
+
  return (
  <div
  className="h-[350px] w-full"
@@ -17,7 +44,7 @@ const EngagementTrendChart = ({ data }) => {
  >
  <ResponsiveContainer width="100%" height="100%">
  <AreaChart
- data={data}
+ data={chartData}
  margin={{ top: 16, right: 30, left: 10, bottom: 20 }}
  >
  <defs>

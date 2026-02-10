@@ -646,11 +646,40 @@ router.get('/skill-gap', protect, authorize([1, 2]), async (req, res) => {
  */
 router.get('/candidate-engagement', protect, authorize([1, 2]), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_candidateengagement");
+        // The view vw_candidateengagement returns null EngagementRate for
+        // candidates with 0 interviews (division by zero). Compute directly
+        // and return 0 for those candidates so the chart can render them.
+        const data = await query(`
+            SELECT
+                c.candidateid,
+                c.fullname,
+                COUNT(DISTINCT i.scheduleid) AS interviewsscheduled,
+                COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) AS confirmedinterviews,
+                CASE
+                    WHEN COUNT(DISTINCT i.scheduleid) = 0 THEN 0
+                    ELSE ROUND(
+                        COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) * 100.0
+                        / COUNT(DISTINCT i.scheduleid),
+                        2
+                    )
+                END AS engagementrate
+            FROM candidates c
+            LEFT JOIN applications a ON c.candidateid = a.candidateid
+            LEFT JOIN interviewschedules i ON a.applicationid = i.applicationid
+            WHERE c.isdeleted = false
+            GROUP BY c.candidateid, c.fullname
+            ORDER BY engagementrate DESC, interviewsscheduled DESC
+        `);
         res.json(data);
     } catch (err) {
         console.error("Candidate Engagement Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch candidate engagement data." });
+        // Fallback to view if direct query fails
+        try {
+            const data = await query("SELECT * FROM vw_candidateengagement");
+            res.json(data);
+        } catch (viewErr) {
+            res.status(500).json({ error: "Failed to fetch candidate engagement data." });
+        }
     }
 });
 
