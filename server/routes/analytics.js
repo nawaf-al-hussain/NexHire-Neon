@@ -666,7 +666,6 @@ router.get('/candidate-engagement', protect, authorize([1, 2]), async (req, res)
             FROM candidates c
             LEFT JOIN applications a ON c.candidateid = a.candidateid
             LEFT JOIN interviewschedules i ON a.applicationid = i.applicationid
-            WHERE c.isdeleted = false
             GROUP BY c.candidateid, c.fullname
             ORDER BY engagementrate DESC, interviewsscheduled DESC
         `);
