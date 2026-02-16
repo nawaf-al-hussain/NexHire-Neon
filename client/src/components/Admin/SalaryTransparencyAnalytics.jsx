@@ -107,15 +107,19 @@ const SalaryTransparencyAnalytics = () => {
  const COLORS = ['#10b981', '#f59e0b', '#6366f1', '#8b5cf6'];
 
  // Application volume by job (top 10)
+ // The API doesn't return ApplicationCount directly — compute it from
+ // applicationspervacancy × vacancies, or fall back to a direct count.
+ // Since the view doesn't have ApplicationCount, we use applicationspervacancy
+ // as a proxy (it's the ratio of applications to vacancies).
  const applicationVolumeData = [...data]
- .sort((a, b) => (b.ApplicationCount || 0) - (a.ApplicationCount || 0))
- .slice(0, 10)
  .map(item => ({
  name: item.JobTitle?.substring(0, 15) || 'Unknown',
- applications: item.ApplicationCount || 0,
- transparent: item.IsTransparent ? 'Yes' : 'No',
- fill: item.IsTransparent ? '#10b981' : '#f59e0b'
- }));
+ applications: Number(item.applicationspervacancy) || Number(item.ApplicationsPerVacancy) || Number(item.ApplicationCount) || 0,
+ transparent: item.IsTransparent || item.istransparent ? 'Yes' : 'No',
+ fill: (item.IsTransparent || item.istransparent) ? '#10b981' : '#f59e0b'
+ }))
+ .sort((a, b) => b.applications - a.applications)
+ .slice(0, 10);
 
  const impactPercentage = summaryStats.avgAppsHidden > 0
  ? Math.round(((summaryStats.avgAppsTransparent - summaryStats.avgAppsHidden) / summaryStats.avgAppsHidden) * 100)
