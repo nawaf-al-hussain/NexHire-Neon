@@ -70,7 +70,8 @@ const DiversityGoals = () => {
  };
 
  const getProgressColor = (current, target) => {
- const percentage = (current / target) * 100;
+ const percentage = (Number(current) / Number(target)) * 100;
+ if (isNaN(percentage)) return 'text-[var(--danger)]';
  if (percentage >= 100) return 'text-[var(--success)]';
  if (percentage >= 70) return 'text-[var(--warning)]';
  return 'text-[var(--danger)]';
@@ -80,7 +81,10 @@ const DiversityGoals = () => {
  if (!goal.IsActive) {
  return <span className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-gray-500/10 text-[var(--text-muted)]">Inactive</span>;
  }
- const progress = (goal.CurrentPercentage / goal.TargetPercentage) * 100;
+ const progress = (Number(goal.CurrentPercentage) / Number(goal.TargetPercentage)) * 100;
+ if (isNaN(progress)) {
+ return <span className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-[var(--warning)]/10 text-[var(--warning)]">In Progress</span>;
+ }
  if (progress >= 100) {
  return <span className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-[var(--success)]/10 text-[var(--success)]">Achieved</span>;
  }
@@ -184,7 +188,7 @@ const DiversityGoals = () => {
  <span className="text-[11px] font-medium text-[var(--text-muted)]">Achieved</span>
  </div>
  <div className="text-2xl sm:text-3xl font-semibold text-[var(--success)]">
- {goals.filter(g => (g.CurrentPercentage / g.TargetPercentage) * 100 >= 100).length}
+ {goals.filter(g => (Number(g.CurrentPercentage) / Number(g.TargetPercentage)) * 100 >= 100).length}
  </div>
  </div>
 
@@ -194,7 +198,7 @@ const DiversityGoals = () => {
  <span className="text-[11px] font-medium text-[var(--text-muted)]">In Progress</span>
  </div>
  <div className="text-2xl sm:text-3xl font-semibold text-[var(--warning)]">
- {goals.filter(g => g.IsActive && (g.CurrentPercentage / g.TargetPercentage) * 100 < 100).length}
+ {goals.filter(g => g.IsActive && (Number(g.CurrentPercentage) / Number(g.TargetPercentage)) * 100 < 100).length}
  </div>
  </div>
 
@@ -219,7 +223,8 @@ const DiversityGoals = () => {
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
  {goals.map((goal) => {
- const progress = Math.min(100, (goal.CurrentPercentage / goal.TargetPercentage) * 100);
+ const progress = Math.min(100, (Number(goal.CurrentPercentage) / Number(goal.TargetPercentage)) * 100);
+ const safeProgress = isNaN(progress) ? 0 : progress;
  return (
  <div key={goal.GoalID} className="glass-card rounded-[var(--radius-xl)] p-6 border border-[var(--border-primary)]">
  <div className="flex items-center justify-between mb-4">
@@ -238,8 +243,8 @@ const DiversityGoals = () => {
  </div>
  <div className="w-full h-3 bg-[var(--bg-accent)] rounded-full overflow-hidden">
  <div
- className={`h-full rounded-full transition-all ${progress >= 100 ? 'bg-[var(--success)]' : progress >= 70 ? 'bg-[var(--warning)]' : 'bg-[var(--danger)]'}`}
- style={{ width: `${progress}%` }}
+ className={`h-full rounded-full transition-all ${safeProgress >= 100 ? 'bg-[var(--success)]' : safeProgress >= 70 ? 'bg-[var(--warning)]' : 'bg-[var(--danger)]'}`}
+ style={{ width: `${safeProgress}%` }}
  ></div>
  </div>
  </div>
