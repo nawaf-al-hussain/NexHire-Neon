@@ -126,14 +126,23 @@ const DiversityGoals = () => {
 
  {/* Diversity Analytics Charts - 3 Column Grid */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
- {/* Ethnicity Chart */}
+ {/* Hiring Funnel by Stage (uses diversity funnel data) */}
  <div className="glass-card rounded-[var(--radius-xl)] p-6 border border-[var(--border-primary)]">
  <div className="flex items-center gap-3 mb-4">
  <UsersRound className="w-5 h-5 text-[var(--success)]" />
- <h3 className="text-sm font-medium">By Ethnicity</h3>
+ <h3 className="text-sm font-medium">Hiring Funnel by Stage</h3>
  </div>
  {ethnicityData.length > 0 ? (
- <DiversityChart data={ethnicityData} />
+ <DiversityChart
+ data={ethnicityData.map(item => ({
+ Demographic: item.StatusName || item.statusname,
+ Count: Number(item.ApplicationCount || item.applicationcount) || 0,
+ Percentage: ethnicityData.length > 0
+ ? Math.round((Number(item.ApplicationCount || item.applicationcount) || 0) /
+ ethnicityData.reduce((sum, d) => sum + (Number(d.ApplicationCount || d.applicationcount) || 0), 0) * 100)
+ : 0
+ }))}
+ />
  ) : (
  <div className="h-[250px] flex items-center justify-center text-xs font-semibold text-[var(--text-muted)] opacity-50">
  No data
@@ -148,10 +157,16 @@ const DiversityGoals = () => {
  <h3 className="text-sm font-medium">By Gender</h3>
  </div>
  {genderData.length > 0 ? (
- <DiversityChart data={genderData} />
+ <DiversityChart
+ data={genderData.map(item => ({
+ Demographic: item.Gender || item.gender || 'Unknown',
+ Count: Number(item.Count || item.count) || 0,
+ Percentage: Number(item.Percentage || item.percentage) || 0
+ }))}
+ />
  ) : (
  <div className="h-[250px] flex items-center justify-center text-xs font-semibold text-[var(--text-muted)] opacity-50">
- No data
+ No demographic data seeded
  </div>
  )}
  </div>
@@ -163,10 +178,23 @@ const DiversityGoals = () => {
  <h3 className="text-sm font-medium">By Disability & Veteran</h3>
  </div>
  {disabilityData.length > 0 || veteranData.length > 0 ? (
- <DiversityChart data={[...disabilityData, ...veteranData]} />
+ <DiversityChart
+ data={[
+ ...disabilityData.map(item => ({
+ Demographic: 'Disability: ' + (item.DisabilityStatus || item.disabilitystatus || 'Unknown'),
+ Count: Number(item.Count || item.count) || 0,
+ Percentage: Number(item.Percentage || item.percentage) || 0
+ })),
+ ...veteranData.map(item => ({
+ Demographic: 'Veteran: ' + (item.VeteranStatus || item.veteranstatus || 'Unknown'),
+ Count: Number(item.Count || item.count) || 0,
+ Percentage: Number(item.Percentage || item.percentage) || 0
+ }))
+ ]}
+ />
  ) : (
  <div className="h-[250px] flex items-center justify-center text-xs font-semibold text-[var(--text-muted)] opacity-50">
- No data
+ No demographic data seeded
  </div>
  )}
  </div>
