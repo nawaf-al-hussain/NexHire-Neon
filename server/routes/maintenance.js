@@ -395,4 +395,119 @@ router.get('/view-definition/:viewName', protect, authorize(1), async (req, res)
     }
 });
 
+/**
+ * @route   POST /api/maintenance/seed-diversity-metrics
+ * @desc    Populate the diversitymetrics table with realistic demographic data
+ *          for all existing applications. Idempotent — clears existing rows first.
+ * @access  Private (Admin Only)
+ */
+router.post('/seed-diversity-metrics', protect, authorize(1), async (req, res) => {
+    const crypto = require('crypto');
+    try {
+        // 1. Clear existing data
+        await query('DELETE FROM diversitymetrics');
+
+        // 2. Fetch all application IDs
+        const apps = await query(`
+            SELECT a.applicationid
+            FROM applications a
+            WHERE a.isdeleted = false
+            ORDER BY a.applicationid
+        `);
+
+        if (apps.length === 0) {
+            return res.json({ message: 'No applications found.', inserted: 0 });
+        }
+
+        // 3. Demographic distributions (realistic tech-industry weights)
+        const GENDERS = [
+            { v: 'Male', w: 55 }, { v: 'Female', w: 40 },
+            { v: 'Non-Binary', w: 3 }, { v: 'Prefer not to say', w: 2 }
+        ];
+        const ETHNICITIES = [
+            { v: 'Asian', w: 35 }, { v: 'White', w: 30 },
+            { v: 'Hispanic or Latino', w: 15 }, { v: 'Black or African American', w: 12 },
+            { v: 'Middle Eastern', w: 4 }, { v: 'Two or More Races', w: 3 },
+            { v: 'Prefer not to say', w: 1 }
+        ];
+        const EDUCATION = [
+            { v: 'High School', w: 10 }, { v: 'Associate Degree', w: 15 },
+            { v: 'Bachelor Degree', w: 45 }, { v: 'Master Degree', w: 20 },
+            { v: 'PhD', w: 5 }, { v: 'Bootcamp', w: 5 }
+        ];
+
+        const pick = (items) => {
+            const total = items.reduce((s, i) => s + i.w, 0);
+            let r = Math.random() * total;
+            for (const item of items) { r -= item.w; if (r <= 0) return item.v; }
+            return items[0].v;
+        };
+        const maybe = (p) => Math.random() < p;
+
+        // 4. Generate and insert in batches
+        let inserted = 0;
+        const batchSize = 25;
+
+        for (let i = 0; i < apps.length; i += batchSize) {
+            const batch = apps.slice(i, i + batchSize);
+            const values = [];
+            const params = [];
+            let pi = 1;
+
+            for (const app of batch) {
+                const gender = pick(GENDERS);
+                const ethnicity = pick(ETHNICITIES);
+                const educationLevel = pick(EDUCATION);
+                const hash = crypto.createHash('sha256').update(`app-${app.applicationid}-${Date.now()}-${Math.random()}`).digest('hex');
+
+                values.push(`($${pi}, $${pi+1}, $${pi+2}, $${pi+3}, $${pi+4}, $${pi+5}, $${pi+6}, $${pi+7}, $${pi+8}, $${pi+9}, $${pi+10})`);
+                params.push(
+                    app.applicationid, gender, ethnicity,
+                    maybe(0.08),  // disability
+                    maybe(0.05),  // veteran
+                    maybe(0.30),  // first-gen college
+                    maybe(0.12),  // LGBTQ+
+                    maybe(0.25) ? Math.floor(Math.random() * 24) : 0,  // career gap
+                    maybe(0.15),  // non-traditional
+                    educationLevel,
+                    hash
+                );
+                pi += 11;
+            }
+
+            await query(`
+                INSERT INTO diversitymetrics
+                    (applicationid, gender, ethnicity, disabilitystatus, veteranstatus,
+                     firstgenerationcollege, lgbtqplus, careergapmonths, nontraditionalbackground,
+                     educationlevel, anonymizedhash)
+                VALUES ${values.join(', ')}
+                ON CONFLICT DO NOTHING
+            `, params);
+            inserted += batch.length;
+        }
+
+        // 5. Return summary
+        const stats = await query(`
+            SELECT
+                COUNT(*) AS total,
+                COUNT(CASE WHEN gender = 'Male' THEN 1 END) AS male,
+                COUNT(CASE WHEN gender = 'Female' THEN 1 END) AS female,
+                COUNT(CASE WHEN disabilitystatus = true THEN 1 END) AS with_disability,
+                COUNT(CASE WHEN veteranstatus = true THEN 1 END) AS veterans,
+                COUNT(CASE WHEN lgbtqplus = true THEN 1 END) AS lgbtq
+            FROM diversitymetrics
+        `);
+
+        res.json({
+            message: 'Diversity metrics populated successfully.',
+            inserted,
+            stats: stats[0]
+        });
+
+    } catch (err) {
+        console.error('Seed Diversity Metrics Error:', err.message);
+        res.status(500).json({ error: 'Failed to seed diversity metrics: ' + err.message });
+    }
+});
+
 module.exports = router;
