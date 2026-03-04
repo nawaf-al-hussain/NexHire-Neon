@@ -719,7 +719,14 @@ router.get('/time-to-hire-individual', protect, authorize(1), async (req, res) =
  */
 router.get('/ghosting-detail', protect, authorize([1, 2]), async (req, res) => {
     try {
-        const data = await query("SELECT * FROM vw_ghostingriskdashboard ORDER BY overallriskscore DESC");
+        // Query the view but JOIN with applications to get jobid (which the
+        // frontend needs for the "Send Reminder" modal).
+        const data = await query(`
+            SELECT gr.*, a.jobid
+            FROM vw_ghostingriskdashboard gr
+            LEFT JOIN applications a ON gr.applicationid = a.applicationid
+            ORDER BY gr.overallriskscore DESC
+        `);
         res.json(data);
     } catch (err) {
         console.error("Ghosting Detail Error:", err.message);
@@ -888,23 +895,27 @@ router.post('/predict-hire-success', protect, authorize([1, 2]), async (req, res
  */
 router.get('/applications-for-prediction', protect, authorize([1, 2]), async (req, res) => {
     try {
-        // MatchScore is from vw_CandidateMatchScore, not Applications table
+        // LEFT JOIN to vw_candidatematchscore to get MatchScore (the frontend
+        // displays it in the prediction form). Also added a.jobid.
         const data = await query(`
-            SELECT 
+            SELECT
                 a.applicationid,
                 a.candidateid,
+                a.jobid,
                 c.fullname AS candidatename,
                 j.jobtitle,
                 s.statusname,
                 a.applieddate,
                 h.changedat AS laststatusdate,
                 (h.changedat::date - a.applieddate::date) AS daysinstatus,
-                COALESCE(avg_time.avgdays, 0) AS avgdaysinstage
+                COALESCE(avg_time.avgdays, 0) AS avgdaysinstage,
+                COALESCE(cms.matchscore, 0) AS matchscore
             FROM applications a
             JOIN candidates c ON a.candidateid = c.candidateid
             JOIN jobpostings j ON a.jobid = j.jobid
             JOIN applicationstatus s ON a.statusid = s.statusid
             JOIN applicationstatushistory h ON a.applicationid = h.applicationid
+            LEFT JOIN vw_candidatematchscore cms ON a.candidateid = cms.candidateid AND a.jobid = cms.jobid
             LEFT JOIN (
                 SELECT tostatusid, AVG(daysinstatus) AS avgdays
                 FROM (
@@ -915,8 +926,8 @@ router.get('/applications-for-prediction', protect, authorize([1, 2]), async (re
             ) avg_time ON a.statusid = avg_time.tostatusid
             WHERE h.tostatusid = a.statusid
               AND (
-                SELECT MAX(changedat) 
-                FROM applicationstatushistory 
+                SELECT MAX(changedat)
+                FROM applicationstatushistory
                 WHERE applicationid = a.applicationid
               ) = h.changedat
             ORDER BY daysinstatus DESC

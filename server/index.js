@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { query, connectDB } = require('./db');
-
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const jobRoutes = require('./routes/jobs');
@@ -39,12 +38,12 @@ app.use('/api/users', userRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/candidates/assessments', assessmentRoutes);
 app.use('/api/candidates', candidateRoutes);
 console.log('✓ All routes registered');
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/interviews', interviewRoutes);
-app.use('/api/candidates/assessments', assessmentRoutes);
 app.use('/api/recruiters', recruiterRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 

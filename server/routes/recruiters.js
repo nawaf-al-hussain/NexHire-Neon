@@ -90,6 +90,81 @@ router.get('/talent-pool', protect, authorize([1, 2]), async (req, res) => {
 
 
 /**
+ * @route   POST /api/recruiters/talent-pool/invite
+ * @desc    Invite one or more candidates from the talent pool to apply for a job
+ * @access  Private (Recruiter/Admin)
+ */
+router.post('/talent-pool/invite', protect, authorize([1, 2]), async (req, res) => {
+    const { candidateIDs, jobID } = req.body;
+
+    if (!candidateIDs || !Array.isArray(candidateIDs) || candidateIDs.length === 0) {
+        return res.status(400).json({ error: "candidateIDs array is required." });
+    }
+    if (!jobID) {
+        return res.status(400).json({ error: "jobID is required." });
+    }
+
+    try {
+        // Verify the job exists and is active
+        const jobCheck = await query("SELECT jobid FROM jobpostings WHERE jobid = ? AND isactive = true AND isdeleted = false", [jobID]);
+        if (jobCheck.length === 0) {
+            return res.status(404).json({ error: "Job not found or inactive." });
+        }
+
+        // For each candidate, create an application if one doesn't already exist
+        let invited = 0;
+        let skipped = 0;
+        const userID = req.user.userid;
+
+        for (const candidateID of candidateIDs) {
+            // Check if application already exists for this candidate + job
+            const existing = await query(
+                "SELECT applicationid FROM applications WHERE candidateid = ? AND jobid = ? AND isdeleted = false",
+                [candidateID, jobID]
+            );
+
+            if (existing.length > 0) {
+                skipped++;
+                continue;
+            }
+
+            // Create new application with status "Invited" (statusid = 7)
+            await query(
+                `INSERT INTO applications (candidateid, jobid, statusid, applieddate, isdeleted)
+                 VALUES (?, ?, 7, NOW(), false)`,
+                [candidateID, jobID]
+            );
+
+            // Record in status history
+            const appResult = await query(
+                "SELECT applicationid FROM applications WHERE candidateid = ? AND jobid = ? ORDER BY applicationid DESC LIMIT 1",
+                [candidateID, jobID]
+            );
+            if (appResult.length > 0) {
+                await query(
+                    `INSERT INTO applicationstatushistory (applicationid, fromstatusid, tostatusid, changedby, changedat, notes)
+                     VALUES (?, NULL, 7, ?, NOW(), 'Invited from talent pool')`,
+                    [appResult[0].applicationid, userID]
+                );
+            }
+
+            invited++;
+        }
+
+        res.json({
+            message: `Invited ${invited} candidate(s) to job #${jobID}.`,
+            invited,
+            skipped,
+            total: candidateIDs.length
+        });
+    } catch (err) {
+        console.error("Talent Pool Invite Error:", err.message);
+        res.status(500).json({ error: "Failed to invite candidates: " + err.message });
+    }
+});
+
+
+/**
  * @route   POST /api/recruiters/search
  * @desc    Search candidates by name - returns full candidate data
  * @access  Private (Recruiter/Admin)

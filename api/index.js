@@ -85,11 +85,11 @@ try {
     app.use('/api/jobs', jobRoutes);
     app.use('/api/skills', skillRoutes);
     app.use('/api/applications', applicationRoutes);
+    app.use('/api/candidates/assessments', assessmentRoutes);
     app.use('/api/candidates', candidateRoutes);
     app.use('/api/analytics', analyticsRoutes);
     app.use('/api/maintenance', maintenanceRoutes);
     app.use('/api/interviews', interviewRoutes);
-    app.use('/api/candidates/assessments', assessmentRoutes);
     app.use('/api/recruiters', recruiterRoutes);
     app.use('/api/chatbot', chatbotRoutes);
 

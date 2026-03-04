@@ -531,6 +531,10 @@ const query = async (sqlQuery, params = []) => {
                 'willingtorelocate': 'WillingToRelocate',
                 'workspacequality': 'WorkspaceQuality',
                 'workspacescore': 'WorkspaceScore',
+
+                // ---- Audit log & misc fields ----
+                'operation': 'Operation',
+                'source': 'Source',
             };
 
             Object.keys(mappings).forEach(lowerKey => {

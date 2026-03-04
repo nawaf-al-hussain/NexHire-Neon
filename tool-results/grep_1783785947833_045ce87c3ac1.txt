@@ -1,0 +1,252 @@
+/home/z/my-project/client/src/context/AuthContext.jsx:3:import API_BASE from '../apiConfig';
+/home/z/my-project/client/src/context/AuthContext.jsx:11: // const API_BASE moved to config
+/home/z/my-project/client/src/context/AuthContext.jsx:44: const res = await axios.post(`${API_BASE}/auth/login`, { username, password });
+/home/z/my-project/client/src/pages/RecruiterDashboard.jsx:12:import API_BASE from '../apiConfig';
+/home/z/my-project/client/src/pages/RecruiterDashboard.jsx:73: const statsRes = await axios.get(`${API_BASE}/analytics/stats`);
+/home/z/my-project/client/src/pages/RecruiterDashboard.jsx:81: const riskRes = await axios.get(`${API_BASE}/analytics/risk-alerts`);
+/home/z/my-project/client/src/pages/RecruiterDashboard.jsx:89: const funnelRes = await axios.get(`${API_BASE}/analytics/funnel`);
+/home/z/my-project/client/src/pages/RecruiterDashboard.jsx:102: const res = await axios.get(`${API_BASE}/interviews`);
+/home/z/my-project/client/src/pages/RecruiterDashboard.jsx:154: await axios.put(`${API_BASE}/jobs/${id}`, { isActive: false });
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:3:import API_BASE from '../apiConfig';
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:121: axios.get(`${API_BASE}/analytics/bias-detection`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:122: axios.get(`${API_BASE}/analytics/skill-gap`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:123: axios.get(`${API_BASE}/analytics/recruiter-performance`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:124: axios.get(`${API_BASE}/analytics/utilization`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:125: axios.get(`${API_BASE}/analytics/bottlenecks`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:126: axios.get(`${API_BASE}/analytics/risk-alerts`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:127: axios.get(`${API_BASE}/analytics/funnel`)
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:199: axios.get(`${API_BASE}/analytics/market`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:200: axios.get(`${API_BASE}/analytics/diversity`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:201: axios.get(`${API_BASE}/analytics/salary-transparency`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:202: axios.get(`${API_BASE}/analytics/remote-compatibility`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:203: axios.get(`${API_BASE}/analytics/organizational-career`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:204: axios.get(`${API_BASE}/analytics/referral-intelligence`)
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:229: axios.get(`${API_BASE}/analytics/interviewer-consistency`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:230: axios.get(`${API_BASE}/analytics/interview-score-decision`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:231: axios.get(`${API_BASE}/analytics/rejection-analysis`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:232: axios.get(`${API_BASE}/analytics/candidate-engagement`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:233: axios.get(`${API_BASE}/analytics/hire-rate-per-job`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:234: axios.get(`${API_BASE}/analytics/time-to-hire-individual`)
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:250: const res = await axios.get(`${API_BASE}/maintenance/archive-stats`);
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:260: axios.get(`${API_BASE}/maintenance/archive-jobs`),
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:261: axios.get(`${API_BASE}/maintenance/archive-applications`)
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:273: const res = await axios.get(`${API_BASE}/users`);
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:285: const res = await axios.get(`${API_BASE}/analytics/audit-logs`);
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:297: const res = await axios.get(`${API_BASE}/analytics/system-stats`);
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:331: await axios.post(`${API_BASE}/maintenance/${endpoint}`);
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:343: await axios.put(`${API_BASE}/users/${userId}/role`, { roleID: newRoleId });
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:352: await axios.put(`${API_BASE}/users/${userId}/status`, { isActive: newStatus });
+/home/z/my-project/client/src/pages/AdminDashboard.jsx:369: const response = await axios.post(`${API_BASE}/users/candidate`, {
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:5:import API_BASE from '../apiConfig';
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:73: const res = await axios.post(`${API_BASE}/candidates/gamification/daily-login`);
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:172: await axios.post(`${API_BASE}/candidates/apply`, { jobID });
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:188: axios.get(`${API_BASE}/candidates/discover`),
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:189: axios.get(`${API_BASE}/candidates/applications`),
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:190: axios.get(`${API_BASE}/candidates/interviews`),
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:191: axios.get(`${API_BASE}/candidates/assessments/available`),
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:192: axios.get(`${API_BASE}/candidates/profile/skills`)
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:220: axios.get(`${API_BASE}/candidates/career-path`)
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:225: axios.get(`${API_BASE}/candidates/learning-path`)
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:231: axios.get(`${API_BASE}/candidates/leaderboard`)
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:235: axios.get(`${API_BASE}/candidates/leaderboard/global`)
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:243: axios.get(`${API_BASE}/candidates/interview-prep`)
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:248: axios.get(`${API_BASE}/candidates/salary-coach`)
+/home/z/my-project/client/src/pages/CandidateDashboard.jsx:253: axios.get(`${API_BASE}/candidates/resume-score`)
+/home/z/my-project/client/src/apiConfig.js:3://   server on :5001. Configure via VITE_API_BASE in .env if needed.
+/home/z/my-project/client/src/apiConfig.js:10:const API_BASE =
+/home/z/my-project/client/src/apiConfig.js:13:     import.meta.env.VITE_API_BASE) ||
+/home/z/my-project/client/src/apiConfig.js:16:export default API_BASE;
+/home/z/my-project/client/src/components/Admin/RecruiterPerformanceAdmin.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/RecruiterPerformanceAdmin.jsx:14: const res = await axios.get(`${API_BASE}/analytics/recruiter-performance`);
+/home/z/my-project/client/src/components/Admin/SQLViews.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/SQLViews.jsx:34: const response = await axios.get(`${API_BASE}/maintenance/sql-views`);
+/home/z/my-project/client/src/components/Admin/SQLViews.jsx:46: const response = await axios.get(`${API_BASE}/maintenance/sql-views/${viewName}`);
+/home/z/my-project/client/src/components/Admin/SalaryTransparencyAnalytics.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/SalaryTransparencyAnalytics.jsx:33: const res = await axios.get(`${API_BASE}/analytics/salary-transparency`);
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:30: axios.get(`${API_BASE}/analytics/diversity-goals`),
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:31: axios.get(`${API_BASE}/analytics/diversity`),
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:32: axios.get(`${API_BASE}/analytics/diversity-gender`),
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:33: axios.get(`${API_BASE}/analytics/diversity-disability`),
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:34: axios.get(`${API_BASE}/analytics/diversity-veteran`)
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:45: const goalsRes = await axios.get(`${API_BASE}/analytics/diversity-goals`);
+/home/z/my-project/client/src/components/Admin/DiversityGoals.jsx:58: await axios.post(`${API_BASE}/analytics/diversity-goals`, newGoal);
+/home/z/my-project/client/src/components/Admin/VacancyUtilizationAdmin.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/VacancyUtilizationAdmin.jsx:16: const res = await axios.get(`${API_BASE}/analytics/utilization`);
+/home/z/my-project/client/src/components/Admin/ConsentManagement.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/ConsentManagement.jsx:13: const res = await axios.get(`${API_BASE}/analytics/consent-status`);
+/home/z/my-project/client/src/components/Admin/BiasLogs.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/BiasLogs.jsx:18: const res = await axios.get(`${API_BASE}/analytics/bias-logs`);
+/home/z/my-project/client/src/components/Admin/BiasLogs.jsx:29: await axios.put(`${API_BASE}/analytics/bias-logs/${id}/resolve`);
+/home/z/my-project/client/src/components/Admin/EmailQueueManager.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Admin/EmailQueueManager.jsx:27: const res = await axios.get(`${API_BASE}/maintenance/email-queue?${params}`);
+/home/z/my-project/client/src/components/Admin/EmailQueueManager.jsx:39: await axios.put(`${API_BASE}/maintenance/email-queue/${id}/retry`);
+/home/z/my-project/client/src/components/Admin/EmailQueueManager.jsx:49: await axios.delete(`${API_BASE}/maintenance/email-queue/${id}`);
+/home/z/my-project/client/src/components/Admin/EmailQueueManager.jsx:59: await axios.post(`${API_BASE}/maintenance/email-queue/send-test`, {
+/home/z/my-project/client/src/components/shared/ChatbotWidget.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/shared/ChatbotWidget.jsx:33: const res = await axios.get(`${API_BASE}/chatbot/faq`);
+/home/z/my-project/client/src/components/shared/ChatbotWidget.jsx:78: const res = await axios.post(`${API_BASE}/chatbot/message`, {
+/home/z/my-project/client/src/components/shared/ChatbotWidget.jsx:129: await axios.post(`${API_BASE}/chatbot/feedback`, {
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:40: const res = await axios.get(`${API_BASE}/candidates/documents`);
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:48: const res = await axios.get(`${API_BASE}/candidates/profile`);
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:68: await axios.put(`${API_BASE}/candidates/profile`, {
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:88: await axios.put(`${API_BASE}/candidates/profile/consent`, {
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:134: const res = await axios.post(`${API_BASE}/candidates/documents/upload`, formData, {
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:158: await axios.delete(`${API_BASE}/candidates/documents/${docType}`);
+/home/z/my-project/client/src/components/Candidate/ProfileManagement.jsx:169: const res = await axios.get(`${API_BASE}/candidates/documents/resume/download`, {
+/home/z/my-project/client/src/components/Candidate/SentimentTracker.jsx:25:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/SentimentTracker.jsx:52: axios.get(`${API_BASE}/candidates/${candidateId}/sentiment/summary`),
+/home/z/my-project/client/src/components/Candidate/SentimentTracker.jsx:53: axios.get(`${API_BASE}/candidates/${candidateId}/sentiment`)
+/home/z/my-project/client/src/components/Candidate/SentimentTracker.jsx:399: await axios.post(`${API_BASE}/candidates/${candidateId}/sentiment`, {
+/home/z/my-project/client/src/components/Candidate/CareerPathSimulator.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/CareerPathSimulator.jsx:25: const res = await axios.get(`${API_BASE}/candidates/career-path/roles`);
+/home/z/my-project/client/src/components/Candidate/CareerPathSimulator.jsx:61: const res = await axios.post(`${API_BASE}/candidates/career-path/simulate`, {
+/home/z/my-project/client/src/components/Candidate/SkillManagementModal.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/SkillManagementModal.jsx:23: const res = await axios.get(`${API_BASE}/skills`);
+/home/z/my-project/client/src/components/Candidate/SkillManagementModal.jsx:34: await axios.post(`${API_BASE}/candidates/skills`, {
+/home/z/my-project/client/src/components/Candidate/InterviewPrep.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/InterviewPrep.jsx:19: await axios.post(`${API_BASE}/candidates/interview-prep/generate`, { jobID: selectedJob });
+/home/z/my-project/client/src/components/Candidate/CandidateInterviews.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/CandidateInterviews.jsx:28: await axios.post(`${API_BASE}/candidates/confirm-interview`, { scheduleID });
+/home/z/my-project/client/src/components/Candidate/CandidateApplications.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/CandidateApplications.jsx:32: await axios.post(`${API_BASE}/candidates/invitations/${applicationID}/respond`, { action });
+/home/z/my-project/client/src/components/Candidate/CandidateApplications.jsx:45: await axios.post(`${API_BASE}/candidates/withdraw`, { applicationID, reason: reason || 'N/A' });
+/home/z/my-project/client/src/components/Recruiters/BiasAnalytics.jsx:5:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/BiasAnalytics.jsx:15: const res = await axios.get(`${API_BASE}/analytics/bias-detection`);
+/home/z/my-project/client/src/components/Recruiters/CandidateProfileModal.jsx:10:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/CandidateProfileModal.jsx:44: const res = await axios.get(`${API_BASE}/recruiters/candidate-profile/${candidateId}`);
+/home/z/my-project/client/src/components/Recruiters/CandidateProfileModal.jsx:57: const res = await axios.get(`${API_BASE}/candidates/${candidateId}/documents`);
+/home/z/my-project/client/src/components/Recruiters/CandidateProfileModal.jsx:70: const res = await axios.get(`${API_BASE}/candidates/${candidateId}/sentiment`);
+/home/z/my-project/client/src/components/Recruiters/CandidateProfileModal.jsx:82: const response = await axios.get(`${API_BASE}/candidates/${candidateId}/documents/resume/download`, {
+/home/z/my-project/client/src/components/Recruiters/InterviewQuestionsGenerator.jsx:6:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/InterviewQuestionsGenerator.jsx:40: const response = await axios.get(`${API_BASE}/jobs`);
+/home/z/my-project/client/src/components/Recruiters/InterviewQuestionsGenerator.jsx:56: const response = await axios.get(`${API_BASE}/interviews/generated-questions/${selectedJob}`);
+/home/z/my-project/client/src/components/Recruiters/InterviewQuestionsGenerator.jsx:77: const response = await axios.post(`${API_BASE}/interviews/generate-questions`, {
+/home/z/my-project/client/src/components/Recruiters/InterviewQuestionsGenerator.jsx:97: const response = await axios.post(`${API_BASE}/interviews/save-question`, {
+/home/z/my-project/client/src/components/Recruiters/InterviewQuestionsGenerator.jsx:109: const savedResponse = await axios.get(`${API_BASE}/interviews/generated-questions/${selectedJob}`);
+/home/z/my-project/client/src/components/Recruiters/InterviewTranscription.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/InterviewTranscription.jsx:19: const res = await axios.post(`${API_BASE}/interviews/transcription`, {
+/home/z/my-project/client/src/components/Recruiters/InterviewTranscription.jsx:44: const res = await axios.post(`${API_BASE}/interviews/transcription/${transcriptionId}/process`, {
+/home/z/my-project/client/src/components/Recruiters/ReferralIntelligence.jsx:9:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/ReferralIntelligence.jsx:27: const res = await axios.get(`${API_BASE}/jobs`);
+/home/z/my-project/client/src/components/Recruiters/ReferralIntelligence.jsx:47: const res = await axios.get(`${API_BASE}/recruiters/referral-suggestions/${jobId}`);
+/home/z/my-project/client/src/components/Recruiters/ReferralIntelligence.jsx:65: const res = await axios.get(`${API_BASE}/recruiters/referral-intelligence`);
+/home/z/my-project/client/src/components/Recruiters/InterviewFeedback.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/InterviewFeedback.jsx:25: const res = await axios.get(`${API_BASE}/interviews/feedback/${applicationId}`);
+/home/z/my-project/client/src/components/Recruiters/InterviewFeedback.jsx:55: const res = await axios.post(`${API_BASE}/interviews/feedback`, {
+/home/z/my-project/client/src/components/Recruiters/ScreeningBot.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/ScreeningBot.jsx:28: const res = await axios.get(`${API_BASE}/jobs`);
+/home/z/my-project/client/src/components/Recruiters/ScreeningBot.jsx:38: const res = await axios.get(`${API_BASE}/recruiters/screening/decisions${selectedJob ? `?jobID=${selectedJob}` : ''}`);
+/home/z/my-project/client/src/components/Recruiters/ScreeningBot.jsx:54: await axios.post(`${API_BASE}/recruiters/screening/run`, { jobID: parseInt(selectedJob), threshold });
+/home/z/my-project/client/src/components/Recruiters/ScreeningBot.jsx:67: await axios.post(`${API_BASE}/recruiters/screening/override`, {
+/home/z/my-project/client/src/components/Recruiters/ScreeningBot.jsx:115: const res = await axios.post(`${API_BASE}/recruiters/screening/advance`, {
+/home/z/my-project/client/src/components/Recruiters/ScreeningBot.jsx:137: const res = await axios.post(`${API_BASE}/recruiters/screening/reject`, {
+/home/z/my-project/client/src/components/Recruiters/TimeToHireDetail.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/TimeToHireDetail.jsx:16: const res = await axios.get(`${API_BASE}/analytics/time-to-hire-detail`);
+/home/z/my-project/client/src/components/Recruiters/CandidateEngagement.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/CandidateEngagement.jsx:17: const res = await axios.get(`${API_BASE}/recruiters/engagement`);
+/home/z/my-project/client/src/components/Recruiters/HireSuccessPredictor.jsx:20:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/HireSuccessPredictor.jsx:38: const res = await axios.get(`${API_BASE}/analytics/applications-for-prediction`);
+/home/z/my-project/client/src/components/Recruiters/HireSuccessPredictor.jsx:59: const res = await axios.get(`${API_BASE}/analytics/hire-success-predictions`);
+/home/z/my-project/client/src/components/Recruiters/HireSuccessPredictor.jsx:80: const res = await axios.post(`${API_BASE}/analytics/predict-hire-success`, {
+/home/z/my-project/client/src/components/Recruiters/HireSuccessPredictor.jsx:101: const predRes = await axios.get(`${API_BASE}/analytics/hire-success-predictions`);
+/home/z/my-project/client/src/components/Recruiters/HireSuccessPredictor.jsx:370: const res = await axios.get(`${API_BASE}/analytics/hire-success-predictions`);
+/home/z/my-project/client/src/components/Recruiters/RankingHistory.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/RankingHistory.jsx:31: const res = await axios.get(`${API_BASE}/recruiters/ranking-history/${candidateId}`);
+/home/z/my-project/client/src/components/Recruiters/MarketAlerts.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/MarketAlerts.jsx:16: const res = await axios.get(`${API_BASE}/recruiters/market-alerts`);
+/home/z/my-project/client/src/components/Recruiters/ExternalPlatformSync.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/ExternalPlatformSync.jsx:26: const res = await axios.get(`${API_BASE}/recruiters/platform-sync`);
+/home/z/my-project/client/src/components/Recruiters/ExternalPlatformSync.jsx:57: await axios.post(`${API_BASE}/recruiters/platform-sync`, {
+/home/z/my-project/client/src/components/Recruiters/TalentPool.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/TalentPool.jsx:26: const res = await axios.get(`${API_BASE}/recruiters/talent-pool`);
+/home/z/my-project/client/src/components/Recruiters/TalentPool.jsx:56: const res = await axios.post(`${API_BASE}/recruiters/search`, {
+/home/z/my-project/client/src/components/Recruiters/TalentPool.jsx:78: const res = await axios.post(`${API_BASE}/recruiters/search`, {
+/home/z/my-project/client/src/components/Recruiters/TalentPool.jsx:110: const res = await axios.get(`${API_BASE}/jobs`);
+/home/z/my-project/client/src/components/Recruiters/TalentPool.jsx:133: const res = await axios.post(`${API_BASE}/recruiters/talent-pool/invite`, {
+/home/z/my-project/client/src/components/Recruiters/GhostingRiskDetail.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/GhostingRiskDetail.jsx:23: const res = await axios.get(`${API_BASE}/analytics/ghosting-detail`);
+/home/z/my-project/client/src/components/Recruiters/GhostingRiskDetail.jsx:55: await axios.post(`${API_BASE}/recruiters/send-reminder`, {
+/home/z/my-project/client/src/components/Recruiters/InterviewFatigueReducer.jsx:7:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/InterviewFatigueReducer.jsx:28: axios.get(`${API_BASE}/recruiters/talent-pool`),
+/home/z/my-project/client/src/components/Recruiters/InterviewFatigueReducer.jsx:29: axios.get(`${API_BASE}/jobs`)
+/home/z/my-project/client/src/components/Recruiters/InterviewFatigueReducer.jsx:52: const res = await axios.post(`${API_BASE}/interviews/optimize-rounds`, {
+/home/z/my-project/client/src/components/Recruiters/HireAnalytics.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/HireAnalytics.jsx:19: axios.get(`${API_BASE}/analytics/bottlenecks`),
+/home/z/my-project/client/src/components/Recruiters/HireAnalytics.jsx:20: axios.get(`${API_BASE}/analytics/diversity`),
+/home/z/my-project/client/src/components/Recruiters/HireAnalytics.jsx:21: axios.get(`${API_BASE}/analytics/market`),
+/home/z/my-project/client/src/components/Recruiters/HireAnalytics.jsx:22: axios.get(`${API_BASE}/analytics/time-to-hire`),
+/home/z/my-project/client/src/components/Recruiters/HireAnalytics.jsx:23: axios.get(`${API_BASE}/analytics/rejection-analysis`)
+/home/z/my-project/client/src/components/Recruiters/OnboardingSuccessPredictor.jsx:20:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/OnboardingSuccessPredictor.jsx:39: const res = await axios.get(`${API_BASE}/analytics/hired-candidates`);
+/home/z/my-project/client/src/components/Recruiters/OnboardingSuccessPredictor.jsx:60: const res = await axios.get(`${API_BASE}/analytics/onboarding-predictions`);
+/home/z/my-project/client/src/components/Recruiters/OnboardingSuccessPredictor.jsx:81: const res = await axios.post(`${API_BASE}/analytics/predict-onboarding-success`, {
+/home/z/my-project/client/src/components/Recruiters/OnboardingSuccessPredictor.jsx:89: const predRes = await axios.get(`${API_BASE}/analytics/onboarding-predictions`);
+/home/z/my-project/client/src/components/Recruiters/OnboardingSuccessPredictor.jsx:324: const res = await axios.get(`${API_BASE}/analytics/onboarding-predictions`);
+/home/z/my-project/client/src/components/Recruiters/BackgroundChecks.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/BackgroundChecks.jsx:62: const res = await axios.get(`${API_BASE}/recruiters/background-checks-dashboard`);
+/home/z/my-project/client/src/components/Recruiters/BackgroundChecks.jsx:74: const res = await axios.get(`${API_BASE}/recruiters/talent-pool`);
+/home/z/my-project/client/src/components/Recruiters/BackgroundChecks.jsx:89: `${API_BASE}/recruiters/background-checks/${candidateId}?${params}`);
+/home/z/my-project/client/src/components/Recruiters/BackgroundChecks.jsx:106: `${API_BASE}/recruiters/background-checks`,
+/home/z/my-project/client/src/components/Recruiters/BackgroundChecks.jsx:126: `${API_BASE}/recruiters/background-checks/${checkId}`,
+/home/z/my-project/client/src/components/Recruiters/SkillVerificationStatus.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/SkillVerificationStatus.jsx:20: const res = await axios.get(`${API_BASE}/analytics/skill-verification`);
+/home/z/my-project/client/src/components/Recruiters/SkillVerificationStatus.jsx:91: await axios.post(`${API_BASE}/analytics/verify-skill`, {
+/home/z/my-project/client/src/components/Recruiters/AutoRejectionLog.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/AutoRejectionLog.jsx:28: const res = await axios.get(`${API_BASE}/applications/auto-rejected`);
+/home/z/my-project/client/src/components/Recruiters/AutoRejectionLog.jsx:44: await axios.post(`${API_BASE}/applications/auto-reject`);
+/home/z/my-project/client/src/components/Recruiters/VideoInterviews.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/VideoInterviews.jsx:18: const res = await axios.get(`${API_BASE}/interviews`);
+/home/z/my-project/client/src/components/Recruiters/BlockchainVerifications.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/BlockchainVerifications.jsx:67: const res = await axios.get(`${API_BASE}/recruiters/blockchain-dashboard`);
+/home/z/my-project/client/src/components/Recruiters/BlockchainVerifications.jsx:96: const res = await axios.get(`${API_BASE}/recruiters/talent-pool`);
+/home/z/my-project/client/src/components/Recruiters/BlockchainVerifications.jsx:111: `${API_BASE}/recruiters/blockchain-verifications/${candidateId}?${params}`);
+/home/z/my-project/client/src/components/Recruiters/BlockchainVerifications.jsx:128: `${API_BASE}/recruiters/blockchain-verifications`,
+/home/z/my-project/client/src/components/Recruiters/BlockchainVerifications.jsx:157: `${API_BASE}/recruiters/blockchain-verifications/${verificationId}`,
+/home/z/my-project/client/src/components/Recruiters/AdvancedAnalytics.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Recruiters/AdvancedAnalytics.jsx:17: axios.get(`${API_BASE}/analytics/time-to-hire`),
+/home/z/my-project/client/src/components/Recruiters/AdvancedAnalytics.jsx:18: axios.get(`${API_BASE}/analytics/rejection-analysis`),
+/home/z/my-project/client/src/components/Recruiters/AdvancedAnalytics.jsx:19: axios.get(`${API_BASE}/analytics/skill-gap`)
+/home/z/my-project/client/src/components/Candidate/PushNotifications.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/PushNotifications.jsx:26: const res = await axios.get(`${API_BASE}/candidates/notifications`);
+/home/z/my-project/client/src/components/Candidate/PushNotifications.jsx:41: await axios.post(`${API_BASE}/candidates/notifications/register-device`, {
+/home/z/my-project/client/src/components/Candidate/PushNotifications.jsx:56: await axios.post(`${API_BASE}/candidates/notifications/mark-read`, {
+/home/z/my-project/client/src/components/Candidate/PushNotifications.jsx:68: await axios.post(`${API_BASE}/candidates/notifications/mark-read`, {});
+/home/z/my-project/client/src/components/Candidate/SalaryCoach.jsx:8:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/SalaryCoach.jsx:26: const res = await axios.post(`${API_BASE}/candidates/salary-coach/negotiate`, {
+/home/z/my-project/client/src/components/Candidate/LocationPreferences.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/LocationPreferences.jsx:25: const res = await axios.get(`${API_BASE}/candidates/location-preferences`);
+/home/z/my-project/client/src/components/Candidate/LocationPreferences.jsx:61: await axios.post(`${API_BASE}/candidates/location-preferences`, {
+/home/z/my-project/client/src/components/Jobs/CandidateMatches.jsx:5:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/CandidateMatches.jsx:28: axios.get(`${API_BASE}/jobs/${job.JobID}/matches`),
+/home/z/my-project/client/src/components/Jobs/CandidateMatches.jsx:29: axios.get(`${API_BASE}/jobs/${job.JobID}`)
+/home/z/my-project/client/src/components/Jobs/CandidateMatches.jsx:45: await axios.post(`${API_BASE}/recruiters/initiate-pipeline`, {
+/home/z/my-project/client/src/components/Jobs/ApplicationPipeline.jsx:10:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/ApplicationPipeline.jsx:46: const res = await axios.get(`${API_BASE}/jobs/${job.JobID}/applications`);
+/home/z/my-project/client/src/components/Jobs/ApplicationPipeline.jsx:59: await axios.post(`${API_BASE}/applications/${applicationID}/hire`);
+/home/z/my-project/client/src/components/Jobs/ApplicationPipeline.jsx:61: await axios.put(`${API_BASE}/applications/${applicationID}/status`, {
+/home/z/my-project/client/src/components/Jobs/ScheduleInterviewModal.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/ScheduleInterviewModal.jsx:31: await axios.post(`${API_BASE}/interviews/schedule`, {
+/home/z/my-project/client/src/components/Jobs/JobMatchingView.jsx:5:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/JobMatchingView.jsx:20: const jobsRes = await axios.get(`${API_BASE}/jobs`);
+/home/z/my-project/client/src/components/Jobs/JobMatchingView.jsx:30: const res = await axios.get(`${API_BASE}/jobs/${job.JobID}/matches?topN=3`);
+/home/z/my-project/client/src/components/Jobs/JobList.jsx:5:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/JobList.jsx:29: const res = await axios.get(`${API_BASE}/jobs?isActive=${isActiveFilter}`);
+/home/z/my-project/client/src/components/Jobs/JobList.jsx:37: const matchRes = await axios.get(`${API_BASE}/jobs/${job.JobID}/matches`);
+/home/z/my-project/client/src/components/Jobs/JobList.jsx:68: await axios.put(`${API_BASE}/jobs/${jobId}`, { isActive: true });
+/home/z/my-project/client/src/components/Jobs/JobCard.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/JobCard.jsx:29: const res = await axios.get(`${API_BASE}/jobs/${job.JobID}`, {
+/home/z/my-project/client/src/components/Jobs/JobModal.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/JobModal.jsx:28: const res = await axios.get(`${API_BASE}/skills`);
+/home/z/my-project/client/src/components/Jobs/JobModal.jsx:62: await axios.post(`${API_BASE}/jobs`, {
+/home/z/my-project/client/src/components/Jobs/JobEditModal.jsx:3:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Jobs/JobEditModal.jsx:41: const res = await axios.get(`${API_BASE}/skills`, {
+/home/z/my-project/client/src/components/Jobs/JobEditModal.jsx:54: const res = await axios.get(`${API_BASE}/jobs/${job.JobID}`, {
+/home/z/my-project/client/src/components/Jobs/JobEditModal.jsx:154: await axios.put(`${API_BASE}/jobs/${job.JobID}`, payload, {
+/home/z/my-project/client/src/components/Candidate/SkillGapAnalysis.jsx:4:import API_BASE from '../../apiConfig';
+/home/z/my-project/client/src/components/Candidate/SkillGapAnalysis.jsx:25: const res = await axios.get(`${API_BASE}/candidates/skill-gap-analysis`);
+/home/z/my-project/client/src/components/Candidate/SkillGapAnalysis.jsx:36: const res = await axios.get(`${API_BASE}/candidates/skills-demand`);
+/home/z/my-project/client/src/components/Candidate/LearningPaths.jsx:4:import API_BASE from '../../apiConfig';
+
+[Showing results with pagination = limit: 250]

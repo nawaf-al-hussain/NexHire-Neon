@@ -54,7 +54,7 @@ const GhostingRiskDetail = () => {
  const message = `Reminder: Please respond regarding your application for ${selectedCandidate.JobTitle}`;
  await axios.post(`${API_BASE}/recruiters/send-reminder`, {
  candidateId: selectedCandidate.CandidateID,
- jobId: selectedCandidate.JobID || null,
+ jobId: selectedCandidate.JobID || selectedCandidate.jobid || null,
  message: message
  });
  toast('Reminder sent.');
@@ -75,9 +75,9 @@ const GhostingRiskDetail = () => {
  c.JobTitle || '',
  c.OverallRiskScore || 0,
  c.OverallRiskLevel || '',
- c.ResponseTimeHours || 0,
- c.CommunicationFrequency || '',
- c.DaysSinceLastContact || 0
+ c.ResponseTimeHours || c.AvgResponseTime || 0,
+ c.CommunicationFrequency || (Number(c.TotalCommunications) > 5 ? 'High' : Number(c.TotalCommunications) > 2 ? 'Medium' : 'Low'),
+ c.DaysSinceLastContact || c.DaysSinceApplication || 0
  ].join(','))
  ].join('\n');
 
@@ -128,9 +128,9 @@ const GhostingRiskDetail = () => {
  case 'risk':
  return (b.OverallRiskScore || 0) - (a.OverallRiskScore || 0);
  case 'response':
- return (b.ResponseTimeHours || 0) - (a.ResponseTimeHours || 0);
+ return (b.ResponseTimeHours || b.AvgResponseTime || 0) - (a.ResponseTimeHours || a.AvgResponseTime || 0);
  case 'days':
- return (b.DaysSinceLastContact || 0) - (a.DaysSinceLastContact || 0);
+ return (b.DaysSinceLastContact || b.DaysSinceApplication || 0) - (a.DaysSinceLastContact || a.DaysSinceApplication || 0);
  default:
  return 0;
  }
@@ -334,17 +334,17 @@ const GhostingRiskDetail = () => {
  <div className="flex items-center gap-2">
  <Clock size={12} className="text-[var(--text-muted)]" />
  <span className="text-[var(--text-muted)]">Response:</span>
- <span>{candidate.ResponseTimeHours || 0}h</span>
+ <span>{candidate.ResponseTimeHours || candidate.AvgResponseTime || 0}h</span>
  </div>
  <div className="flex items-center gap-2">
  <MessageSquare size={12} className="text-[var(--text-muted)]" />
  <span className="text-[var(--text-muted)]">Frequency:</span>
- <span>{candidate.CommunicationFrequency || 'N/A'}</span>
+ <span>{candidate.CommunicationFrequency || (Number(candidate.TotalCommunications) > 5 ? 'High' : Number(candidate.TotalCommunications) > 2 ? 'Medium' : 'Low')}</span>
  </div>
  <div className="flex items-center gap-2">
  <Users size={12} className="text-[var(--text-muted)]" />
  <span className="text-[var(--text-muted)]">Last Contact:</span>
- <span>{candidate.DaysSinceLastContact || 0}d ago</span>
+ <span>{candidate.DaysSinceLastContact || candidate.DaysSinceApplication || 0}d ago</span>
  </div>
  </div>
  </div>
