@@ -234,10 +234,29 @@ router.get('/skills', protect, authorize(3), async (req, res) => {
 router.get('/interviews', protect, authorize(3), async (req, res) => {
     const userID = req.user.userid;
     try {
-        const interviews = await query(
-            "SELECT * FROM vw_candidateinterviews WHERE userid = ? ORDER BY interviewstart ASC",
-            [userID]
-        );
+        // The view vw_candidateinterviews may return 0 rows due to stale JOINs.
+        // Query the tables directly to get the candidate's interviews.
+        const interviews = await query(`
+            SELECT
+                i.scheduleid,
+                i.applicationid,
+                i.interviewstart,
+                i.interviewend,
+                i.candidateconfirmed,
+                j.jobtitle,
+                c.fullname AS candidatename,
+                r.fullname AS recruitername,
+                CASE WHEN i.interviewstart > NOW() THEN 'Upcoming' ELSE 'Completed' END AS status,
+                EXTRACT(EPOCH FROM (i.interviewend - i.interviewstart))/60 AS duration,
+                'Video Call' AS platform
+            FROM interviewschedules i
+            JOIN applications a ON i.applicationid = a.applicationid
+            JOIN candidates c ON a.candidateid = c.candidateid
+            JOIN jobpostings j ON a.jobid = j.jobid
+            LEFT JOIN recruiters r ON i.recruiterid = r.recruiterid
+            WHERE c.userid = ?
+            ORDER BY i.interviewstart ASC
+        `, [userID]);
         res.json(interviews);
     } catch (err) {
         console.error("Fetch Candidate Interviews Error:", err.message);

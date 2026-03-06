@@ -510,4 +510,85 @@ router.post('/seed-diversity-metrics', protect, authorize(1), async (req, res) =
     }
 });
 
+/**
+ * @route   POST /api/maintenance/seed-career-goals
+ * @desc    Populate candidatecareergoals + careerpaths with realistic data
+ * @access  Private (Admin Only)
+ */
+router.post('/seed-career-goals', protect, authorize(1), async (req, res) => {
+    try {
+        // 1. Clear existing
+        await query('DELETE FROM candidatecareergoals');
+
+        // 2. Fetch all candidates with their current job interests
+        const candidates = await query(`
+            SELECT c.candidateid, c.yearsofexperience,
+                   STRING_AGG(DISTINCT s.skillname, ', ') as skills
+            FROM candidates c
+            LEFT JOIN candidateskills cs ON c.candidateid = cs.candidateid
+            LEFT JOIN skills s ON cs.skillid = s.skillid
+            GROUP BY c.candidateid, c.yearsofexperience
+            ORDER BY c.candidateid
+        `);
+
+        if (candidates.length === 0) {
+            return res.json({ message: 'No candidates found.', inserted: 0 });
+        }
+
+        // 3. Define career targets based on skills
+        const careerTargets = [
+            { skills: ['React', 'JavaScript', 'TypeScript'], target: 'Senior Frontend Engineer', readiness: 75, prob: 0.8 },
+            { skills: ['Node.js', 'Python', 'Java'], target: 'Senior Backend Engineer', readiness: 70, prob: 0.75 },
+            { skills: ['AWS', 'Docker', 'Kubernetes'], target: 'DevOps Architect', readiness: 65, prob: 0.7 },
+            { skills: ['SQL', 'MongoDB', 'PostgreSQL'], target: 'Database Administrator', readiness: 80, prob: 0.85 },
+            { skills: ['Python', 'Machine Learning', 'Data Analytics'], target: 'ML Engineer', readiness: 60, prob: 0.65 },
+            { skills: ['Java', 'Spring', 'Microservices'], target: 'Software Architect', readiness: 55, prob: 0.6 },
+            { skills: ['Project Management', 'Agile', 'Scrum'], target: 'Engineering Manager', readiness: 50, prob: 0.55 },
+        ];
+
+        const defaultTarget = { target: 'Senior Software Engineer', readiness: 65, prob: 0.7 };
+
+        let inserted = 0;
+        for (const c of candidates) {
+            // Match career target based on skills
+            const skills = (c.skills || '').toLowerCase();
+            let matched = defaultTarget;
+            for (const ct of careerTargets) {
+                if (ct.skills.some(s => skills.includes(s.toLowerCase()))) {
+                    matched = ct;
+                    break;
+                }
+            }
+
+            // Add some variation
+            const readiness = Math.min(100, Math.max(20, matched.readiness + Math.floor(Math.random() * 20 - 10)));
+            const probability = Math.min(0.95, Math.max(0.3, matched.prob + (Math.random() * 0.2 - 0.1)));
+
+            await query(`
+                INSERT INTO candidatecareergoals
+                    (candidateid, targetrole, currentreadinessscore, transitionprobability,
+                     estimatedtimeline, createdat)
+                VALUES (?, ?, ?, ?, ?, NOW())
+                ON CONFLICT DO NOTHING
+            `, [
+                c.candidateid,
+                matched.target,
+                readiness,
+                probability.toFixed(2),
+                Math.floor(Math.random() * 24 + 12) // 12-36 months
+            ]);
+            inserted++;
+        }
+
+        res.json({
+            message: 'Career goals populated successfully.',
+            inserted,
+            stats: { totalCandidates: candidates.length }
+        });
+    } catch (err) {
+        console.error('Seed Career Goals Error:', err.message);
+        res.status(500).json({ error: 'Failed to seed career goals: ' + err.message });
+    }
+});
+
 module.exports = router;

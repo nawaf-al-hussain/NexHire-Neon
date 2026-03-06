@@ -12,7 +12,16 @@ router.get('/stats', protect, authorize([1, 2]), async (req, res) => {
     try {
         const results = await Promise.allSettled([
             query("SELECT COUNT(*) as total FROM candidates"),
-            query("SELECT COUNT(*) as total FROM vw_candidatematchscore WHERE totalmatchscore > 80"),
+            // vw_candidatematchscore may return 0 rows due to stale JOINs.
+            // Count candidates who have skills matching active job requirements instead.
+            query(`
+                SELECT COUNT(DISTINCT cs.candidateid) as total
+                FROM candidateskills cs
+                JOIN jobskills js ON cs.skillid = js.skillid
+                JOIN jobpostings j ON js.jobid = j.jobid
+                WHERE j.isactive = true AND j.isdeleted = false
+                  AND cs.proficiencylevel >= COALESCE(js.minproficiency, 1)
+            `),
             query("SELECT COUNT(*) as total FROM jobpostings WHERE isactive = true AND isdeleted = false")
         ]);
 

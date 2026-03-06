@@ -316,9 +316,27 @@ router.post('/initiate-pipeline', protect, authorize(2), async (req, res) => {
  */
 router.get('/engagement', protect, authorize([1, 2]), async (req, res) => {
     try {
+        // vw_candidateengagement returns null EngagementRate for candidates
+        // with 0 interviews. Compute directly with 0 fallback.
         const engagement = await query(`
-            SELECT * FROM vw_candidateengagement
-            ORDER BY engagementrate DESC
+            SELECT
+                c.candidateid,
+                c.fullname,
+                COUNT(DISTINCT i.scheduleid) AS interviewsscheduled,
+                COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) AS confirmedinterviews,
+                CASE
+                    WHEN COUNT(DISTINCT i.scheduleid) = 0 THEN 0
+                    ELSE ROUND(
+                        COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) * 100.0
+                        / COUNT(DISTINCT i.scheduleid),
+                        2
+                    )
+                END AS engagementrate
+            FROM candidates c
+            LEFT JOIN applications a ON c.candidateid = a.candidateid
+            LEFT JOIN interviewschedules i ON a.applicationid = i.applicationid
+            GROUP BY c.candidateid, c.fullname
+            ORDER BY engagementrate DESC, interviewsscheduled DESC
         `);
         res.json(engagement);
     } catch (err) {
@@ -1037,15 +1055,24 @@ router.get('/candidate-profile/:candidateId', protect, authorize([1, 2]), async 
             console.log("Skill verification error:", err.message);
         }
 
-        // 4. Engagement Metrics
+        // 4. Engagement Metrics — compute directly (vw_ returns null for 0-interview candidates)
         try {
             const engagement = await query(`
-                SELECT 
-                    interviewsscheduled as interviewsscheduled,
-                    confirmedinterviews as confirmedinterviews,
-                    engagementrate as engagementrate
-                FROM vw_candidateengagement
-                WHERE candidateid = ?
+                SELECT
+                    COUNT(DISTINCT i.scheduleid) AS interviewsscheduled,
+                    COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) AS confirmedinterviews,
+                    CASE
+                        WHEN COUNT(DISTINCT i.scheduleid) = 0 THEN 0
+                        ELSE ROUND(
+                            COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) * 100.0
+                            / COUNT(DISTINCT i.scheduleid), 2
+                        )
+                    END AS engagementrate
+                FROM candidates c
+                LEFT JOIN applications a ON c.candidateid = a.candidateid
+                LEFT JOIN interviewschedules i ON a.applicationid = i.applicationid
+                WHERE c.candidateid = ?
+                GROUP BY c.candidateid
             `, [candidateId]);
             profile.engagement = engagement[0] || null;
         } catch (err) {
