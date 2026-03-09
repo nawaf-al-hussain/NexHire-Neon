@@ -245,7 +245,7 @@ router.get('/interviews', protect, authorize(3), async (req, res) => {
                 i.candidateconfirmed,
                 j.jobtitle,
                 c.fullname AS candidatename,
-                r.fullname AS recruitername,
+                u.username AS recruitername,
                 CASE WHEN i.interviewstart > NOW() THEN 'Upcoming' ELSE 'Completed' END AS status,
                 EXTRACT(EPOCH FROM (i.interviewend - i.interviewstart))/60 AS duration,
                 'Video Call' AS platform
@@ -254,6 +254,7 @@ router.get('/interviews', protect, authorize(3), async (req, res) => {
             JOIN candidates c ON a.candidateid = c.candidateid
             JOIN jobpostings j ON a.jobid = j.jobid
             LEFT JOIN recruiters r ON i.recruiterid = r.recruiterid
+            LEFT JOIN users u ON r.userid = u.userid
             WHERE c.userid = ?
             ORDER BY i.interviewstart ASC
         `, [userID]);

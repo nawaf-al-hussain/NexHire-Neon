@@ -566,9 +566,9 @@ router.post('/seed-career-goals', protect, authorize(1), async (req, res) => {
 
             await query(`
                 INSERT INTO candidatecareergoals
-                    (candidateid, targetrole, currentreadinessscore, transitionprobability,
-                     estimatedtimeline, createdat)
-                VALUES (?, ?, ?, ?, ?, NOW())
+                    (candidateid, targetrole, currentreadinessscore, progresspercentage,
+                     targettimelinemonths, isactive, createdat)
+                VALUES (?, ?, ?, ?, ?, true, NOW())
                 ON CONFLICT DO NOTHING
             `, [
                 c.candidateid,
