@@ -591,4 +591,89 @@ router.post('/seed-career-goals', protect, authorize(1), async (req, res) => {
     }
 });
 
+/**
+ * @route   POST /api/maintenance/seed-candidate-names
+ * @desc    Replace Candidate_* placeholder names with realistic real names
+ * @access  Private (Admin Only)
+ */
+router.post('/seed-candidate-names', protect, authorize(1), async (req, res) => {
+    try {
+        // 1. Fetch all candidates with Candidate_* names
+        const candidates = await query(`
+            SELECT candidateid, fullname
+            FROM candidates
+            WHERE fullname LIKE 'Candidate_%'
+            ORDER BY candidateid
+        `);
+
+        if (candidates.length === 0) {
+            return res.json({ message: 'No Candidate_* names found.', updated: 0 });
+        }
+
+        // 2. Pool of realistic names (mix of South Asian + international, matching the project context)
+        const firstNames = [
+            'Aarav', 'Adnan', 'Aisha', 'Anika', 'Arif', 'Arnav', 'Ayesha', 'Farhan',
+            'Fatima', 'Faisal', 'Hafsa', 'Hamza', 'Hassan', 'Hiba', 'Ibrahim', 'Inaya',
+            'Irfan', 'Jannat', 'Kabir', 'Laila', 'Mahir', 'Mehreen', 'Nadia', 'Naufal',
+            'Omar', 'Priya', 'Rabia', 'Rafi', 'Sadia', 'Sahil', 'Sana', 'Shadman',
+            'Shahid', 'Sumaiya', 'Tahir', 'Tania', 'Usman', 'Wahid', 'Yasin', 'Zara',
+            'Zayan', 'Zoha', 'Abrar', 'Afifa', 'Ahnaf', 'Anjum', 'Asif', 'Durjoy',
+            'Emran', 'Farzana', 'Galib', 'Hasib', 'Iqbal', 'Junaid', 'Khadija', 'Marjan',
+            'Mehedi', 'Nayeem', 'Nilima', 'Parvez', 'Rakib', 'Sabrina', 'Tahmid', 'Wasim'
+        ];
+
+        const lastNames = [
+            'Rahman', 'Islam', 'Khan', 'Ahmed', 'Hossain', 'Akter', 'Chowdhury', 'Alam',
+            'Siddiqui', 'Karim', 'Mahmud', 'Sharma', 'Das', 'Bose', 'Haider', 'Rashid',
+            'Sarker', 'Talukder', 'Miah', 'Begum', 'Sheikh', 'Choudhury', 'Farooqi', 'Aziz',
+            'Noor', 'Haque', 'Mallick', 'Banik', 'Roy', 'Dey', 'Saha', 'Quadir',
+            'Tasnim', 'Laskar', 'Barua', 'Adnan', 'Rifa', 'Tahsin', 'Munshi', 'Chy'
+        ];
+
+        // 3. Generate unique name combinations
+        const usedNames = new Set();
+        // Get existing real names to avoid duplicates
+        const existing = await query(`SELECT DISTINCT fullname FROM candidates WHERE fullname NOT LIKE 'Candidate_%'`);
+        existing.forEach(r => usedNames.add(r.fullname.toLowerCase()));
+
+        let updated = 0;
+        for (const c of candidates) {
+            let fullName;
+            let attempts = 0;
+            do {
+                const first = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const last = lastNames[Math.floor(Math.random() * lastNames.length)];
+                fullName = `${first} ${last}`;
+                attempts++;
+            } while (usedNames.has(fullName.toLowerCase()) && attempts < 50);
+
+            usedNames.add(fullName.toLowerCase());
+
+            await query(
+                `UPDATE candidates SET fullname = ? WHERE candidateid = ?`,
+                [fullName, c.candidateid]
+            );
+            updated++;
+        }
+
+        // 4. Return summary
+        const sample = await query(`
+            SELECT candidateid, fullname FROM candidates
+            WHERE fullname NOT LIKE 'Candidate_%'
+            ORDER BY candidateid
+            LIMIT 10
+        `);
+
+        res.json({
+            message: 'Candidate names updated successfully.',
+            updated,
+            sample: sample.map(r => r.fullname)
+        });
+
+    } catch (err) {
+        console.error('Seed Candidate Names Error:', err.message);
+        res.status(500).json({ error: 'Failed to update candidate names: ' + err.message });
+    }
+});
+
 module.exports = router;
