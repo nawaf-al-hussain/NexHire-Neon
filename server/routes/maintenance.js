@@ -676,4 +676,109 @@ router.post('/seed-candidate-names', protect, authorize(1), async (req, res) => 
     }
 });
 
+/**
+ * @route   POST /api/maintenance/seed-gamification
+ * @desc    Populate candidategamification with realistic points, levels, badges, ranks
+ * @access  Private (Admin Only)
+ */
+router.post('/seed-gamification', protect, authorize(1), async (req, res) => {
+    try {
+        // 1. Fetch all candidates
+        const candidates = await query(`
+            SELECT c.candidateid
+            FROM candidates c
+            ORDER BY c.candidateid
+        `);
+
+        if (candidates.length === 0) {
+            return res.json({ message: 'No candidates found.', updated: 0 });
+        }
+
+        // 2. Badge pool
+        const badgePool = [
+            'ProfileComplete', 'FirstApplication', 'InterviewMaster',
+            'SkillVerified', 'QuickResponder', 'Streak7', 'Streak30',
+            'TopPerformer', 'CareerExplorer', 'AssessmentPro',
+            'EarlyBird', 'Consistent', 'ResumeStar', 'MatchChampion'
+        ];
+
+        // 3. Generate gamification data for each candidate
+        let updated = 0;
+        const gamificationData = [];
+
+        for (const c of candidates) {
+            // Random points between 50 and 2500
+            const points = Math.floor(Math.random() * 2450) + 50;
+            // Level 1-5 based on points
+            const level = points >= 2000 ? 5 : points >= 1000 ? 4 : points >= 500 ? 3 : points >= 200 ? 2 : 1;
+            // 2-5 random badges
+            const badgeCount = Math.floor(Math.random() * 4) + (level >= 3 ? 2 : 1);
+            const shuffled = [...badgePool].sort(() => Math.random() - 0.5);
+            const badges = JSON.stringify(shuffled.slice(0, Math.min(badgeCount, badgePool.length)));
+            // Streak 1-30 days
+            const streakDays = Math.floor(Math.random() * 30) + 1;
+            // Engagement score 30-95
+            const engagementScore = Math.floor(Math.random() * 65) + 30;
+
+            gamificationData.push({
+                candidateid: c.candidateid,
+                points,
+                level,
+                badges,
+                streakDays,
+                engagementScore
+            });
+        }
+
+        // 4. Sort by points to compute leaderboard ranks
+        gamificationData.sort((a, b) => b.points - a.points);
+        gamificationData.forEach((g, i) => {
+            g.leaderboardRank = i + 1;
+        });
+
+        // 5. Upsert into candidategamification
+        for (const g of gamificationData) {
+            await query(`
+                INSERT INTO candidategamification
+                    (candidateid, points, level, badges, streakdays,
+                     leaderboardrank, engagementscore, lastactivitydate)
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                ON CONFLICT (candidateid) DO UPDATE SET
+                    points = EXCLUDED.points,
+                    level = EXCLUDED.level,
+                    badges = EXCLUDED.badges,
+                    streakdays = EXCLUDED.streakdays,
+                    leaderboardrank = EXCLUDED.leaderboardrank,
+                    engagementscore = EXCLUDED.engagementscore,
+                    lastactivitydate = NOW()
+            `, [
+                g.candidateid, g.points, g.level, g.badges,
+                g.streakDays, g.leaderboardRank, g.engagementScore
+            ]);
+            updated++;
+        }
+
+        // 6. Return summary
+        const stats = await query(`
+            SELECT
+                COUNT(*) AS total,
+                AVG(points) AS avgpoints,
+                MAX(points) AS maxpoints,
+                COUNT(CASE WHEN level >= 4 THEN 1 END) AS highlevel,
+                AVG(engagementscore) AS avgengagement
+            FROM candidategamification
+        `);
+
+        res.json({
+            message: 'Gamification data populated successfully.',
+            updated,
+            stats: stats[0]
+        });
+
+    } catch (err) {
+        console.error('Seed Gamification Error:', err.message);
+        res.status(500).json({ error: 'Failed to seed gamification data: ' + err.message });
+    }
+});
+
 module.exports = router;

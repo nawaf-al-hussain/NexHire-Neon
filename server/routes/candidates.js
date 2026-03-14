@@ -707,7 +707,7 @@ router.get('/leaderboard/global', protect, authorize(3), async (req, res) => {
 
         res.json({
             globalRanking: globalLeaderboard,
-            userRank: userRank[0]?.UserRank || 0
+            userRank: parseInt(userRank[0]?.userrank) || 0
         });
     } catch (err) {
         console.error("Fetch Global Leaderboard Error:", err.message);
