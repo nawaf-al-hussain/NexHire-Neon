@@ -163,6 +163,8 @@ const query = async (sqlQuery, params = []) => {
 
                 // Gamification / leaderboard
                 'points': 'Points',
+                'level': 'Level',
+                'leaderboardrank': 'LeaderboardRank',
                 'totalpoints': 'TotalPoints',
                 'rank': 'Rank',
                 'badgename': 'BadgeName',
