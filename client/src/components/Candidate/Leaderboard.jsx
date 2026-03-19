@@ -31,16 +31,39 @@ const Leaderboard = ({ leaderboardData, loading, globalData, userRank }) => {
  LastActivityDate: new Date().toISOString()
  }];
 
- const badges = data[0]?.Badges ? (data[0].Badges || "").split(',') : ['ApplicationWinner', 'SkillMaster'];
+ const badgesRaw = data[0]?.Badges || data[0]?.badges || '[]';
+ let badges;
+ try {
+ // Badges is stored as a JSON array string like ["EarlyBird","SkillVerified"]
+ const parsed = typeof badgesRaw === 'string' ? JSON.parse(badgesRaw) : badgesRaw;
+ badges = Array.isArray(parsed) && parsed.length > 0 ? parsed : ['ApplicationWinner', 'SkillMaster'];
+ } catch (e) {
+ // Fallback: treat as comma-separated string
+ badges = typeof badgesRaw === 'string' ? badgesRaw.split(',').map(b => b.trim()).filter(Boolean) : ['ApplicationWinner'];
+ if (badges.length === 0) badges = ['ApplicationWinner', 'SkillMaster'];
+ }
  const badgeIcons = {
  'ApplicationWinner': <Star className="w-5 h-5 text-[var(--warning)]" />,
  'SkillMaster': <Award className="w-5 h-5 text-[var(--success)]" />,
  'InterviewPro': <Medal className="w-5 h-5 text-[var(--accent)]" />,
+ 'InterviewMaster': <Medal className="w-5 h-5 text-[var(--accent)]" />,
  'EarlyBird': <Zap className="w-5 h-5 text-[var(--danger)]" />,
  'StreakMaster': <Trophy className="w-5 h-5 text-[var(--warning)]" />,
+ 'Streak7': <Flame className="w-5 h-5 text-[var(--warning)]" />,
+ 'Streak30': <Trophy className="w-5 h-5 text-[var(--warning)]" />,
  'ProfilePerfectionist': <Crown className="w-5 h-5 text-[var(--accent)]" />,
+ 'ProfileComplete': <Crown className="w-5 h-5 text-[var(--accent)]" />,
  'JobHunter': <TrendingUp className="w-5 h-5 text-[var(--accent)]" />,
- 'ConsistentCandidate': <Flame className="w-5 h-5 text-[var(--warning)]" />
+ 'FirstApplication': <Star className="w-5 h-5 text-[var(--success)]" />,
+ 'ConsistentCandidate': <Flame className="w-5 h-5 text-[var(--warning)]" />,
+ 'Consistent': <Flame className="w-5 h-5 text-[var(--warning)]" />,
+ 'SkillVerified': <Award className="w-5 h-5 text-[var(--success)]" />,
+ 'QuickResponder': <Zap className="w-5 h-5 text-[var(--danger)]" />,
+ 'TopPerformer': <Trophy className="w-5 h-5 text-[var(--warning)]" />,
+ 'CareerExplorer': <TrendingUp className="w-5 h-5 text-[var(--accent)]" />,
+ 'AssessmentPro': <Medal className="w-5 h-5 text-[var(--accent)]" />,
+ 'ResumeStar': <Star className="w-5 h-5 text-[var(--warning)]" />,
+ 'MatchChampion': <Crown className="w-5 h-5 text-[var(--accent)]" />,
  };
 
  // Check if user logged in today for streak indicator
