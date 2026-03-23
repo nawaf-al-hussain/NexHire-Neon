@@ -7,7 +7,6 @@ import { useToast } from '../../components/ui/Toast';
 const STATUS_STEPS = ['Applied', 'Screening', 'Interview', 'Hired'];
 
 const getStatusColor = (status) => {
-    const { toast } = useToast();
  switch (status) {
  case 'Hired': return 'text-[var(--success)] bg-[var(--success)]/10 border-emerald-500/20';
  case 'Rejected': return 'text-[var(--danger)] bg-[var(--danger)]/10 border-[var(--danger)]/20';
@@ -26,6 +25,7 @@ const stepActive = (stepName, currentStatus) => {
 
 const CandidateApplications = ({ applications, loading, onRefresh }) => {
  const [expandedApp, setExpandedApp] = useState(null);
+ const { toast } = useToast();
 
  const handleRespond = async (applicationID, action) => {
  try {
