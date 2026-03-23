@@ -1,0 +1,594 @@
+     1→     1→const { Pool } = require("pg");
+     2→     2→require('dotenv').config();
+     3→     3→
+     4→     4→const connectionString = process.env.DB_CONNECTION_STRING;
+     5→     5→
+     6→     6→// Use pool for better performance and connection management
+     7→     7→const pool = new Pool({
+     8→     8→    connectionString: connectionString,
+     9→     9→    ssl: {
+    10→    10→        rejectUnauthorized: false // Required for Neon connections
+    11→    11→    }
+    12→    12→});
+    13→    13→
+    14→    14→/**
+    15→    15→ * Executes a SQL query with optional parameters.
+    16→    16→ * Handles both SQL Server (?) and PostgreSQL ($1, $2) parameter styles
+    17→    17→ * to maintain compatibility during migration.
+    18→    18→ * @param {string} sqlQuery - The SQL query string.
+    19→    19→ * @param {Array} params - Optional parameters for the query.
+    20→    20→ * @returns {Promise<Array>} - Resolves with the result rows.
+    21→    21→ */
+    22→    22→const query = async (sqlQuery, params = []) => {
+    23→    23→    let client;
+    24→    24→    try {
+    25→    25→        client = await pool.connect();
+    26→    26→
+    27→    27→        // Convert '?' parameters to '$1, $2, ...' if needed for PG
+    28→    28→        // This is a simple conversion for legacy SQL Server queries
+    29→    29→        let pgQuery = sqlQuery;
+    30→    30→        let paramCount = 1;
+    31→    31→        while (pgQuery.includes('?')) {
+    32→    32→            pgQuery = pgQuery.replace('?', `$${paramCount++}`);
+    33→    33→        }
+    34→    34→
+    35→    35→        const result = await client.query(pgQuery, params);
+    36→    36→
+    37→    37→        // Alias support for frontend compatibility
+    38→    38→        // Automatically maps lowercase keys to PascalCase for common fields
+    39→    39→        const processedRows = result.rows.map(row => {
+    40→    40→            const aliasedRow = { ...row };
+    41→    41→
+    42→    42→            // Comprehensive ID and descriptive field mappings
+    43→    43→            const mappings = {
+    44→    44→                // IDs
+    45→    45→                'userid': 'UserID',
+    46→    46→                'roleid': 'RoleID',
+    47→    47→                'jobid': 'JobID',
+    48→    48→                'applicationid': 'ApplicationID',
+    49→    49→                'candidateid': 'CandidateID',
+    50→    50→                'statusid': 'StatusID',
+    51→    51→                'interviewid': 'InterviewID',
+    52→    52→                'assessmentid': 'AssessmentID',
+    53→    53→                'skillid': 'SkillID',
+    54→    54→                'auditid': 'AuditID',
+    55→    55→                'recordid': 'RecordID',
+    56→    56→                'consentid': 'ConsentID',
+    57→    57→
+    58→    58→                // Common Descriptive Fields
+    59→    59→                'jobtitle': 'JobTitle',
+    60→    60→                'location': 'Location',
+    61→    61→                'description': 'Description',
+    62→    62→                'fullname': 'FullName',
+    63→    63→                'candidatename': 'CandidateName',
+    64→    64→                'yearsofexperience': 'YearsOfExperience',
+    65→    65→                'skills': 'Skills',
+    66→    66→                'username': 'Username',  // frontend reads Username (not UserName)
+    67→    67→                'email': 'Email',
+    68→    68→                'statusname': 'StatusName',
+    69→    69→                'rolename': 'RoleName',
+    70→    70→                'minexperience': 'MinExperience',
+    71→    71→                'vacancies': 'Vacancies',
+    72→    72→                'salarymin': 'SalaryMin',
+    73→    73→                'salarymax': 'SalaryMax',
+    74→    74→                'minsalary': 'MinSalary',
+    75→    75→                'maxsalary': 'MaxSalary',
+    76→    76→                'applieddate': 'AppliedDate',
+    77→    77→                'createdat': 'CreatedAt',
+    78→    78→                'updatedat': 'UpdatedAt',
+    79→    79→                'isactive': 'IsActive',
+    80→    80→                'isdeleted': 'IsDeleted',
+    81→    81→                'ismandatory': 'IsMandatory',
+    82→    82→                'minproficiency': 'MinProficiency',
+    83→    83→                'skillname': 'SkillName',
+    84→    84→                'matchedskillscount': 'MatchedSkillsCount',
+    85→    85→                'totalmatchscore': 'TotalMatchScore',
+    86→    86→                'engagementrate': 'EngagementRate',
+    87→    87→                'hireratepercent': 'HireRatePercent',
+    88→    88→                'skillgap': 'SkillGap',
+    89→    89→                'avgscoregiven': 'AvgScoreGiven',
+    90→    90→                'scorevariance': 'ScoreVariance',
+    91→    91→                'rejectionreason': 'RejectionReason',
+    92→    92→                'rejectioncount': 'RejectionCount',
+    93→    93→                'rejectionpercent': 'RejectionPercent',
+    94→    94→
+    95→    95→                // Interview-specific fields
+    96→    96→                'scheduleid': 'ScheduleID',
+    97→    97→                'interviewstart': 'InterviewStart',
+    98→    98→                'interviewend': 'InterviewEnd',
+    99→    99→                'candidateconfirmed': 'CandidateConfirmed',
+   100→   100→                'recruiterid': 'RecruiterID',
+   101→   101→                'recruitername': 'RecruiterName',
+   102→   102→                'joblocation': 'JobLocation',
+   103→   103→                'timestatus': 'TimeStatus',
+   104→   104→                'duration': 'Duration',
+   105→   105→                'platform': 'Platform',
+   106→   106→                'status': 'Status',
+   107→   107→
+   108→   108→                // Candidate profile fields
+   109→   109→                'proficiencylevel': 'ProficiencyLevel',
+   110→   110→                'phonenumber': 'PhoneNumber',
+   111→   111→                'dateofbirth': 'DateOfBirth',
+   112→   112→                'resumeurl': 'ResumeUrl',
+   113→   113→                'linkedinurl': 'LinkedInURL',  // frontend reads LinkedInURL (all caps)
+   114→   114→                'githuburl': 'GitHubUrl',
+   115→   115→                'portfoliourl': 'PortfolioUrl',
+   116→   116→                'isverified': 'IsVerified',
+   117→   117→                'verifiedat': 'VerifiedAt',
+   118→   118→                'verifiedby': 'VerifiedBy',
+   119→   119→                'withdrawalreason': 'WithdrawalReason',
+   120→   120→                'daysinactive': 'DaysInactive',
+   121→   121→
+   122→   122→                // Assessment / ranking fields
+   123→   123→                'assessmentname': 'AssessmentName',
+   124→   124→                'assessmenttype': 'AssessmentType',
+   125→   125→                'passscore': 'PassScore',
+   126→   126→                'maxscore': 'MaxScore',
+   127→   127→                'score': 'Score',
+   128→   128→                'ispassed': 'IsPassed',
+   129→   129→                'completedat': 'CompletedAt',
+   130→   130→                'timetaken': 'TimeTaken',
+   131→   131→                'candidaterank': 'CandidateRank',
+   132→   132→                'rankingscore': 'RankingScore',
+   133→   133→
+   134→   134→                // Analytics / reporting fields
+   135→   135→                'applicationcount': 'ApplicationCount',
+   136→   136→                'filledpositions': 'FilledPositions',
+   137→   137→                'totalapplications': 'TotalApplications',
+   138→   138→                'totalapplicants': 'TotalApplicants',
+   139→   139→                'hiredcount': 'HiredCount',
+   140→   140→                'experiencegroup': 'ExperienceGroup',
+   141→   141→                'avgdaysinstage': 'AvgDaysInStage',
+   142→   142→                'applicationsinstage': 'ApplicationsInStage',
+   143→   143→                'interviewsconducted': 'InterviewsConducted',
+   144→   144→                'avgdayshired': 'AvgDaysHired',
+   145→   145→                'hirecount': 'HireCount',
+   146→   146→                'totalpool': 'TotalPool',
+   147→   147→                'topmatches': 'TopMatches',
+   148→   148→                'openroles': 'OpenRoles',
+   149→   149→                'calculatedat': 'CalculatedAt',
+   150→   150→                'matchscore': 'MatchScore',
+   151→   151→                'overallremotescore': 'OverallRemoteScore',
+   152→   152→                'hireddate': 'HiredDate',
+   153→   153→                'dayssincehired': 'DaysSinceHired',
+   154→   154→                'historyid': 'HistoryID',
+   155→   155→                'utilizationrate': 'UtilizationRate',
+   156→   156→                'filledvacancies': 'FilledVacancies',
+   157→   157→                'totalvacancies': 'TotalVacancies',
+   158→   158→                'skillgap': 'SkillGap',
+   159→   159→                'demandlevel': 'DemandLevel',
+   160→   160→                'supplycount': 'SupplyCount',
+   161→   161→                'demandcount': 'DemandCount',
+   162→   162→                'availableskills': 'AvailableSkills',
+   163→   163→
+   164→   164→                // Gamification / leaderboard
+   165→   165→                'points': 'Points',
+   166→   166→                'level': 'Level',
+   167→   167→                'leaderboardrank': 'LeaderboardRank',
+   168→   168→                'totalpoints': 'TotalPoints',
+   169→   169→                'rank': 'Rank',
+   170→   170→                'badgename': 'BadgeName',
+   171→   171→                'badgedescription': 'BadgeDescription',
+   172→   172→                'earneddate': 'EarnedDate',
+   173→   173→                'streakdays': 'StreakDays',
+   174→   174→                'loginstreak': 'LoginStreak',
+   175→   175→
+   176→   176→                // Background check / verification
+   177→   177→                'checkid': 'CheckID',
+   178→   178→                'checkstatus': 'CheckStatus',
+   179→   179→                'checktype': 'CheckType',
+   180→   180→                'checkedby': 'CheckedBy',
+   181→   181→                'checkdate': 'CheckDate',
+   182→   182→                'txhash': 'TxHash',
+   183→   183→                'blockchainnetwork': 'BlockchainNetwork',
+   184→   184→                'vendor': 'Vendor',
+   185→   185→                'requestid': 'RequestID',
+   186→   186→                'result': 'Result',
+   187→   187→                'findings': 'Findings',
+   188→   188→                'risklevel': 'RiskLevel',
+   189→   189→                'initiatedat': 'InitiatedAt',
+   190→   190→                'completedat': 'CompletedAt',
+   191→   191→                'reporturl': 'ReportUrl',
+   192→   192→                'cost': 'Cost',
+   193→   193→                'turnarounddays': 'TurnaroundDays',
+   194→   194→                'notes': 'Notes',
+   195→   195→
+   196→   196→                // Blockchain verification fields
+   197→   197→                // These are returned by GET /recruiters/blockchain-verifications/:candidateId
+   198→   198→                // and GET /recruiters/blockchain-dashboard. Without these mappings the
+   199→   199→                // frontend reads verif.VerificationID as undefined and ends up PUT-ing
+   200→   200→                // to /blockchain-verifications/undefined (500).
+   201→   201→                'verificationid': 'VerificationID',
+   202→   202→                'credentialtype': 'CredentialType',
+   203→   203→                'issuingauthority': 'IssuingAuthority',
+   204→   204→                'credentialhash': 'CredentialHash',
+   205→   205→                'blockchaintransactionid': 'BlockchainTransactionID',
+   206→   206→                'blocknumber': 'BlockNumber',
+   207→   207→                'network': 'Network',
+   208→   208→                'isimmutable': 'IsImmutable',
+   209→   209→                'verificationcost': 'VerificationCost',
+   210→   210→                'verificationstatus': 'VerificationStatus',
+   211→   211→                'metadata': 'Metadata',
+   212→   212→                'lastchecked': 'LastChecked',
+   213→   213→
+   214→   214→                // Blockchain dashboard summary aggregates
+   215→   215→                'totalverifications': 'TotalVerifications',
+   216→   216→                'totalcost': 'TotalCost',
+   217→   217→                'avgcost': 'AvgCost',
+   218→   218→
+   219→   219→                // Dashboard stats
+   220→   220→                'totalchecks': 'TotalChecks',
+   221→   221→                'pending': 'Pending',
+   222→   222→                'inprogress': 'InProgress',
+   223→   223→                'cleared': 'Cleared',
+   224→   224→                'adverse': 'Adverse',
+   225→   225→                'consider': 'Consider',
+   226→   226→                'avgcost': 'AvgCost',
+   227→   227→                'avgturnarounddays': 'AvgTurnaroundDays',
+   228→   228→                'totalcost': 'TotalCost',
+   229→   229→                'count': 'Count',
+   230→   230→                'completed': 'Completed',
+   231→   231→                'failed': 'Failed',
+   232→   232→                'successprobability': 'SuccessProbability',
+   233→   233→                'confidencelevel': 'ConfidenceLevel',
+   234→   234→                'keyfactors': 'KeyFactors',
+   235→   235→                'predictionid': 'PredictionID',
+   236→   236→
+   237→   237→                // Job salary / requirements
+   238→   238→                'istransparent': 'IsTransparent',
+   239→   239→                'createdby': 'CreatedBy',
+   240→   240→                'fromstatus': 'FromStatus',
+   241→   241→                'tostatus': 'ToStatus',
+   242→   242→                'changedbylabel': 'ChangedByLabel',
+   243→   243→
+   244→   244→                // ---- Ghosting / risk analytics ----
+   245→   245→                // Returned by GET /analytics/ghosting-detail and /analytics/risk-alerts
+   246→   246→                // Without these, GhostingRiskDetail.jsx shows 0 candidates in each
+   247→   247→                // risk bucket (High/Medium/Low) because OverallRiskLevel is undefined.
+   248→   248→                'overallrisklevel': 'OverallRiskLevel',
+   249→   249→                'overallriskscore': 'OverallRiskScore',
+   250→   250→                'candidateghostingscore': 'CandidateGhostingScore',
+   251→   251→                'recruiterghostingscore': 'RecruiterGhostingScore',
+   252→   252→                'avgresponsetime': 'AvgResponseTime',
+   253→   253→                'totalcommunications': 'TotalCommunications',
+   254→   254→                'dayssinceapplication': 'DaysSinceApplication',
+   255→   255→                'dayssincecontact': 'DaysSinceLastContact',  // alias used in some queries
+   256→   256→                'responsetimehours': 'ResponseTimeHours',
+   257→   257→                'communicationfrequency': 'CommunicationFrequency',
+   258→   258→                'lastcontactdate': 'LastContactDate',
+   259→   259→
+   260→   260→                // ---- Market intelligence / skill demand ----
+   261→   261→                // Returned by GET /analytics/market (MarketIntelligenceChart, SalaryCoach,
+   262→   262→                // MarketAlerts, HireAnalytics, SkillGapAnalysis)
+   263→   263→                'demandscore': 'DemandScore',
+   264→   264→                'supplyscore': 'SupplyScore',
+   265→   265→                'salarytrend': 'SalaryTrend',
+   266→   266→                'avgsalary': 'AvgSalary',
+   267→   267→
+   268→   268→                // ---- Referral intelligence ----
+   269→   269→                // Returned by /referrals routes (ReferralIntelligence.jsx)
+   270→   270→                'referralid': 'ReferralID',
+   271→   271→                'referraldate': 'ReferralDate',
+   272→   272→                'referralstrength': 'ReferralStrength',
+   273→   273→                'relationshiptype': 'RelationshipType',
+   274→   274→                'connectionstrength': 'ConnectionStrength',
+   275→   275→                'bonusamount': 'BonusAmount',
+   276→   276→                'totalbonusearned': 'TotalBonusEarned',
+   277→   277→                'totalreferrals': 'TotalReferrals',
+   278→   278→                'successfulreferrals': 'SuccessfulReferrals',
+   279→   279→                'converted': 'Converted',
+   280→   280→                'conversionrate': 'ConversionRate',
+   281→   281→
+   282→   282→                // ---- Candidate engagement / interviews ----
+   283→   283→                // Returned by /analytics/candidate-engagement (CandidateEngagement.jsx)
+   284→   284→                'engagementscore': 'EngagementScore',
+   285→   285→                'confirmedinterviews': 'ConfirmedInterviews',
+   286→   286→                'interviewsscheduled': 'InterviewsScheduled',
+   287→   287→                'interviewername': 'InterviewerName',
+   288→   288→                'qualityscore': 'QualityScore',
+   289→   289→                'avgqualityscore': 'AvgQualityScore',
+   290→   290→
+   291→   291→                // ---- Career path simulator ----
+   292→   292→                // Returned by /analytics/career-path (CareerPath.jsx, CareerPathSimulator.jsx)
+   293→   293→                'targetrole': 'TargetRole',
+   294→   294→                'transitionprobability': 'TransitionProbability',
+   295→   295→                'currentreadinessscore': 'CurrentReadinessScore',
+   296→   296→                'selfmotivationscore': 'SelfMotivationScore',
+   297→   297→                'timezonealignment': 'TimezoneAlignment',
+   298→   298→
+   299→   299→                // ---- Candidate profile enrichment ----
+   300→   300→                // Returned by candidate profile endpoints (CandidateProfileModal.jsx)
+   301→   301→                'candidatelocation': 'CandidateLocation',
+   302→   302→                'extractedskills': 'ExtractedSkills',
+   303→   303→                'resumequalityscore': 'ResumeQualityScore',
+   304→   304→                'resumetext': 'ResumeText',
+   305→   305→                'educationinstitutions': 'EducationInstitutions',
+   306→   306→                'certifications': 'Certifications',
+   307→   307→                'badges': 'Badges',
+   308→   308→                'trustlevel': 'TrustLevel',
+   309→   309→                'complianceverified': 'ComplianceVerified',
+   310→   310→
+   311→   311→                // ---- Skill verification ----
+   312→   312→                // Returned by /analytics/skill-verification (SkillVerificationStatus.jsx,
+   313→   313→                // CandidateSkillsVerification.jsx)
+   314→   314→                'claimedlevel': 'ClaimedLevel',
+   315→   315→                'verificationmethod': 'VerificationMethod',
+   316→   316→                'verificationscore': 'VerificationScore',
+   317→   317→                'expirydate': 'ExpiryDate',
+   318→   318→                'validitystatus': 'ValidityStatus',
+   319→   319→                'passingscore': 'PassingScore',
+   320→   320→                'predictedat': 'PredictedAt',
+   321→   321→
+   322→   322→                // ---- Assessment / question generation ----
+   323→   323→                // Returned by /assessment routes (AssessmentTestingEngine.jsx)
+   324→   324→                'attemptid': 'AttemptID',
+   325→   325→                'questionscount': 'QuestionsCount',
+   326→   326→                'timelimit': 'TimeLimit',
+   327→   327→
+   328→   328→                // ---- Hire success prediction breakdown ----
+   329→   329→                // Returned by /analytics/predict-hire-success response
+   330→   330→                'hireresult': 'HireResult',
+   331→   331→
+   332→   332→                // ---- Common audit fields ----
+   333→   333→                'changedby': 'ChangedBy',
+   334→   334→                'created': 'Created',
+   335→   335→                'submitted': 'Submitted',
+   336→   336→                'declined': 'Declined',
+   337→   337→                'detection': 'Detection',
+   338→   338→                'recruiter': 'Recruiter',
+   339→   339→
+   340→   340→                // ---- Market alerts (returned by /recruiters/market-alerts) ----
+   341→   341→                // These are computed in the SQL query (CASE/CONCAT expressions),
+   342→   342→                // not from a view, so they need their own PascalCase mappings.
+   343→   343→                // Without these, MarketAlerts.jsx reads a.SkillName as undefined.
+   344→   344→                'alerttype': 'AlertType',
+   345→   345→                'imbalancescore': 'ImbalanceScore',
+   346→   346→                'severity': 'Severity',
+   347→   347→                'triggeredat': 'TriggeredAt',
+   348→   348→                'expiresat': 'ExpiresAt',
+   349→   349→
+   350→   350→                // ---- BATCH: 166 auto-generated PascalCase mappings ----
+   351→   351→                // Generated by auditing every PascalCase field access in client/src/**/*.jsx
+   352→   352→                // and adding mappings for any that weren't already covered above.
+   353→   353→                //
+   354→   354→                // SAFETY: each mapping only fires when (a) the lowercase key exists
+   355→   355→                // in the row AND (b) the PascalCase key does NOT already exist.
+   356→   356→                // This means:
+   357→   357→                //   - SQL queries that explicitly use 'AS SomeField' are NEVER overwritten
+   358→   358→                //   - These mappings only fill in the gaps (fields returned lowercase
+   359→   359→                //     by PostgreSQL that the frontend reads in PascalCase)
+   360→   360→                //   - Unused mappings are no-ops (no behavior change)
+   361→   361→                //
+   362→   362→                // This batch fixes empty-data bugs across many pages including:
+   363→   363→                //   BiasLogs, SalaryCoach, SkillGapAnalysis, DiversityGoals,
+   364→   364→                //   ReferralIntelligence, Leaderboard, SentimentTracker,
+   365→   365→                //   PushNotifications, ExternalPlatformSync, CareerPathSimulator,
+   366→   366→                //   InterviewFatigueReducer, ConsentManagement, EmailQueueManager,
+   367→   367→                //   RemoteWorkAnalytics, ProfileManagement, ScreeningBot,
+   368→   368→                //   TimeToHireDetail, TalentPool, InterviewQuestionsGenerator,
+   369→   369→                //   CandidateProfileModal, InterviewFeedback, AssessmentTestingEngine
+   370→   370→                'alreadyassessedskills': 'AlreadyAssessedSkills',
+   371→   371→                'alternativepaths': 'AlternativePaths',
+   372→   372→                'alternativerole': 'AlternativeRole',
+   373→   373→                'analyzedat': 'AnalyzedAt',
+   374→   374→                'applicationrate': 'ApplicationRate',
+   375→   375→                'applicationstatus': 'ApplicationStatus',
+   376→   376→                'archivedat': 'ArchivedAt',
+   377→   377→                'averagesalary': 'AverageSalary',
+   378→   378→                'avgdaystohire': 'AvgDaysToHire',
+   379→   379→                'avginterviewscore': 'AvgInterviewScore',
+   380→   380→                'avgmonthstopromote': 'AvgMonthsToPromote',
+   381→   381→                'avgprobability': 'AvgProbability',
+   382→   382→                'avgsalaryincrease': 'AvgSalaryIncrease',
+   383→   383→                'avgsalaryincreasepct': 'AvgSalaryIncreasePct',
+   384→   384→                'avgsentimentscore': 'AvgSentimentScore',
+   385→   385→                'avgtransitionmonths': 'AvgTransitionMonths',
+   386→   386→                'callcount': 'CallCount',
+   387→   387→                'candidateexperience': 'CandidateExperience',
+   388→   388→                'candidateproficiencylevel': 'CandidateProficiencyLevel',
+   389→   389→                'changedat': 'ChangedAt',
+   390→   390→                'chatcount': 'ChatCount',
+   391→   391→                'communicationpreference': 'CommunicationPreference',
+   392→   392→                'communicationscore': 'CommunicationScore',
+   393→   393→                'commutetimemax': 'CommuteTimeMax',
+   394→   394→                'compatibilityassessment': 'CompatibilityAssessment',
+   395→   395→                'consenttype': 'ConsentType',
+   396→   396→                'consentversion': 'ConsentVersion',
+   397→   397→                'culturefitscore': 'CultureFitScore',
+   398→   398→                'currentpercentage': 'CurrentPercentage',
+   399→   399→                'currentrole': 'CurrentRole',
+   400→   400→                'daystohire': 'DaysToHire',
+   401→   401→                'decisionid': 'DecisionID',
+   402→   402→                'detectedat': 'DetectedAt',
+   403→   403→                'detectionid': 'DetectionID',
+   404→   404→                'detectiontype': 'DetectionType',
+   405→   405→                'developmentplan': 'DevelopmentPlan',
+   406→   406→                'difficultylevel': 'DifficultyLevel',
+   407→   407→                'distractionresistance': 'DistractionResistance',
+   408→   408→                'documenttype': 'DocumentType',
+   409→   409→                'dominantcommunicationstyle': 'DominantCommunicationStyle',
+   410→   410→                'educationlevel': 'EducationLevel',
+   411→   411→                'emailcount': 'EmailCount',
+   412→   412→                'emailid': 'EmailID',
+   413→   413→                'emailtype': 'EmailType',
+   414→   414→                'emotionbreakdown': 'EmotionBreakdown',
+   415→   415→                'enddate': 'EndDate',
+   416→   416→                'estimatedhours': 'EstimatedHours',
+   417→   417→                'estimatedminutes': 'EstimatedMinutes',
+   418→   418→                'estimatedsuccessprobability': 'EstimatedSuccessProbability',
+   419→   419→                'estimatedtimeline': 'EstimatedTimeline',
+   420→   420→                'estimatedtimelinemonths': 'EstimatedTimelineMonths',
+   421→   421→                'expectedanswerkeywords': 'ExpectedAnswerKeywords',
+   422→   422→                'expectedsalaryincreasepercent': 'ExpectedSalaryIncreasePercent',
+   423→   423→                'experiencelabel': 'ExperienceLabel',
+   424→   424→                'experiencerange': 'ExperienceRange',
+   425→   425→                'fallbackoptions': 'FallbackOptions',
+   426→   426→                'feasibilityassessment': 'FeasibilityAssessment',
+   427→   427→                'filepath': 'FilePath',
+   428→   428→                'finalstatus': 'FinalStatus',
+   429→   429→                'fitscore': 'FitScore',
+   430→   430→                'fromrole': 'FromRole',
+   431→   431→                'gapcategory': 'GapCategory',
+   432→   432→                'gapscore': 'GapScore',
+   433→   433→                'gaptotarget': 'GapToTarget',
+   434→   434→                'ghostingrisk': 'GhostingRisk',
+   435→   435→                'givenat': 'GivenAt',
+   436→   436→                'globalrank': 'GlobalRank',
+   437→   437→                'goalid': 'GoalID',
+   438→   438→                'grantedat': 'GrantedAt',
+   439→   439→                'hasapplied': 'HasApplied',
+   440→   440→                'hasskill': 'HasSkill',
+   441→   441→                'hirerate': 'HireRate',
+   442→   442→                'hiringdifficulty': 'HiringDifficulty',
+   443→   443→                'hiringrate': 'HiringRate',
+   444→   444→                'historicalconversionrate': 'HistoricalConversionRate',
+   445→   445→                'humanoverride': 'HumanOverride',
+   446→   446→                'initialoffer': 'InitialOffer',
+   447→   447→                'interactioncontent': 'InteractionContent',
+   448→   448→                'interactiontype': 'InteractionType',
+   449→   449→                'interviewcount': 'InterviewCount',
+   450→   450→                'isgranted': 'IsGranted',
+   451→   451→                'isread': 'IsRead',
+   452→   452→                'isresolved': 'IsResolved',
+   453→   453→                'issent': 'IsSent',
+   454→   454→                'jobssynced': 'JobsSynced',
+   455→   455→                'lastactivitydate': 'LastActivityDate',
+   456→   456→                'lastsyncedat': 'LastSyncedAt',
+   457→   457→                'leadershipexperience': 'LeadershipExperience',
+   458→   458→                'locationpriority': 'LocationPriority',
+   459→   459→                'marketaverage': 'MarketAverage',
+   460→   460→                'marketcondition': 'MarketCondition',
+   461→   461→                'matchcategory': 'MatchCategory',
+   462→   462→                'matchingskillscount': 'MatchingSkillsCount',
+   463→   463→                'meetsrequirement': 'MeetsRequirement',
+   464→   464→                'metrictype': 'MetricType',
+   465→   465→                'negotiationroom': 'NegotiationRoom',
+   466→   466→                'negotiationscript': 'NegotiationScript',
+   467→   467→                'newvalue': 'NewValue',
+   468→   468→                'nextrole': 'NextRole',
+   469→   469→                'notificationid': 'NotificationID',
+   470→   470→                'notificationtype': 'NotificationType',
+   471→   471→                'offerassessment': 'OfferAssessment',
+   472→   472→                'offerpercentile': 'OfferPercentile',
+   473→   473→                'oldvalue': 'OldValue',
+   474→   474→                'overlaphours': 'OverlapHours',
+   475→   475→                'overlapscore': 'OverlapScore',
+   476→   476→                'pendingreferrals': 'PendingReferrals',
+   477→   477→                'positiveindicators': 'PositiveIndicators',
+   478→   478→                'potentialreferrals': 'PotentialReferrals',
+   479→   479→                'predictedretentionmonths': 'PredictedRetentionMonths',
+   480→   480→                'preferredlocations': 'PreferredLocations',
+   481→   481→                'profileurl': 'ProfileURL',
+   482→   482→                'questionid': 'QuestionID',
+   483→   483→                'questiontext': 'QuestionText',
+   484→   484→                'questiontype': 'QuestionType',
+   485→   485→                'recommendedaction': 'RecommendedAction',
+   486→   486→                'recommendedcounteroffer': 'RecommendedCounterOffer',
+   487→   487→                'recommendedinterviewrounds': 'RecommendedInterviewRounds',
+   488→   488→                'redflagsdetected': 'RedFlagsDetected',
+   489→   489→                'redundancyassessment': 'RedundancyAssessment',
+   490→   490→                'redundantquestionsdetected': 'RedundantQuestionsDetected',
+   491→   491→                'referralcount': 'ReferralCount',
+   492→   492→                'referredcandidatename': 'ReferredCandidateName',
+   493→   493→                'referrername': 'ReferrerName',
+   494→   494→                'referrerqualityscore': 'ReferrerQualityScore',
+   495→   495→                'remainingvacancies': 'RemainingVacancies',
+   496→   496→                'remotepreference': 'RemotePreference',
+   497→   497→                'remotescore': 'RemoteScore',
+   498→   498→                'requiredexperience': 'RequiredExperience',
+   499→   499→                'requiredskills': 'RequiredSkills',
+   500→   500→                'resolvedat': 'ResolvedAt',
+   501→   501→                'resumescore': 'ResumeScore',
+   502→   502→                'salaryincrease': 'SalaryIncrease',
+   503→   503→                'scoringrubric': 'ScoringRubric',
+   504→   504→                'sentimentscore': 'SentimentScore',
+   505→   505→                'skillsummary': 'SkillSummary',
+   506→   506→                'skillsmatchpercent': 'SkillsMatchPercent',
+   507→   507→                'skillstoassess': 'SkillsToAssess',
+   508→   508→                'startdate': 'StartDate',
+   509→   509→                'successrate': 'SuccessRate',
+   510→   510→                'successfulhires': 'SuccessfulHires',
+   511→   511→                'suggestedactions': 'SuggestedActions',
+   512→   512→                'suggestedstructure': 'SuggestedStructure',
+   513→   513→                'syncdirection': 'SyncDirection',
+   514→   514→                'syncstatus': 'SyncStatus',
+   515→   515→                'tablename': 'TableName',
+   516→   516→                'targetpercentage': 'TargetPercentage',
+   517→   517→                'targetsalary': 'TargetSalary',
+   518→   518→                'techstack': 'TechStack',
+   519→   519→                'technicalscore': 'TechnicalScore',
+   520→   520→                'timesavedminutes': 'TimeSavedMinutes',
+   521→   521→                'timetofilldays': 'TimeToFillDays',
+   522→   522→                'timelinemonths': 'TimelineMonths',
+   523→   523→                'timingrecommendation': 'TimingRecommendation',
+   524→   524→                'torole': 'ToRole',
+   525→   525→                'totalinteractions': 'TotalInteractions',
+   526→   526→                'totalpositiveindicators': 'TotalPositiveIndicators',
+   527→   527→                'totalredflags': 'TotalRedFlags',
+   528→   528→                'transitioncount': 'TransitionCount',
+   529→   529→                'trenddirection': 'TrendDirection',
+   530→   530→                'uploadedat': 'UploadedAt',
+   531→   531→                'usedcount': 'UsedCount',
+   532→   532→                'verifiedlevel': 'VerifiedLevel',
+   533→   533→                'willingtorelocate': 'WillingToRelocate',
+   534→   534→                'workspacequality': 'WorkspaceQuality',
+   535→   535→                'workspacescore': 'WorkspaceScore',
+   536→   536→
+   537→   537→                // ---- Audit log & misc fields ----
+   538→   538→                'operation': 'Operation',
+   539→   539→                'source': 'Source',
+   540→   540→            };
+   541→   541→
+   542→   542→            Object.keys(mappings).forEach(lowerKey => {
+   543→   543→                if (row[lowerKey] !== undefined && row[mappings[lowerKey]] === undefined) {
+   544→   544→                    aliasedRow[mappings[lowerKey]] = row[lowerKey];
+   545→   545→                }
+   546→   546→            });
+   547→   547→
+   548→   548→            // Round long-decimal values — PostgreSQL NUMERIC type preserves
+   549→   549→            // full precision (e.g., 0.880000000000000000000 or 6.6666666666666667)
+   550→   550→            // which looks bad in the UI. This catches ALL values globally.
+   551→   551→            for (const key of Object.keys(aliasedRow)) {
+   552→   552→                const val = aliasedRow[key];
+   553→   553→                if (typeof val === 'string' && val.match(/^-?\d+\.\d{4,}$/)) {
+   554→   554→                    const num = parseFloat(val);
+   555→   555→                    if (!isNaN(num)) {
+   556→   556→                        aliasedRow[key] = Math.round(num * 100) / 100;
+   557→   557→                    }
+   558→   558→                } else if (typeof val === 'number' && val % 1 !== 0) {
+   559→   559→                    const str = String(val);
+   560→   560→                    if (str.includes('.') && str.split('.')[1].length > 4) {
+   561→   561→                        aliasedRow[key] = Math.round(val * 100) / 100;
+   562→   562→                    }
+   563→   563→                }
+   564→   564→            }
+   565→   565→
+   566→   566→            return aliasedRow;
+   567→   567→        });
+   568→   568→
+   569→   569→        return processedRows;
+   570→   570→    } catch (err) {
+   571→   571→        console.error("Database Query Error:", err.message);
+   572→   572→        console.error("SQL:", sqlQuery);
+   573→   573→        throw err;
+   574→   574→    } finally {
+   575→   575→        if (client) client.release();
+   576→   576→    }
+   577→   577→};
+   578→   578→
+   579→   579→const connectDB = async () => {
+   580→   580→    try {
+   581→   581→        console.log("Connecting to Neon PostgreSQL...");
+   582→   582→        // Running a simple query to verify connection
+   583→   583→        await query("SELECT 1 as result");
+   584→   584→        console.log("✅ Successfully connected to Neon PostgreSQL!");
+   585→   585→        return true;
+   586→   586→    } catch (err) {
+   587→   587→        console.error("❌ Neon PostgreSQL connection failed!");
+   588→   588→        console.error(err.message);
+   589→   589→        throw err;
+   590→   590→    }
+   591→   591→};
+   592→   592→
+   593→   593→module.exports = { query, connectDB, pool };
+   594→   594→
