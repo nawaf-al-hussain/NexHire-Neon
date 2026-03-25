@@ -66,6 +66,12 @@ app.get('/api/status', async (req, res) => {
     }
 });
 
+// Global error handler — catches uncaught async errors so they return
+// a clean 500 JSON instead of hanging until Vercel's 60s timeout.
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err.message);
+    res.status(500).json({ error: 'Internal server error.' });
+});
 // Start Server
 app.listen(PORT, async () => {
     console.log(`🚀 NexHire Server running on port ${PORT}`);

@@ -995,246 +995,101 @@ router.get('/candidate-profile/:candidateId', protect, authorize([1, 2]), async 
             interviews: []
         };
 
-        // 1. Basic Info
-        try {
-            const basic = await query(`
-                SELECT 
-                    c.candidateid as candidateid,
-                    c.fullname as fullname,
-                    c.location as location,
-                    c.yearsofexperience as yearsofexperience,
-                    c.resumetext as resumetext,
-                    c.extractedskills as extractedskills,
-                    c.createdat as createdat,
-                    u.email as email,
-                    u.username as username
-                FROM candidates c
-                LEFT JOIN users u ON c.userid = u.userid
-                WHERE c.candidateid = ?
-            `, [candidateId]);
-            profile.basicInfo = basic[0] || null;
-        } catch (err) {
-            console.log("Basic info error:", err.message);
-        }
+        // Run all 12 queries in parallel using Promise.allSettled.
+        // Previously these were sequential (12 round-trips × ~100ms = ~1.2s).
+        // Now they run concurrently (~100ms total).
+        const [
+            basicRes, resumeRes, skillsRes, engagementRes, ghostingRes,
+            remoteRes, careerRes, gamificationRes, predictionsRes,
+            blockchainRes, applicationsRes, interviewsRes
+        ] = await Promise.allSettled([
+            // 1. Basic Info
+            query(`SELECT c.candidateid, c.fullname, c.location, c.yearsofexperience,
+                          c.resumetext, c.extractedskills, c.createdat,
+                          u.email, u.username
+                   FROM candidates c LEFT JOIN users u ON c.userid = u.userid
+                   WHERE c.candidateid = ?`, [candidateId]),
+            // 2. Resume Insights
+            query(`SELECT resumequalityscore, educationinstitutions, certifications,
+                          technologiesmentioned AS techstack,
+                          leadershiptermscount AS leadershipexperience,
+                          nlpprocessedat AS lastanalyzedat
+                   FROM resumeinsights WHERE candidateid = ?`, [candidateId]),
+            // 3. Skill Verification
+            query(`SELECT skillname, claimedlevel, verificationscore, verificationmethod,
+                          verifiedat, expirydate, verificationstatus, validitystatus
+                   FROM vw_skillverificationstatus WHERE candidateid = ?`, [candidateId]),
+            // 4. Engagement Metrics
+            query(`SELECT COUNT(DISTINCT i.scheduleid) AS interviewsscheduled,
+                          COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) AS confirmedinterviews,
+                          CASE WHEN COUNT(DISTINCT i.scheduleid) = 0 THEN 0
+                               ELSE ROUND(COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) * 100.0
+                                   / COUNT(DISTINCT i.scheduleid), 2) END AS engagementrate
+                   FROM candidates c
+                   LEFT JOIN applications a ON c.candidateid = a.candidateid
+                   LEFT JOIN interviewschedules i ON a.applicationid = i.applicationid
+                   WHERE c.candidateid = ? GROUP BY c.candidateid`, [candidateId]),
+            // 5. Ghosting Risk
+            query(`SELECT candidateghostingscore, overallriskscore, overallrisklevel,
+                          avgresponsetime, totalcommunications
+                   FROM vw_ghostingriskdashboard WHERE candidateid = ? LIMIT 1`, [candidateId]),
+            // 6. Remote Compatibility
+            query(`SELECT overallremotescore, timezonealignment,
+                          workspacequality AS workspacescore,
+                          communicationpreference AS communicationscore,
+                          selfmotivationscore
+                   FROM vw_remotecompatibilitymatrix WHERE candidateid = ? LIMIT 1`, [candidateId]),
+            // 7. Career Path
+            query(`SELECT targetrole, transitionprobability, topskills AS skillsneeded,
+                          avgtransitionmonths AS estimatedmonths, currentreadinessscore
+                   FROM vw_careerpathinsights WHERE candidateid = ? LIMIT 1`, [candidateId]),
+            // 8. Gamification
+            query(`SELECT points, level, badges, streakdays, engagementscore
+                   FROM candidategamification WHERE candidateid = ?`, [candidateId]),
+            // 9. AI Predictions
+            query(`SELECT p.jobid, j.jobtitle, p.successprobability, p.keyfactors,
+                          p.predictiondate AS predictedat
+                   FROM ai_predictions p LEFT JOIN jobpostings j ON p.jobid = j.jobid
+                   WHERE p.candidateid = ?`, [candidateId]),
+            // 10. Blockchain Verifications
+            query(`SELECT credentialtype, credentialhash,
+                          blockchaintransactionid AS transactionid,
+                          network, verifiedat,
+                          CASE WHEN verificationstatus = 'Verified' THEN TRUE ELSE FALSE END AS isverified
+                   FROM blockchainverifications WHERE candidateid = ?
+                   ORDER BY verifiedat DESC`, [candidateId]),
+            // 11. Recent Applications
+            query(`SELECT a.applicationid, j.jobtitle, j.location AS joblocation,
+                          s.statusname, a.applieddate, NULL AS matchscore
+                   FROM applications a JOIN jobpostings j ON a.jobid = j.jobid
+                   JOIN applicationstatus s ON a.statusid = s.statusid
+                   WHERE a.candidateid = ? AND a.isdeleted = FALSE
+                   ORDER BY a.applieddate DESC LIMIT 10`, [candidateId]),
+            // 12. Interviews
+            query(`SELECT i.scheduleid, j.jobtitle, u.username AS recruitername,
+                          i.interviewstart, i.interviewend, i.candidateconfirmed,
+                          CASE WHEN i.interviewstart < NOW() THEN 'Past' ELSE 'Upcoming' END AS timestatus
+                   FROM interviewschedules i
+                   JOIN applications a ON i.applicationid = a.applicationid
+                   JOIN jobpostings j ON a.jobid = j.jobid
+                   JOIN recruiters r ON i.recruiterid = r.recruiterid
+                   JOIN users u ON r.userid = u.userid
+                   WHERE a.candidateid = ? ORDER BY i.interviewstart DESC`, [candidateId]),
+        ]);
 
-        // 2. Resume Insights
-        try {
-            const resume = await query(`
-                SELECT
-                    resumequalityscore as resumequalityscore,
-                    educationinstitutions as educationinstitutions,
-                    certifications as certifications,
-                    technologiesmentioned AS techstack,
-                    leadershiptermscount AS leadershipexperience,
-                    nlpprocessedat AS lastanalyzedat
-                FROM resumeinsights
-                WHERE candidateid = ?
-            `, [candidateId]);
-            profile.resumeInsights = resume[0] || null;
-        } catch (err) {
-            console.log("Resume insights error:", err.message);
-        }
-
-        // 3. Skill Verification Status
-        try {
-            const skills = await query(`
-                SELECT 
-                    skillname as skillname,
-                    claimedlevel as claimedlevel,
-                    verificationscore as verificationscore,
-                    verificationmethod as verificationmethod,
-                    verifiedat as verifiedat,
-                    expirydate as expirydate,
-                    verificationstatus as verificationstatus,
-                    validitystatus as validitystatus
-                FROM vw_skillverificationstatus
-                WHERE candidateid = ?
-            `, [candidateId]);
-            profile.skillVerification = skills || [];
-        } catch (err) {
-            console.log("Skill verification error:", err.message);
-        }
-
-        // 4. Engagement Metrics — compute directly (vw_ returns null for 0-interview candidates)
-        try {
-            const engagement = await query(`
-                SELECT
-                    COUNT(DISTINCT i.scheduleid) AS interviewsscheduled,
-                    COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) AS confirmedinterviews,
-                    CASE
-                        WHEN COUNT(DISTINCT i.scheduleid) = 0 THEN 0
-                        ELSE ROUND(
-                            COUNT(DISTINCT CASE WHEN i.candidateconfirmed = true THEN i.scheduleid END) * 100.0
-                            / COUNT(DISTINCT i.scheduleid), 2
-                        )
-                    END AS engagementrate
-                FROM candidates c
-                LEFT JOIN applications a ON c.candidateid = a.candidateid
-                LEFT JOIN interviewschedules i ON a.applicationid = i.applicationid
-                WHERE c.candidateid = ?
-                GROUP BY c.candidateid
-            `, [candidateId]);
-            profile.engagement = engagement[0] || null;
-        } catch (err) {
-            console.log("Engagement error:", err.message);
-        }
-
-        // 5. Ghosting Risk
-        try {
-            const ghosting = await query(`
-                SELECT 
-                    candidateghostingscore as candidateghostingscore,
-                    overallriskscore as overallriskscore,
-                    overallrisklevel as overallrisklevel,
-                    avgresponsetime as avgresponsetime,
-                    totalcommunications as totalcommunications
-                FROM vw_ghostingriskdashboard
-                WHERE candidateid = ?
-                LIMIT 1
-            `, [candidateId]);
-            profile.ghostingRisk = ghosting[0] || null;
-        } catch (err) {
-            console.log("Ghosting risk error:", err.message);
-        }
-
-        // 6. Remote Compatibility
-        try {
-            const remote = await query(`
-                SELECT 
-                    overallremotescore as overallremotescore,
-                    timezonealignment as timezonealignment,
-                    workspacequality AS workspacescore,
-                    communicationpreference AS communicationscore,
-                    selfmotivationscore as selfmotivationscore
-                FROM vw_remotecompatibilitymatrix
-                WHERE candidateid = ?
-                LIMIT 1
-            `, [candidateId]);
-            profile.remoteCompatibility = remote[0] || null;
-        } catch (err) {
-            console.log("Remote compatibility error:", err.message);
-        }
-
-        // 7. Career Path Insights
-        try {
-            const career = await query(`
-                SELECT 
-                    targetrole as targetrole,
-                    transitionprobability as transitionprobability,
-                    topskills AS skillsneeded,
-                    avgtransitionmonths AS estimatedmonths,
-                    currentreadinessscore as currentreadinessscore
-                FROM vw_careerpathinsights
-                WHERE candidateid = ?
-                LIMIT 1
-            `, [candidateId]);
-            profile.careerPath = career[0] || null;
-        } catch (err) {
-            console.log("Career path error:", err.message);
-        }
-
-        // 8. Gamification
-        try {
-            const gamification = await query(`
-                SELECT 
-                    points as points,
-                    level as level,
-                    badges as badges,
-                    streakdays as streakdays,
-                    engagementscore as engagementscore
-                FROM candidategamification
-                WHERE candidateid = ?
-            `, [candidateId]);
-            profile.gamification = gamification[0] || null;
-        } catch (err) {
-            console.log("Gamification error:", err.message);
-        }
-
-        // 9. AI Predictions
-        try {
-            const predictions = await query(`
-                SELECT 
-                    p.jobid as jobid,
-                    j.jobtitle as jobtitle,
-                    p.successprobability as successprobability,
-                    p.keyfactors as keyfactors,
-                    p.predictiondate AS predictedat
-                FROM ai_predictions p
-                LEFT JOIN jobpostings j ON p.jobid = j.jobid
-                WHERE p.candidateid = ?
-            `, [candidateId]);
-            profile.predictions = predictions || [];
-        } catch (err) {
-            console.log("AI predictions error:", err.message);
-        }
-
-        // 10. Blockchain Verifications
-        try {
-            const blockchain = await query(`
-                SELECT 
-                    credentialtype as credentialtype,
-                    credentialhash as credentialhash,
-                    blockchaintransactionid AS transactionid,
-                    network as network,
-                    verifiedat as verifiedat,
-                    CASE WHEN verificationstatus = 'Verified' THEN TRUE ELSE FALSE END AS isverified
-                FROM blockchainverifications
-                WHERE candidateid = ?
-                ORDER BY verifiedat DESC
-            `, [candidateId]);
-            profile.blockchainVerifications = blockchain || [];
-        } catch (err) {
-            console.log("Blockchain verifications error:", err.message);
-        }
-
-        // 11. Recent Applications
-        try {
-            const applications = await query(`
-                SELECT 
-                    a.applicationid as applicationid,
-                    j.jobtitle as jobtitle,
-                    j.location AS joblocation,
-                    s.statusname as statusname,
-                    a.applieddate as applieddate,
-                    NULL AS matchscore
-                FROM applications a
-                JOIN jobpostings j ON a.jobid = j.jobid
-                JOIN applicationstatus s ON a.statusid = s.statusid
-                WHERE a.candidateid = ? AND a.isdeleted = FALSE
-                ORDER BY a.applieddate DESC
-                LIMIT 10
-            `, [candidateId]);
-            profile.applications = applications || [];
-        } catch (err) {
-            console.log("Applications error:", err.message);
-        }
-
-        // 12. Interviews
-        try {
-            const interviews = await query(`
-                SELECT 
-                    i.scheduleid as scheduleid,
-                    j.jobtitle as jobtitle,
-                    u.username AS recruitername,
-                    i.interviewstart as interviewstart,
-                    i.interviewend as interviewend,
-                    i.candidateconfirmed as candidateconfirmed,
-                    CASE 
-                        WHEN i.interviewstart < NOW() THEN 'Past'
-                        ELSE 'Upcoming'
-                    END AS timestatus
-                FROM interviewschedules i
-                JOIN applications a ON i.applicationid = a.applicationid
-                JOIN jobpostings j ON a.jobid = j.jobid
-                JOIN recruiters r ON i.recruiterid = r.recruiterid
-                JOIN users u ON r.userid = u.userid
-                WHERE a.candidateid = ?
-                ORDER BY i.interviewstart DESC
-            `, [candidateId]);
-            profile.interviews = interviews || [];
-        } catch (err) {
-            console.log("Interviews error:", err.message);
-        }
+        // Assign results (each is {status: 'fulfilled', value: [...]} or {status: 'rejected', reason: ...})
+        profile.basicInfo = basicRes.status === 'fulfilled' ? (basicRes.value[0] || null) : null;
+        profile.resumeInsights = resumeRes.status === 'fulfilled' ? (resumeRes.value[0] || null) : null;
+        profile.skillVerification = skillsRes.status === 'fulfilled' ? (skillsRes.value || []) : [];
+        profile.engagement = engagementRes.status === 'fulfilled' ? (engagementRes.value[0] || null) : null;
+        profile.ghostingRisk = ghostingRes.status === 'fulfilled' ? (ghostingRes.value[0] || null) : null;
+        profile.remoteCompatibility = remoteRes.status === 'fulfilled' ? (remoteRes.value[0] || null) : null;
+        profile.careerPath = careerRes.status === 'fulfilled' ? (careerRes.value[0] || null) : null;
+        profile.gamification = gamificationRes.status === 'fulfilled' ? (gamificationRes.value[0] || null) : null;
+        profile.predictions = predictionsRes.status === 'fulfilled' ? (predictionsRes.value || []) : [];
+        profile.blockchainVerifications = blockchainRes.status === 'fulfilled' ? (blockchainRes.value || []) : [];
+        profile.applications = applicationsRes.status === 'fulfilled' ? (applicationsRes.value || []) : [];
+        profile.interviews = interviewsRes.status === 'fulfilled' ? (interviewsRes.value || []) : [];
 
         res.json(profile);
     } catch (err) {

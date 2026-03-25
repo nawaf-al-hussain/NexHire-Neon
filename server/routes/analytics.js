@@ -967,38 +967,10 @@ router.get('/hire-success-predictions', protect, authorize([1, 2]), async (req, 
             ORDER BY p.predictiondate DESC LIMIT 50
         `);
 
-        // If the table is empty, auto-generate predictions for all applications
-        // at Interview stage (3) or later, so the page shows real history on
-        // first visit instead of being empty.
-        if (!data || data.length === 0) {
-            try {
-                const apps = await query(`
-                    SELECT applicationid FROM applications
-                    WHERE statusid >= 3 AND isdeleted = false
-                    ORDER BY applicationid LIMIT 30
-                `);
-                for (const app of apps) {
-                    try {
-                        await query(`SELECT * FROM sp_predicthiresuccess($1)`, [app.applicationid]);
-                    } catch (predErr) {
-                        console.log("Auto hire-success prediction failed for application", app.applicationid, ":", predErr.message);
-                    }
-                }
-                // Re-fetch
-                data = await query(`
-                    SELECT p.*, c.fullname as candidatename, j.jobtitle,
-                           s.statusname, c.yearsofexperience
-                    FROM ai_predictions p
-                    LEFT JOIN candidates c ON p.candidateid = c.candidateid
-                    LEFT JOIN jobpostings j ON p.jobid = j.jobid
-                    LEFT JOIN applications a ON p.applicationid = a.applicationid
-                    LEFT JOIN applicationstatus s ON a.statusid = s.statusid
-                    ORDER BY p.predictiondate DESC LIMIT 50
-                `);
-            } catch (autoGenErr) {
-                console.error("Auto-generation of hire success predictions failed:", autoGenErr.message);
-            }
-        }
+        // NOTE: Auto-generation was previously triggered here when the table
+        // was empty. This violated REST semantics (write inside GET) and
+        // created race conditions. Auto-generation is now a separate
+        // POST /maintenance/seed-predictions admin endpoint.
 
         // Transform to PascalCase for frontend
         const formattedData = data.map(p => ({
@@ -1136,68 +1108,10 @@ router.get('/onboarding-predictions', protect, authorize([1, 2]), async (req, re
             ORDER BY p.predictiondate DESC LIMIT 50
         `);
 
-        // If the table is empty, auto-generate predictions for all hired
-        // candidates so the page shows real history on first visit (instead
-        // of being empty until a recruiter manually runs each prediction).
-        if (!data || data.length === 0) {
-            try {
-                // Get all hired candidates (statusid = 4)
-                const hiredCandidates = await query(`
-                    SELECT a.candidateid, a.jobid
-                    FROM applications a
-                    WHERE a.statusid = 4 AND a.isdeleted = false
-                    ORDER BY a.applicationid
-                `);
-
-                // Run prediction for each one. The SP returns the prediction
-                // but (in this DB) does NOT insert into onboardingpredictions,
-                // so we have to do the INSERT ourselves.
-                // NOTE: the table does NOT have a risklevel column — RiskLevel
-                // is derived from SuccessProbability at query time.
-                for (const hc of hiredCandidates) {
-                    try {
-                        const predResult = await query(
-                            `SELECT * FROM sp_predictonboardingsuccess($1, $2)`,
-                            [hc.candidateid, hc.jobid]
-                        );
-                        if (predResult && predResult.length > 0) {
-                            const p = predResult[0];
-                            await query(`
-                                INSERT INTO onboardingpredictions
-                                    (candidateid, jobid, successprobability,
-                                     riskfactors, recommendations, predictedretentionmonths,
-                                     predictiondate)
-                                VALUES ($1, $2, $3, $4, $5, $6, NOW())
-                                ON CONFLICT DO NOTHING
-                            `, [
-                                hc.candidateid,
-                                hc.jobid,
-                                p.successprobability,
-                                p.riskfactors,
-                                p.recommendations,
-                                p.predictedretentionmonths
-                            ]);
-                        }
-                    } catch (predErr) {
-                        // Skip individual failures — keep generating for others
-                        console.log("Auto-prediction failed for candidate", hc.candidateid, ":", predErr.message);
-                    }
-                }
-
-                // Re-fetch predictions now that they should be populated
-                data = await query(`
-                    SELECT p.*, c.fullname as candidatename, j.jobtitle,
-                           p.predictiondate as predictedat
-                    FROM onboardingpredictions p
-                    LEFT JOIN candidates c ON p.candidateid = c.candidateid
-                    LEFT JOIN jobpostings j ON p.jobid = j.jobid
-                    ORDER BY p.predictiondate DESC LIMIT 50
-                `);
-            } catch (autoGenErr) {
-                console.error("Auto-generation of onboarding predictions failed:", autoGenErr.message);
-                // Continue with empty data — frontend will show empty state
-            }
-        }
+        // NOTE: Auto-generation was previously triggered here when the table
+        // was empty. This violated REST semantics (write inside GET) and
+        // created race conditions. Auto-generation is now a separate
+        // POST /maintenance/seed-predictions admin endpoint.
 
         // Transform to PascalCase for frontend
         const formattedData = data.map(p => ({

@@ -105,6 +105,13 @@ try {
         });
     }
 
+    // Global error handler — catches uncaught async errors so they return
+    // a clean 500 JSON instead of hanging until Vercel's 60s timeout.
+    app.use((err, req, res, next) => {
+        console.error('Unhandled error:', err.message);
+        res.status(500).json({ error: 'Internal server error.' });
+    });
+
     // Export the pool too (some Vercel tooling expects it)
     module.exports = app;
     module.exports.pool = pool;

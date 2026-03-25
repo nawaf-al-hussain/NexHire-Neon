@@ -7,7 +7,7 @@ const connectionString = process.env.DB_CONNECTION_STRING;
 const pool = new Pool({
     connectionString: connectionString,
     ssl: {
-        rejectUnauthorized: false // Required for Neon connections
+        rejectUnauthorized: true // Neon supports proper SSL certificate verification
     }
 });
 

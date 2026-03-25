@@ -404,10 +404,8 @@ router.get('/view-definition/:viewName', protect, authorize(1), async (req, res)
 router.post('/seed-diversity-metrics', protect, authorize(1), async (req, res) => {
     const crypto = require('crypto');
     try {
-        // 1. Clear existing data
-        await query('DELETE FROM diversitymetrics');
-
-        // 2. Fetch all application IDs
+        // 1. Fetch all application IDs FIRST (before deleting, so if fetch
+        //    fails we haven't lost data)
         const apps = await query(`
             SELECT a.applicationid
             FROM applications a
@@ -418,6 +416,9 @@ router.post('/seed-diversity-metrics', protect, authorize(1), async (req, res) =
         if (apps.length === 0) {
             return res.json({ message: 'No applications found.', inserted: 0 });
         }
+
+        // 2. Clear existing data
+        await query('DELETE FROM diversitymetrics');
 
         // 3. Demographic distributions (realistic tech-industry weights)
         const GENDERS = [
@@ -778,6 +779,81 @@ router.post('/seed-gamification', protect, authorize(1), async (req, res) => {
     } catch (err) {
         console.error('Seed Gamification Error:', err.message);
         res.status(500).json({ error: 'Failed to seed gamification data: ' + err.message });
+    }
+});
+
+/**
+ * @route   POST /api/maintenance/seed-predictions
+ * @desc    Auto-generate hire-success and onboarding predictions for all
+ *          eligible candidates. Replaces the previous auto-gen logic that
+ *          was inside GET handlers (violated REST semantics + race conditions).
+ * @access  Private (Admin Only)
+ */
+router.post('/seed-predictions', protect, authorize(1), async (req, res) => {
+    try {
+        let hireGenerated = 0;
+        let onboardingGenerated = 0;
+
+        // 1. Generate hire-success predictions for applications at Interview stage or later
+        const apps = await query(`
+            SELECT applicationid FROM applications
+            WHERE statusid >= 3 AND isdeleted = false
+            ORDER BY applicationid LIMIT 30
+        `);
+
+        for (const app of apps) {
+            try {
+                await query(`SELECT * FROM sp_predicthiresuccess($1)`, [app.applicationid]);
+                hireGenerated++;
+            } catch (e) {
+                // Skip individual failures
+            }
+        }
+
+        // 2. Generate onboarding predictions for all hired candidates
+        const hiredCandidates = await query(`
+            SELECT a.candidateid, a.jobid
+            FROM applications a
+            WHERE a.statusid = 4 AND a.isdeleted = false
+            ORDER BY a.applicationid
+        `);
+
+        for (const hc of hiredCandidates) {
+            try {
+                const predResult = await query(
+                    `SELECT * FROM sp_predictonboardingsuccess($1, $2)`,
+                    [hc.candidateid, hc.jobid]
+                );
+                if (predResult && predResult.length > 0) {
+                    const p = predResult[0];
+                    await query(`
+                        INSERT INTO onboardingpredictions
+                            (candidateid, jobid, successprobability,
+                             riskfactors, recommendations, predictedretentionmonths,
+                             predictiondate)
+                        VALUES ($1, $2, $3, $4, $5, $6, NOW())
+                        ON CONFLICT DO NOTHING
+                    `, [
+                        hc.candidateid, hc.jobid,
+                        p.successprobability, p.riskfactors,
+                        p.recommendations, p.predictedretentionmonths
+                    ]);
+                    onboardingGenerated++;
+                }
+            } catch (e) {
+                // Skip individual failures
+            }
+        }
+
+        res.json({
+            message: 'Predictions generated successfully.',
+            hireSuccessPredictions: hireGenerated,
+            onboardingPredictions: onboardingGenerated
+        });
+
+    } catch (err) {
+        console.error('Seed Predictions Error:', err.message);
+        res.status(500).json({ error: 'Failed to seed predictions: ' + err.message });
     }
 });
 

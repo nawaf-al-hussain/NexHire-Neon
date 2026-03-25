@@ -322,8 +322,6 @@ router.get('/profile/skills', protect, authorize(3), async (req, res) => {
 });
 
 router.post('/apply', protect, authorize(3), async (req, res) => {
-    console.log("=== /APPLY ENDPOINT HIT ===");
-    console.log("Request Body:", req.body);
     const { jobID } = req.body;
     const userID = req.user.userid;
 
@@ -332,21 +330,35 @@ router.post('/apply', protect, authorize(3), async (req, res) => {
         if (candidate.length === 0) return res.status(404).json({ error: "Candidate profile not found." });
         const candidateID = candidate[0].candidateid;
 
-        // Check if already applied
-        const existing = await query("SELECT * FROM applications WHERE candidateid = ? AND jobid = ?", [candidateID, jobID]);
-        if (existing.length > 0) return res.status(400).json({ error: "Already applied for this job." });
-
-        // Insert application
-        await query(
-            "INSERT INTO applications (candidateid, jobid, statusid) VALUES (?, ?, (SELECT statusid FROM applicationstatus WHERE statusname = 'Applied'))",
+        // Insert application — ON CONFLICT handles the TOCTOU race:
+        // if two parallel requests both pass the "already applied" check,
+        // the UNIQUE constraint on (candidateid, jobid) prevents the
+        // duplicate, and ON CONFLICT DO NOTHING returns 0 rows affected.
+        const result = await query(
+            `INSERT INTO applications (candidateid, jobid, statusid)
+             VALUES (?, ?, (SELECT statusid FROM applicationstatus WHERE statusname = 'Applied'))
+             ON CONFLICT (candidateid, jobid) DO NOTHING`,
             [candidateID, jobID]
         );
+
+        // Check if the insert was skipped (duplicate)
+        if (result && result.length === 0) {
+            // ON CONFLICT DO NOTHING doesn't return row count via pg, so
+            // check if the application already exists
+            const existing = await query(
+                "SELECT applicationid FROM applications WHERE candidateid = ? AND jobid = ?",
+                [candidateID, jobID]
+            );
+            if (existing.length > 0) {
+                return res.status(400).json({ error: "Already applied for this job." });
+            }
+        }
 
         // Award gamification points
         try {
             await query("CALL sp_awardgamificationpoints($1, $2)", [candidateID, 'Application']);
         } catch (gErr) {
-            console.error("Gamification Error:", gErr.message);
+            // Non-fatal — application was still created
         }
 
         res.json({ message: "Application submitted successfully." });
@@ -1668,49 +1680,6 @@ router.get('/profile', protect, authorize(3), async (req, res) => {
     } catch (err) {
         console.error("Fetch Profile Error:", err.message);
         res.status(500).json({ error: "Failed to fetch profile." });
-    }
-});
-
-/**
- * @route   GET /api/candidates/profile/extracted-skills
- * @desc    Get skills extracted from resume
- * @access  Private (Candidate)
- */
-router.get('/profile/extracted-skills', protect, authorize(3), async (req, res) => {
-    const userID = req.user.userid;
-    try {
-        const result = await query(
-            "SELECT extractedskills, resumetext, yearsofexperience FROM candidates WHERE userid = ?",
-            [userID]
-        );
-
-        if (result.length === 0) {
-            return res.status(404).json({ error: "Candidate not found." });
-        }
-
-        const { extractedskills, resumetext, yearsofexperience } = result[0];
-
-        // Parse extractedskills from "Java:40,React:35,SQL:25" format
-        let skills = [];
-        if (extractedskills) {
-            skills = extractedskills.split(',').map(s => {
-                const [skillName, confidence] = s.split(':');
-                return {
-                    skillName: skillName?.trim(),
-                    confidence: parseInt(confidence) || 0,
-                    source: 'Resume'
-                };
-            }).filter(s => s.skillName);
-        }
-
-        res.json({
-            skills,
-            resumeTextLength: resumetext?.length || 0,
-            extractedYearsExperience: yearsofexperience
-        });
-    } catch (err) {
-        console.error("Fetch Extracted Skills Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch extracted skills." });
     }
 });
 
