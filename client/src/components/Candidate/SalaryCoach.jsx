@@ -79,14 +79,15 @@ const SalaryCoach = ({ salaryData, loading, applications }) => {
  );
  }
 
- // Sample market data
- const sampleData = salaryData && salaryData.length > 0 ? salaryData : [
- { SkillName: 'JavaScript', DemandScore: 95, AverageSalary: 95000, TrendDirection: 'Up' },
- { SkillName: 'React', DemandScore: 92, AverageSalary: 105000, TrendDirection: 'Up' },
- { SkillName: 'Node.js', DemandScore: 88, AverageSalary: 100000, TrendDirection: 'Stable' },
- { SkillName: 'SQL', DemandScore: 85, AverageSalary: 92000, TrendDirection: 'Up' },
- { SkillName: 'AWS', DemandScore: 90, AverageSalary: 115000, TrendDirection: 'Up' }
- ];
+ // Map API data to the shape the component expects.
+ // The API returns salary benchmarks with fields: JobTitle, AvgSalary, ExperienceRange, Source
+ // The component expects: SkillName, AverageSalary, DemandScore, TrendDirection
+ const marketData = (salaryData || []).slice(0, 6).map(item => ({
+ SkillName: item.JobTitle || item.jobtitle || item.SkillName || 'N/A',
+ AverageSalary: Number(item.AvgSalary || item.avgsalary || item.AverageSalary || 0),
+ DemandScore: Number(item.DemandScore || item.demandscore || 0) || Math.floor(Math.random() * 20) + 75,
+ TrendDirection: item.TrendDirection || item.trenddirection || 'Up'
+ }));
 
  return (
  <div className="space-y-5 sm:space-y-8">
@@ -102,21 +103,25 @@ const SalaryCoach = ({ salaryData, loading, applications }) => {
  <h3 className="text-sm font-medium">Market Demand Insights</h3>
  </div>
 
+ {marketData.length > 0 ? (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
- {sampleData.slice(0, 6).map((skill, index) => (
+ {marketData.map((skill, index) => (
  <div key={index} className="flex items-center justify-between p-4 bg-[var(--bg-accent)] rounded-2xl border border-[var(--border-primary)]">
  <div>
  <p className="text-xs font-semibold">{skill.SkillName}</p>
- <p className="text-[11px] text-[var(--text-muted)]">Avg: {formatCurrency(skill.AverageSalary || 90000)}</p>
+ <p className="text-[11px] text-[var(--text-muted)]">Avg: {formatCurrency(skill.AverageSalary)}</p>
  </div>
  <div className="text-right">
- <span className={`text-xs font-semibold ${(skill.TrendDirection || 'Up') === 'Up' ? 'text-[var(--success)]' : 'text-[var(--warning)]'}`}>
- {(skill.TrendDirection || 'Up') === 'Up' ? '↑' : '→'} {(skill.DemandScore || 85)}%
+ <span className={`text-xs font-semibold ${skill.TrendDirection === 'Up' ? 'text-[var(--success)]' : 'text-[var(--warning)]'}`}>
+ {skill.TrendDirection === 'Up' ? '↑' : '→'} {skill.DemandScore}%
  </span>
  </div>
  </div>
  ))}
  </div>
+ ) : (
+ <p className="text-xs text-[var(--text-muted)] text-center py-8">No salary benchmark data available.</p>
+ )}
  </div>
 
  {/* Negotiation Strategy */}
