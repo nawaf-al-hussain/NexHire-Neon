@@ -10,7 +10,7 @@ const RemoteWorkAnalytics = ({ data, loading }) => {
  const stats = React.useMemo(() => {
  if (!data || data.length === 0) return null;
 
- const avgScore = data.reduce((sum, d) => sum + (d.RemoteScore || 0), 0) / data.length;
+ const avgScore = data.reduce((sum, d) => sum + (d.RemoteScore || d.OverallRemoteScore || d.overallremotescore || 0), 0) / data.length;
  const excellentMatches = data.filter(d => d.CompatibilityAssessment === 'Excellent Match').length;
  const goodMatches = data.filter(d => d.CompatibilityAssessment === 'Good Match').length;
  const moderateMatches = data.filter(d => d.CompatibilityAssessment === 'Moderate Match').length;
@@ -251,8 +251,8 @@ const RemoteWorkAnalytics = ({ data, loading }) => {
  <div className="text-[11px] text-[var(--text-muted)]">{row.JobLocation || 'Unknown'}</div>
  </td>
  <td className="py-4 px-4 text-center">
- <span className={`text-lg font-semibold ${getScoreColor(row.RemoteScore || 0)}`}>
- {row.RemoteScore || 0}%
+ <span className={`text-lg font-semibold ${getScoreColor(row.RemoteScore || row.OverallRemoteScore || row.overallremotescore || 0)}`}>
+ {row.RemoteScore || row.OverallRemoteScore || row.overallremotescore || 0}%
  </span>
  </td>
  <td className="py-4 px-4 text-center">
