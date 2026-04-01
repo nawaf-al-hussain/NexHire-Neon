@@ -293,6 +293,7 @@ const query = async (sqlQuery, params = []) => {
                 'targetrole': 'TargetRole',
                 'transitionprobability': 'TransitionProbability',
                 'currentreadinessscore': 'CurrentReadinessScore',
+                'progresspercentage': 'ProgressPercentage',
                 'selfmotivationscore': 'SelfMotivationScore',
                 'timezonealignment': 'TimezoneAlignment',
 

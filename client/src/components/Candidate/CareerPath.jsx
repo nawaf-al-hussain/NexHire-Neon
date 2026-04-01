@@ -91,7 +91,7 @@ const CareerPath = ({ careerPath, loading, onRefresh }) => {
  </div>
  <div className="text-right">
  <div className="text-2xl sm:text-3xl font-semibold text-[var(--success)]">
- {path.TransitionProbability || '—'}%
+ {path.TransitionProbability || path.ProgressPercentage || path.progresspercentage || '—'}%
  </div>
  <p className="text-[11px] font-semibold text-[var(--text-muted)]">Probability</p>
  </div>
