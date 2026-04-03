@@ -102,15 +102,7 @@ const GhostingRiskDetail = () => {
  return 'bg-[var(--success)]/10 border-emerald-500/20';
  };
 
- const sampleData = [
- { CandidateID: 1, CandidateName: 'John Smith', JobTitle: 'Senior Developer', OverallRiskScore: 85, OverallRiskLevel: 'High', ResponseTimeHours: 72, CommunicationFrequency: 'Low', LastContactDate: '2026-02-15', DaysSinceLastContact: 5 },
- { CandidateID: 2, CandidateName: 'Sarah Johnson', JobTitle: 'UX Designer', OverallRiskScore: 72, OverallRiskLevel: 'Medium', ResponseTimeHours: 48, CommunicationFrequency: 'Medium', LastContactDate: '2026-02-18', DaysSinceLastContact: 3 },
- { CandidateID: 3, CandidateName: 'Mike Brown', JobTitle: 'Data Analyst', OverallRiskScore: 65, OverallRiskLevel: 'Medium', ResponseTimeHours: 36, CommunicationFrequency: 'Medium', LastContactDate: '2026-02-19', DaysSinceLastContact: 2 },
- { CandidateID: 4, CandidateName: 'Emily Davis', JobTitle: 'Product Manager', OverallRiskScore: 45, OverallRiskLevel: 'Low', ResponseTimeHours: 12, CommunicationFrequency: 'High', LastContactDate: '2026-02-20', DaysSinceLastContact: 1 },
- { CandidateID: 5, CandidateName: 'Alex Wilson', JobTitle: 'DevOps Engineer', OverallRiskScore: 78, OverallRiskLevel: 'High', ResponseTimeHours: 96, CommunicationFrequency: 'Low', LastContactDate: '2026-02-14', DaysSinceLastContact: 6 }
- ];
-
- const displayData = ghostingData.length > 0 ? ghostingData : sampleData;
+ const displayData = ghostingData;
 
  // Filter by search term
  const searchFiltered = displayData.filter(c =>
