@@ -121,17 +121,7 @@ const SkillVerificationStatus = () => {
  }
  };
 
- const sampleData = [
- { CandidateName: 'John Smith', SkillName: 'React', ClaimedLevel: 'Expert', VerifiedLevel: 'Expert', Status: 'Verified', VerificationDate: '2026-01-15', ExpiryDate: '2027-01-15' },
- { CandidateName: 'John Smith', SkillName: 'Node.js', ClaimedLevel: 'Intermediate', VerifiedLevel: 'Intermediate', Status: 'Verified', VerificationDate: '2026-01-15', ExpiryDate: '2027-01-15' },
- { CandidateName: 'Sarah Johnson', SkillName: 'Python', ClaimedLevel: 'Expert', VerifiedLevel: 'Advanced', Status: 'Verified', VerificationDate: '2026-02-01', ExpiryDate: '2027-02-01' },
- { CandidateName: 'Sarah Johnson', SkillName: 'AWS', ClaimedLevel: 'Intermediate', VerifiedLevel: null, Status: 'Pending', VerificationDate: null, ExpiryDate: null },
- { CandidateName: 'Mike Brown', SkillName: 'SQL', ClaimedLevel: 'Expert', VerifiedLevel: null, Status: 'Pending', VerificationDate: null, ExpiryDate: null },
- { CandidateName: 'Emily Davis', SkillName: 'Java', ClaimedLevel: 'Advanced', VerifiedLevel: 'Beginner', Status: 'Failed', VerificationDate: '2026-01-20', ExpiryDate: null },
- { CandidateName: 'Alex Wilson', SkillName: 'Docker', ClaimedLevel: 'Intermediate', VerifiedLevel: 'Intermediate', Status: 'Verified', VerificationDate: '2026-02-10', ExpiryDate: '2027-02-10' }
- ];
-
- const displayData = skillData.length > 0 ? skillData : sampleData;
+ const displayData = skillData;
 
  // Calculate stats
  const verified = displayData.filter(d => d.Status === 'Verified').length;
