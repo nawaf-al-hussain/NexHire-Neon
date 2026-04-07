@@ -28,9 +28,8 @@ const VideoInterviews = () => {
  fetchData();
  }, []);
 
- // Sample data for demo purposes when no interviews exist
- // Use real data from API, fallback to sample data
- const displayData = interviews.length > 0 ? interviews : [];
+ // Use real data from API only
+ const displayData = interviews;
  const upcoming = displayData.filter(i => i.Status === 'Upcoming' || i.Status === 'Scheduled');
  const completed = displayData.filter(i => i.Status === 'Completed');
 
