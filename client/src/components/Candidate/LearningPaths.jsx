@@ -32,8 +32,7 @@ const LearningPaths = ({ learningPath, loading, onGenerate, onRefresh, initialTa
  fetchJobs();
  }, []);
 
- // Demo learning paths to show when no real data exists
- // Use demo data when showDemo is true, otherwise use real learning path or generated path
+ // Use real data from API only
  const displayPaths = (generatedPath || learningPath || []);
 
  const handleGenerate = async () => {
