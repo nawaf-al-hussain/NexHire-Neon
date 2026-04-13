@@ -91,15 +91,6 @@ const OnboardingSuccessPredictor = () => {
  } catch (err) {
  console.error('Prediction error:', err);
  setError(err.response?.data?.error || 'Failed to generate prediction');
-
- // Demo prediction
- setPredictionResult({
- successProbability: 0.72,
- riskLevel: 'Medium Risk',
- riskFactors: 'No previous remote work experience. Company remote onboarding may need improvement.',
- recommendations: 'Moderate risk. Recommendations: 1) Bi-weekly mentor meetings, 2) Clear first project, 3) Social integration activities',
- predictedRetentionMonths: 18
- });
  } finally {
  setLoading(false);
  }
