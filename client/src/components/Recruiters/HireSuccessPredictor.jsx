@@ -39,12 +39,6 @@ const HireSuccessPredictor = () => {
  setApplications(res.data || []);
  } catch (err) {
  console.error('Error fetching applications:', err);
- // Use demo data if API fails
- setApplications([
- { ApplicationID: 1, CandidateName: 'John Smith', JobTitle: 'Senior Developer', StatusName: 'Interview', MatchScore: 85 },
- { ApplicationID: 2, CandidateName: 'Sarah Johnson', JobTitle: 'Product Manager', StatusName: 'Screening', MatchScore: 78 },
- { ApplicationID: 3, CandidateName: 'Mike Chen', JobTitle: 'Data Analyst', StatusName: 'Applied', MatchScore: 92 },
- ]);
  } finally {
  setAppsLoading(false);
  }
@@ -103,19 +97,6 @@ const HireSuccessPredictor = () => {
  } catch (err) {
  console.error('Prediction error:', err);
  setError(err.response?.data?.error || 'Failed to generate prediction');
-
- // Use demo prediction for UI demonstration
- setPredictionResult({
- successProbability: 72.5,
- confidenceLevel: 'Medium',
- factors: {
- skillMatch: 85,
- experienceMatch: 70,
- interviewScore: 68,
- responseEngagement: 75,
- historicalSuccess: 65
- }
- });
  } finally {
  setLoading(false);
  }

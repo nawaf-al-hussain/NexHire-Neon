@@ -40,12 +40,6 @@ const OnboardingSuccessPredictor = () => {
  setHiredCandidates(res.data || []);
  } catch (err) {
  console.error('Error fetching hired candidates:', err);
- // Demo data
- setHiredCandidates([
- { CandidateID: 1, CandidateName: 'John Smith', JobTitle: 'Senior Developer', DaysSinceHired: 5, OverallRemoteScore: 8.5 },
- { CandidateID: 2, CandidateName: 'Sarah Johnson', JobTitle: 'Product Manager', DaysSinceHired: 12, OverallRemoteScore: 7.2 },
- { CandidateID: 3, CandidateName: 'Mike Chen', JobTitle: 'Data Analyst', DaysSinceHired: 3, OverallRemoteScore: 6.8 },
- ]);
  } finally {
  setCandidatesLoading(false);
  }
