@@ -37,7 +37,7 @@ const InterviewPrep = ({ prepMaterials, loading, onGenerate, applications }) => 
  );
  }
 
- // Sample prep data
+ // Use real data from API only
  const displayData = (prepMaterials && prepMaterials.length > 0) ? prepMaterials : [];
 
  return (
