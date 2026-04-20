@@ -36,3 +36,22 @@ test_out*.txt
 # Database files
 *.db
 *.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+upload/
+work/
+tool-results/
+scripts/*.png
+
