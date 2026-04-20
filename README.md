@@ -80,3 +80,20 @@ See [Connecting Vercel to Neon](#connecting-vercel-to-neon) below for step-by-st
 - **Backend:** Express 5, pg 8 (PostgreSQL client), Multer (file uploads)
 - **Database:** Neon PostgreSQL 17 (serverless Postgres)
 - **Deployment:** Vercel (serverless functions + static hosting)
+
+
+## Demo Accounts
+
+| Role | Username | Password | Access |
+|------|----------|----------|--------|
+| Admin | admin1 | (leave blank) | Full system access |
+| Recruiter | recruiter1 | (leave blank) | Job management, candidates, analytics |
+| Candidate | candidate1 | (leave blank) | Job discovery, applications, career tools |
+
+## Technology Stack
+
+- **Frontend:** React 19, Vite, Tailwind CSS 4, Recharts, Lucide Icons
+- **Backend:** Node.js, Express.js, PostgreSQL (Neon)
+- **Deployment:** Vercel (serverless functions)
+- **Database:** 70 tables, 28 views, 33 stored procedures, 7 triggers
+
