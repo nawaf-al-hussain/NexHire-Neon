@@ -148,7 +148,7 @@ router.post('/feedback', protect, authorize(2), async (req, res) => {
 
         // InterviewerID should be the UserID (not RecruiterID) per the FK constraint
         const interviewerId = recruiterCheck[0].userid;  // Use UserID for InterviewerID FK
-        console.log("Submitting feedback - UserID:", userID, "InterviewerID:", interviewerId, "RecruiterID:", recruiterCheck[0].recruiterid);
+        // Feedback submission logged
 
         // Verify application exists.
         // NOTE: We intentionally do NOT gate on application status here.
