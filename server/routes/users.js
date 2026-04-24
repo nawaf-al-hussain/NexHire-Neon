@@ -73,6 +73,10 @@ router.post('/candidate', async (req, res) => {
 
     if (!username || !email || !password || !fullName) {
         return res.status(400).json({ error: "Required fields: username, email, password, fullName" });
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: "Invalid email format." });
+    }
     }
 
     try {
