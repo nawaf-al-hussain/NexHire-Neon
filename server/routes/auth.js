@@ -1,3 +1,10 @@
+/**
+ * Authentication Routes
+ *
+ * TODO (production): Add rate limiting with express-rate-limit
+ * on POST /login (max 5 attempts per 15 minutes per IP).
+ * Currently relies on PostgreSQL password verification only.
+ */
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
