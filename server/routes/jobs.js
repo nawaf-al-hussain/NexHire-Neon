@@ -1,3 +1,9 @@
+/**
+ * Job Postings Routes
+ * Manages CRUD operations for job postings, skill matching,
+ * and vacancy utilization analytics.
+ * All routes require authentication (protect) and recruiter/admin access (authorize).
+ */
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
