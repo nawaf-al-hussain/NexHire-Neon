@@ -611,3 +611,14 @@ select[class*="appearance-none"] {
     background-color: var(--bg-tertiary);
     color: var(--text-muted);
 }
+
+/* Enhanced focus indicator for interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
