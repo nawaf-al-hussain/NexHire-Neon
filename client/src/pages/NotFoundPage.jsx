@@ -103,11 +103,11 @@ const NotFoundPage = () => {
  >
  <Link to="/" className="btn-primary" style={{ textDecoration: 'none' }}>
  <Home size={16} strokeWidth={1.75} />
- Back to home
+ Back to Home
  </Link>
  <Link to="/login" className="btn-ghost" style={{ textDecoration: 'none' }}>
  <LogIn size={16} strokeWidth={1.75} />
- Go to login
+ Go to Login
  </Link>
  </div>
 
