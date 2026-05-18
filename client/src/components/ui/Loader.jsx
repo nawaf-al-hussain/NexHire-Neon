@@ -1,33 +1,19 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
 /**
- * Shared loading spinner — uses design tokens (not hardcoded colors).
- * Replaces the 4 duplicated TabLoader/RouteLoader components.
+ * Centered spinner loader for async loading states.
  */
-const Loader = ({ size = 32, label = 'Loading…' }) => (
-    <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: size >= 32 ? '100vh' : 'auto',
-        padding: size >= 32 ? '2rem' : '1rem',
-        fontFamily: 'var(--font-sans)',
-        color: 'var(--text-muted)',
-    }}>
-        <div style={{ textAlign: 'center' }}>
-            <div style={{
-                width: `${size}px`,
-                height: `${size}px`,
-                border: `${Math.max(2, size / 12)}px solid var(--bg-tertiary)`,
-                borderTopColor: 'var(--accent)',
-                borderRadius: '50%',
-                animation: 'spin 0.8s linear infinite',
-                margin: '0 auto 12px',
-            }} />
-            {label && <div style={{ fontSize: '14px' }}>{label}</div>}
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
+const Loader = ({ message = 'Loading...', size = 32 }) => {
+  return (
+    <div className="flex flex-col items-center justify-center py-20">
+      <Loader2
+        size={size}
+        className="text-[var(--accent)] animate-spin mb-3"
+      />
+      <span className="text-sm font-medium text-[var(--text-muted)]">{message}</span>
     </div>
-);
+  );
+};
 
 export default Loader;
