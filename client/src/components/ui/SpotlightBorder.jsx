@@ -36,3 +36,7 @@ const SpotlightBorder = ({ children, className = '', as: Tag = 'div' }) => {
 };
 
 export default SpotlightBorder;
+
+/* SpotlightBorder: tracks mouse position for a subtle glow effect on cards.
+   Uses CSS variables --mouse-x and --mouse-y set via onMouseMove. */
+
