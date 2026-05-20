@@ -59,3 +59,10 @@ const ScrollReveal = ({ children, delay = 0, as: Tag = 'div' }) => {
 };
 
 export default ScrollReveal;
+
+/*
+ * ScrollReveal: wraps children with an IntersectionObserver that adds
+ * a 'reveal-up' CSS class when the element scrolls into view.
+ * Supports staggered animation via the delay prop (in ms).
+ */
+
