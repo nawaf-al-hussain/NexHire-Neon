@@ -15,3 +15,11 @@ const SkipLink = () => (
 );
 
 export default SkipLink;
+
+/*
+ * SkipLink: the first focusable element on every page. Hidden off-screen
+ * until focused via keyboard (Tab), then appears in the top-left corner.
+ * Lets keyboard users jump straight to #main-content, bypassing navigation.
+ * Required by WCAG 2.1 Success Criterion 2.4.1 (Bypass Blocks).
+ */
+
