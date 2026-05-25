@@ -127,3 +127,12 @@ export const useConfirm = () => {
 };
 
 export default ConfirmProvider;
+
+/*
+ * ConfirmDialog: context-based replacement for native confirm().
+ * Provides a modal with customizable title, message, and confirm/cancel
+ * buttons. Supports danger styling for destructive actions.
+ * Uses the ConfirmProvider context — call useConfirm() to get the
+ * confirm() function.
+ */
+
