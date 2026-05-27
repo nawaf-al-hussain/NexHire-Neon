@@ -102,7 +102,6 @@ router.get('/discover', protect, authorize(3), async (req, res) => {
         queryStr += locationFilter;
         queryStr += ' ORDER BY j.createdat DESC';
 
-        console.log("Final query:", queryStr);
         console.log("Query params:", queryParams);
 
         const jobs = await query(queryStr, queryParams);
