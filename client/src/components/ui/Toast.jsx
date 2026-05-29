@@ -118,3 +118,11 @@ export const useToast = () => {
 };
 
 export default ToastProvider;
+
+/*
+ * Toast: context-based notification system replacing native alert().
+ * Provides toast() function via useToast() hook.
+ * Auto-dismisses after 3 seconds. Supports type: 'success' | 'error' | 'info'.
+ * Accessible: uses role='alert' and aria-live='polite'.
+ */
+
