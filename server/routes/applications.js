@@ -1,3 +1,8 @@
+/**
+ * Application Routes
+ * Handles application lifecycle: submit, withdraw, status updates,
+ * auto-reject, and application history tracking.
+ */
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
