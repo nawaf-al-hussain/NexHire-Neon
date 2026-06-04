@@ -1,3 +1,8 @@
+/**
+ * Skills Routes
+ * Manages the master skills catalog used for job requirements
+ * and candidate proficiency tracking.
+ */
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
