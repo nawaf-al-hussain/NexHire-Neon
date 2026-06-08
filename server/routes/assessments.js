@@ -1,3 +1,8 @@
+/**
+ * Assessment Routes
+ * Manages micro-assessments for skill verification,
+ * including question banks, attempt tracking, and scoring.
+ */
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
