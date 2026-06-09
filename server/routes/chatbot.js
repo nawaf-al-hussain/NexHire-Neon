@@ -1,3 +1,9 @@
+/**
+ * Chatbot Routes
+ * Provides FAQ-based AI assistant for candidates.
+ * Matches user queries against a knowledge base and returns
+ * contextual responses about jobs, applications, and interviews.
+ */
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
