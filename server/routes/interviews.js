@@ -1,3 +1,8 @@
+/**
+ * Interview Routes
+ * Manages interview scheduling, feedback submission,
+ * AI question generation, fatigue optimization, and transcription.
+ */
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
