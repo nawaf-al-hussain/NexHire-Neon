@@ -81,3 +81,9 @@ app.listen(PORT, async () => {
         console.error('❌ Initial DB connection failed:', err.message);
     }
 });
+
+// CORS Configuration:
+// - Development: allows localhost:5173 and localhost:5174 (Vite dev servers)
+// - Production: reads CORS_ORIGIN env var (set in Vercel dashboard)
+// - Credentials enabled for cookie-based auth (future use)
+
