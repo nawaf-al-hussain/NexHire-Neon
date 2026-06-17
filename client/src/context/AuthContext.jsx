@@ -63,3 +63,11 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+
+/*
+ * AuthContext: manages user authentication state across the app.
+ * Stores user object in localStorage as 'nexhire_user'.
+ * Sets x-user-id and x-user-role headers on all axios requests.
+ * On logout: clears localStorage and removes headers.
+ */
+
