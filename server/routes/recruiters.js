@@ -511,7 +511,6 @@ router.post('/screening/run', protect, authorize([1, 2]), async (req, res) => {
             WHERE a.jobid = ? AND a.statusid = 1 AND a.isdeleted = FALSE
         `, [jobID]);
 
-        console.log(`Found ${applications.length} applications to screen for job ${jobID}`);
 
         const results = [];
 
