@@ -36,3 +36,11 @@ export const useTheme = () => {
  }
  return context;
 };
+
+/*
+ * ThemeContext: manages light/dark theme toggle.
+ * Applies/removes .dark class on <html> element.
+ * Persists preference in localStorage as 'nexhire_theme'.
+ * Defaults to system preference (prefers-color-scheme).
+ */
+
