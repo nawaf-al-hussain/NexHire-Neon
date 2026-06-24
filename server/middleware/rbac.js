@@ -46,3 +46,12 @@ const authorize = (allowedRoles = []) => {
 };
 
 module.exports = { protect, authorize };
+
+/*
+ * RBAC Middleware Design:
+ * - protect: verifies user identity via headers (x-user-id, x-user-role)
+ * - authorize: checks if user's role is in the allowed roles list
+ * - Roles: 1=Admin, 2=Recruiter, 3=Candidate
+ * - Future: replace header-based auth with JWT verification
+ */
+
