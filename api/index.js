@@ -138,3 +138,18 @@ try {
 
     module.exports = app;
 }
+
+/*
+ * Vercel Serverless Entry Point
+ * 
+ * This file is the single serverless function that handles ALL /api/* routes.
+ * Vercel bundles the entire Express app into one function (maxDuration: 60s).
+ * 
+ * On cold start: loads all route modules, connects to Neon PostgreSQL.
+ * On warm requests: reuses the cached app instance.
+ * 
+ * Error handling: if module-load fails, a fallback Express app returns
+ * the error as JSON (much easier to debug than Vercel's default
+ * FUNCTION_INVOCATION_FAILED).
+ */
+
