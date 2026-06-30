@@ -184,7 +184,6 @@ router.post('/search', protect, authorize([1, 2]), async (req, res) => {
                 console.log("Fuzzy results:", fuzzyResults);
                 candidateIDs = fuzzyResults.map(r => r.candidateid); // PostgreSQL returns lowercase column names
             } catch (fuzzyErr) {
-                console.log("Fuzzy SP failed, using LIKE:", fuzzyErr.message);
                 // Fallback to LIKE
                 const likeResults = await query(`
                     SELECT candidateid as candidateid FROM candidates WHERE fullname ILIKE ?
