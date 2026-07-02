@@ -319,3 +319,11 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+/*
+ * LandingPage: the public-facing homepage at /.
+ * Features: hero section, feature cards, pipeline preview card,
+ * documentation link, design system link, and login CTA.
+ * No authentication required.
+ */
+
