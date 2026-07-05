@@ -293,3 +293,11 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
+/*
+ * LoginPage: authentication form at /login.
+ * Accepts username + password. Dev bypass: empty password logs in
+ * (development only — gated by import.meta.env.DEV in the UI hint).
+ * On success: stores user object in localStorage, redirects to role dashboard.
+ */
+
