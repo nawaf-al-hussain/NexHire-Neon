@@ -878,7 +878,6 @@ router.get('/market-alerts', protect, authorize(2), async (req, res) => {
             }
         } catch (spErr) {
             console.log("SP failed, using fallback query:", spErr.message);
-        }
 
         // Fallback: Query MarketIntelligence directly for recruiter's location
         let alerts = [];
