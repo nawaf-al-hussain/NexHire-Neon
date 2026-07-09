@@ -131,3 +131,10 @@ const NotFoundPage = () => {
 };
 
 export default NotFoundPage;
+
+/*
+ * NotFoundPage: 404 error page for unmatched routes.
+ * Shows error message with links back to home and login.
+ * Must be the last Route in App.jsx (catch-all).
+ */
+
