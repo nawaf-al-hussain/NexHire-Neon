@@ -1032,7 +1032,6 @@ router.post('/predict-onboarding-success', protect, authorize([1, 2]), async (re
                 ]);
             } catch (insertErr) {
                 // Don't fail the request if the insert fails — still return the prediction
-                console.log("Failed to persist onboarding prediction:", insertErr.message);
             }
 
             res.json({
