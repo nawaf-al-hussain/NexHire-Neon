@@ -111,3 +111,11 @@ function App() {
 }
 
 export default App
+
+/*
+ * ProtectedRoute: wraps dashboard routes to enforce authentication.
+ * Reads user from AuthContext. If not logged in, redirects to /login.
+ * If user's RoleID doesn't match allowedRoles, redirects to /.
+ * Usage: <ProtectedRoute allowedRoles={[1]}><AdminDashboard /></ProtectedRoute>
+ */
+
