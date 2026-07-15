@@ -1244,3 +1244,12 @@ const CodeBlock = ({ code, id, expanded, toggle, copied, copy }) => {
 };
 
 export default DesignSystemPage;
+
+/*
+ * DesignSystemPage: live component library at /design-system.
+ * Showcases all design tokens, components, and patterns.
+ * Includes: foundations, colors, typography, spacing, shadows,
+ * motion, buttons, cards, forms, feedback, charts, overlays, a11y.
+ * Features working dark mode toggle (applies .dark class to <html>).
+ */
+
